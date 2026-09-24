@@ -3,6 +3,7 @@ export const site = {
   domain: 'e1-4.com',
   url: 'https://e1-4.com',
   org: 'Earth One Global Coalescent',
+  hero: 'Greetings Earthling.',
   motto: 'Think.',
   tagline: 'four ways to speak',
   philosophyUrl: 'https://earth1.co',

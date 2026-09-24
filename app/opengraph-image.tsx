@@ -22,7 +22,8 @@ export default async function OpengraphImage() {
           padding: '80px',
         }}
       >
-        <div style={{ fontSize: 160, letterSpacing: '-0.04em' }}>Think.</div>
+        <div style={{ fontSize: 104, letterSpacing: '-0.04em' }}>{site.hero}</div>
+        <div style={{ fontSize: 56, color: '#93a294', marginTop: 12 }}>{site.motto}</div>
         <div style={{ fontSize: 48, color: '#93a294', marginTop: 16 }}>{site.tagline}</div>
         <div style={{ display: 'flex', marginTop: 56, height: 2, backgroundColor: '#d3a34c' }} />
         <div style={{ fontSize: 28, color: '#93a294', marginTop: 24 }}>

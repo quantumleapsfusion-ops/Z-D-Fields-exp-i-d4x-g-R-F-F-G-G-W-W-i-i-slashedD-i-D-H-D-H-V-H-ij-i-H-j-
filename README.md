@@ -3,7 +3,7 @@
 Marketing landing page for **e1-4.com** ("earth life-forms"), the flagship product of **Earth One
 Global Coalescent**. Its sibling philosophy site is [earth1.co](https://earth1.co).
 
-Motto: _Think._ — four ways to speak.
+Hero: _Greetings Earthling._ Motto: _Think._ — four ways to speak.
 
 ## Stack
 
