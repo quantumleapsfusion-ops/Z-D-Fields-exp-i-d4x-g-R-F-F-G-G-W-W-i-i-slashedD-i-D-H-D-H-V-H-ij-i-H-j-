@@ -36,6 +36,17 @@
   .label {
     @apply font-mono text-[0.68rem] uppercase tracking-label text-dust;
   }
+
+  /* Blackboard surface with a faint chalk-dust haze. */
+  .chalk-surface {
+    background-color: rgb(var(--color-blackboard));
+    background-image: radial-gradient(
+        ellipse at 20% 10%,
+        rgb(var(--color-chalk) / 0.05),
+        transparent 55%
+      ),
+      radial-gradient(ellipse at 80% 90%, rgb(var(--color-dust) / 0.06), transparent 60%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -46,4 +57,28 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Voice Stream scrubber: transparent track over the segment bar, chalk thumb. */
+.stream-scrubber {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 1rem;
+}
+.stream-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 0.85rem;
+  width: 0.85rem;
+  border-radius: 9999px;
+  background: rgb(var(--color-chalk));
+  cursor: pointer;
+}
+.stream-scrubber::-moz-range-thumb {
+  height: 0.85rem;
+  width: 0.85rem;
+  border: 0;
+  border-radius: 9999px;
+  background: rgb(var(--color-chalk));
+  cursor: pointer;
 }
