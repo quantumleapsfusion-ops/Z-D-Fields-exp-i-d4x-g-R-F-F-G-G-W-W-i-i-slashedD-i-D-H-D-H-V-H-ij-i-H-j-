@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Brand palette, exposed as space-separated RGB channels so Tailwind's
+ * `<alpha-value>` opacity modifiers (e.g. `text-chalk/70`) work.
+ *   blackboard #0e1a13 · chalk #f1ede1 · dust #93a294 · ochre #d3a34c
+ */
+:root {
+  --color-blackboard: 14 26 19;
+  --color-chalk: 241 237 225;
+  --color-dust: 147 162 148;
+  --color-ochre: 211 163 76;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-blackboard text-chalk;
+  }
+
+  ::selection {
+    @apply bg-ochre text-blackboard;
+  }
+}
+
+@layer components {
+  .hairline {
+    @apply h-px w-full bg-chalk/15;
+  }
+
+  .label {
+    @apply font-mono text-[0.68rem] uppercase tracking-label text-dust;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
