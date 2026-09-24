@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Profile row for a Supabase Auth user. `id` equals `auth.users.id`.
+model User {
+  id          String   @id @db.Uuid
+  email       String?  @unique
+  displayName String?  @map("display_name")
+  /// Storage object path inside the `avatars` bucket (e.g. "<uid>/avatar.png").
+  avatarPath  String?  @map("avatar_path")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  voiceStreams VoiceStream[]
+  sharesOwned  Share[]       @relation("ShareOwner")
+  sharesGiven  Share[]       @relation("ShareRecipient")
+
+  @@map("users")
+}
+
+/// A continuous voice recording session (Voice Stream feature).
+model VoiceStream {
+  id        String    @id @default(uuid()) @db.Uuid
+  ownerId   String    @map("owner_id") @db.Uuid
+  title     String?
+  startedAt DateTime  @default(now()) @map("started_at") @db.Timestamptz
+  endedAt   DateTime? @map("ended_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  owner    User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  segments VoiceSegment[]
+  shares   Share[]
+
+  @@index([ownerId])
+  @@map("voice_streams")
+}
+
+/// One audio blob + (optional) transcript inside a stream.
+model VoiceSegment {
+  id         String   @id @default(uuid()) @db.Uuid
+  streamId   String   @map("stream_id") @db.Uuid
+  sequence   Int
+  /// Storage object path inside the `voice` bucket (e.g. "<uid>/<streamId>/<seq>.webm").
+  audioPath  String   @map("audio_path")
+  mimeType   String   @map("mime_type")
+  durationMs Int?     @map("duration_ms")
+  transcript String?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  stream VoiceStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+
+  @@unique([streamId, sequence])
+  @@map("voice_segments")
+}
+
+enum ShareScope {
+  PRIVATE
+  LINK
+  USER
+}
+
+/// Grants access to a VoiceStream: to a specific user, or via an unlisted link token.
+model Share {
+  id          String     @id @default(uuid()) @db.Uuid
+  streamId    String     @map("stream_id") @db.Uuid
+  ownerId     String     @map("owner_id") @db.Uuid
+  recipientId String?    @map("recipient_id") @db.Uuid
+  scope       ShareScope @default(PRIVATE)
+  token       String?    @unique
+  expiresAt   DateTime?  @map("expires_at") @db.Timestamptz
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
+
+  stream    VoiceStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  owner     User        @relation("ShareOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  recipient User?       @relation("ShareRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([streamId])
+  @@index([recipientId])
+  @@map("shares")
+}
