@@ -1,0 +1,21 @@
+{
+  "name": "e1-4-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm ci --prefix web && npm ci --prefix app",
+    "dev:web": "npm run dev --prefix web",
+    "dev:app": "npm run dev --prefix app -- --port 3001",
+    "build:web": "npm run build --prefix web",
+    "build:app": "npm run build --prefix app",
+    "build": "npm run build:web && npm run build:app",
+    "lint:web": "npm run lint --prefix web",
+    "lint:app": "npm run lint --prefix app",
+    "lint": "npm run lint:web && npm run lint:app",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}
