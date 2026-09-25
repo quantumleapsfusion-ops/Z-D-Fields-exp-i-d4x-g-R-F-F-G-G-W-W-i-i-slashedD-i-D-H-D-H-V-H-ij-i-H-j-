@@ -54,7 +54,7 @@ export async function createShareAction(options: ShareOptions): Promise<{ token:
       includeTranscript: options.includeTranscript,
     },
   });
-  revalidatePath('/profile');
+  revalidatePath('/settings');
   return { token: share.token };
 }
 
@@ -64,5 +64,5 @@ export async function revokeShareAction(shareId: string): Promise<void> {
     where: { id: shareId, userId, revokedAt: null },
     data: { revokedAt: new Date() },
   });
-  revalidatePath('/profile');
+  revalidatePath('/settings');
 }

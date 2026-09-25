@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
+  darkMode: 'media',
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './features/**/*.{ts,tsx}'],
   theme: {
     extend: {
@@ -9,14 +10,25 @@ const config: Config = {
         chalk: 'rgb(var(--color-chalk) / <alpha-value>)',
         dust: 'rgb(var(--color-dust) / <alpha-value>)',
         ochre: 'rgb(var(--color-ochre) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        spec: {
+          red: 'rgb(var(--color-spec-red) / <alpha-value>)',
+          orange: 'rgb(var(--color-spec-orange) / <alpha-value>)',
+          yellow: 'rgb(var(--color-spec-yellow) / <alpha-value>)',
+          green: 'rgb(var(--color-spec-green) / <alpha-value>)',
+          teal: 'rgb(var(--color-spec-teal) / <alpha-value>)',
+          blue: 'rgb(var(--color-spec-blue) / <alpha-value>)',
+          violet: 'rgb(var(--color-spec-violet) / <alpha-value>)',
+        },
       },
       fontFamily: {
-        display: ['var(--font-fraunces)', 'Georgia', 'serif'],
-        sans: ['var(--font-space-grotesk)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-adventor)', 'Century Gothic', 'Questrial', 'sans-serif'],
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       letterSpacing: {
-        label: '0.18em',
+        label: '0.12em',
+        display: '0.01em',
       },
       keyframes: {
         wave: {

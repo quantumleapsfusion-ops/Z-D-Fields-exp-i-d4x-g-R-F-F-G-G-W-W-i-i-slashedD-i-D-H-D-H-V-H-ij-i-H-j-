@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 
 import { getUserId } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { hardDeleteUser } from '@/lib/privacy/hard-delete';
+import { hardDeleteStream, hardDeleteUser } from '@/lib/privacy/hard-delete';
 import { getStorage, storageKeys } from '@/lib/storage';
 
 const AVATAR_TYPES: Record<string, string> = {
@@ -24,13 +24,27 @@ async function authed(): Promise<string> {
   return userId;
 }
 
+export async function destroyVoiceData(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const userId = await authed();
+  if (String(form.get('confirm') ?? '').trim() !== 'DESTROY') {
+    return { ok: false, message: 'Type DESTROY to confirm.' };
+  }
+  const deleted = await hardDeleteStream(userId);
+  revalidatePath('/settings');
+  revalidatePath('/stream');
+  return {
+    ok: true,
+    message: `Destroyed ${deleted} segment${deleted === 1 ? '' : 's'}: audio, transcripts and share links are gone.`,
+  };
+}
+
 export async function updateName(_prev: ActionState, form: FormData): Promise<ActionState> {
   const userId = await authed();
   const name = String(form.get('name') ?? '')
     .trim()
     .slice(0, 80);
   await prisma.user.update({ where: { id: userId }, data: { name: name || null } });
-  revalidatePath('/profile');
+  revalidatePath('/settings');
   return { ok: true, message: 'Saved.' };
 }
 

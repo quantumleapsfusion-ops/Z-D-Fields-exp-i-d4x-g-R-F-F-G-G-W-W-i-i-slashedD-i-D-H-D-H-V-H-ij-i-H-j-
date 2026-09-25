@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { Logo } from '@/components/Logo';
+import { Lockup } from '@/components/Logo';
 import { PageShell } from '@/components/PageShell';
 import { enabledProviders, getSessionUser } from '@/lib/auth';
 
@@ -22,9 +22,9 @@ export default async function SignInPage({
   return (
     <PageShell>
       <section className="mx-auto flex max-w-md flex-col items-center px-5 py-24 text-center">
-        <Logo size={64} />
-        <h1 className="mt-8 font-display text-4xl tracking-tight">Greetings Earthling.</h1>
-        <p className="mt-3 font-sans text-dust">Sign in to start your stream.</p>
+        <Lockup width={240} priority />
+        <h1 className="sr-only">Sign in to e1-4</h1>
+        <p className="mt-8 font-sans text-dust">Sign in to start your Voice Stream.</p>
         {error ? (
           <p className="mt-6 rounded-sm border border-ochre/40 px-4 py-2 text-sm text-ochre">
             Sign-in failed ({error}). Try again.

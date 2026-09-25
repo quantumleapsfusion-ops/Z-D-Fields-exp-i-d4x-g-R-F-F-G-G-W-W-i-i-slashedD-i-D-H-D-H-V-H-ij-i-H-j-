@@ -1,10 +1,11 @@
 # e1-4.com
 
-**e1-4.com** ("earth life-forms") is the flagship product of **Earth One Global Coalescent**. Its
-sibling philosophy site is [earth1.co](https://earth1.co). The mission is to replace text-based
-platforms with voice by 2030.
+**e1-4** — _earth life-forms_ — is a voice-only social network: you speak, and transcription,
+translation and visuals follow. Every person gets an audio diary through Voice Stream. e1-4 is a
+product of [Earth One Global Coalescent](https://earth1.co).
 
-Hero: _Greetings Earthling._ Motto: _Think._ — four ways to speak.
+Build plan and owner questions: [`PLAN.md`](./PLAN.md). Spell the name exactly `e1-4`; the only
+tagline is `earth life-forms`.
 
 ## What ships, and how mature it is
 
@@ -23,7 +24,8 @@ Codenames are kept verbatim in `lib/site.ts` (including their spellings — do n
 ## Stack
 
 - Next.js 15 (App Router, Server Actions) + TypeScript + Tailwind CSS 3
-- `next/font` — Fraunces (display) and Space Grotesk (UI/body)
+- `next/font/local` — TeX Gyre Adventor (display, self-hosted from `brand/fonts`); system UI stack for body
+- Installable PWA — `app/manifest.ts`, `public/sw.js` (shell cache + `/offline` fallback), Apple touch icon
 - NextAuth.js v4 — Google, Facebook, Microsoft (Entra ID) OAuth, all env-driven; optional dev login
 - Prisma 6 + PostgreSQL
 - Object storage behind `lib/storage` — local filesystem (dev) or S3-compatible (AWS S3 / Cloudflare R2)
@@ -140,8 +142,10 @@ everything else degrades gracefully when absent.
 
 ## Privacy (GDPR / CCPA scaffolding)
 
-- `/privacy` explains what is stored. `/profile` offers **Download my data** (JSON export) and
-  **Delete my account**.
+- `/privacy`, `/terms` and `/content-policy` are drafts pending counsel. `/settings` offers
+  **Download my data** (JSON export), **Destroy all my voice data** (typed `DESTROY` confirmation;
+  removes every segment's audio, transcript and share link, keeps the account) and **Delete my account**.
+- `components/CookieConsent.tsx` — essential-only vs allow-all, stored in `localStorage` (`e1-4:consent`).
 - Hard delete (`lib/privacy/hard-delete.ts`) removes every storage object (segment audio, avatar, and
   a sweep of the user's key prefix) and then the database rows (cascading streams, segments, shares,
   boards, sessions, accounts). Segment and whole-stream deletes use the same routine.
@@ -157,7 +161,9 @@ app/
   davinci/ chalkboard/ gravity/               feature surfaces
   actions/                                    Server Actions (profile, stream, boards)
   api/                                        auth, avatar, account export, stream, share, davinci, gravity, stt/live (Deepgram token)
-components/                                   Logo (variant: rainbow | white | chalk), Nav, Footer, PageShell, landing blocks
+brand/                                        supplied brand kit: logo/ (PNG lockups, mark, favicons, OG), fonts/ (Adventor), tokens.css
+public/brand/                                 web-served copies of brand/logo
+components/                                   Logo/Lockup/Tagline (supplied PNGs), Nav, Footer, PageShell, DemoStream, CookieConsent, LegalPage
 features/                                     client feature code (live STT, voice-stream, davinci, chalkboard, gravity)
 lib/                                          env, flags, auth, db, storage, stt, llm, privacy, voice, chalkboard, gravity, site copy
 prisma/                                       schema + migrations
@@ -165,13 +171,18 @@ prisma/                                       schema + migrations
 
 ## Brand system
 
-| Token        | Hex       | Use                |
-| ------------ | --------- | ------------------ |
-| `blackboard` | `#0e1a13` | background         |
-| `chalk`      | `#f1ede1` | foreground / text  |
-| `dust`       | `#93a294` | muted text, labels |
-| `ochre`      | `#d3a34c` | accent / CTA       |
+Assets live in `brand/` exactly as supplied — never redraw, recolour, stretch or shadow them.
+Tokens are declared in `brand/tokens.css` (light + dark via `prefers-color-scheme`) and mapped into
+Tailwind in `app/globals.css` / `tailwind.config.ts`:
 
-Colours are declared once in `app/globals.css` as RGB channels and mapped into the Tailwind theme.
-`components/Logo.tsx` renders the Ψ-over-π mark with `variant="rainbow"` (primary), `"white"` or
-`"chalk"`. Favicon: `public/icon.svg`; OG image: `app/opengraph-image.tsx`.
+| Tailwind     | Light               | Dark      | Use                                               |
+| ------------ | ------------------- | --------- | ------------------------------------------------- |
+| `blackboard` | `#FFFFFF`           | `#0B0E0D` | background                                        |
+| `surface`    | `#F5F5F7`           | `#161A19` | cards, inputs                                     |
+| `chalk`      | `#202124`           | `#F5F5F7` | text, hairlines                                   |
+| `dust`       | `#5F6368`           | `#AAAEB4` | secondary text                                    |
+| `spec-*`     | red…violet spectrum | same      | accents only: mark, recording, progress, Da Vinci |
+
+The UI is monochrome; the spectrum never colours chrome. Display type is Adventor with `tracking-display`
+(0.01em). Lockup ≥160px wide, mark ≥24px tall. Favicon: `app/favicon.ico`; OG image:
+`public/brand/og-image_1200x630.png`.

@@ -1,0 +1,57 @@
+/*
+ * e1-4 design tokens — shared with earth1.co in spirit; extractable later.
+ * The UI is monochrome. The spectrum (sampled from the Ψπ mark, top to bottom)
+ * is for accents only: the mark, recording state, progress, Da Vinci visuals.
+ */
+:root {
+  /* UI (light) */
+  --bg: #ffffff;
+  --surface: #f5f5f7;
+  --text: #202124;
+  --text-2: #5f6368;
+  --line: #202124;
+
+  /* Brand spectrum */
+  --spec-red: #da313e;
+  --spec-orange: #ec6d2f;
+  --spec-yellow: #eecf25;
+  --spec-green: #49ac6f;
+  --spec-teal: #20a78d;
+  --spec-blue: #1e5a98;
+  --spec-violet: #823579;
+  --spectrum: linear-gradient(
+    180deg,
+    #da313e,
+    #ec6d2f,
+    #eecf25,
+    #49ac6f,
+    #20a78d,
+    #1e5a98,
+    #823579
+  );
+  --spectrum-x: linear-gradient(
+    90deg,
+    #da313e,
+    #ec6d2f,
+    #eecf25,
+    #49ac6f,
+    #20a78d,
+    #1e5a98,
+    #823579
+  );
+
+  /* Typography */
+  --font-display: 'TeX Gyre Adventor', 'Century Gothic', 'Questrial', sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --tracking-display: 0.01em;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0e0d;
+    --surface: #161a19;
+    --text: #f5f5f7;
+    --text-2: #aaaeb4;
+    --line: #f5f5f7;
+  }
+}

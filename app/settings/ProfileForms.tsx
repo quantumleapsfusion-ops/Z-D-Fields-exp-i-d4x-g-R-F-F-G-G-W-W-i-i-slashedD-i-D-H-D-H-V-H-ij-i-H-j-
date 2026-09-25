@@ -2,7 +2,13 @@
 
 import { useActionState, useTransition } from 'react';
 
-import { deleteAccount, updateName, uploadAvatar, type ActionState } from '@/app/actions/profile';
+import {
+  deleteAccount,
+  destroyVoiceData,
+  updateName,
+  uploadAvatar,
+  type ActionState,
+} from '@/app/actions/profile';
 import { revokeShareAction } from '@/app/actions/stream';
 
 const input =
@@ -45,6 +51,32 @@ export function NameForm({ defaultName }: { defaultName: string }) {
       <input name="name" defaultValue={defaultName} maxLength={80} className={input} />
       <button type="submit" disabled={pending} className={`${button} self-start`}>
         Save
+      </button>
+      <Status state={state} />
+    </form>
+  );
+}
+
+export function DestroyVoiceDataForm() {
+  const [state, action, pending] = useActionState(destroyVoiceData, null);
+  return (
+    <form action={action} className="flex max-w-md flex-col gap-3">
+      <label htmlFor="destroy-confirm" className="sr-only">
+        Type DESTROY to confirm
+      </label>
+      <input
+        id="destroy-confirm"
+        name="confirm"
+        placeholder="Type DESTROY to confirm"
+        autoComplete="off"
+        className={input}
+      />
+      <button
+        type="submit"
+        disabled={pending}
+        className="self-start rounded-full border border-spec-red/70 px-4 py-2 text-sm text-spec-red transition-colors hover:bg-spec-red hover:text-white disabled:opacity-50"
+      >
+        {pending ? 'Destroying…' : 'Destroy all my voice data'}
       </button>
       <Status state={state} />
     </form>

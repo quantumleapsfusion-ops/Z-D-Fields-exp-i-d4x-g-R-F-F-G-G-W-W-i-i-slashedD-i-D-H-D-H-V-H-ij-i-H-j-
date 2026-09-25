@@ -3,13 +3,14 @@ export const site = {
   domain: 'e1-4.com',
   url: 'https://e1-4.com',
   org: 'Earth One Global Coalescent',
-  hero: 'Greetings Earthling.',
-  motto: 'Think.',
-  tagline: 'four ways to speak',
-  philosophyUrl: 'https://earth1.co',
-  philosophyLabel: 'earth1.co',
+  orgUrl: 'https://earth1.co',
+  orgLabel: 'earth1.co',
+  tagline: 'earth life-forms',
+  /** The one sentence on the homepage. */
+  pitch: 'A social network with no typing. You speak; everything else follows.',
+  community: 'audiophiles in audiofiles',
   description:
-    'e1-4.com — earth life-forms. Four ways to speak, built by Earth One Global Coalescent.',
+    'e1-4 — earth life-forms. A voice-only social network: speak, and transcription, translation and visuals follow. Every person gets an audio diary through Voice Stream.',
 } as const;
 
 export type FeatureStatus = 'ready' | 'early' | 'experimental';

@@ -1,66 +1,77 @@
-type LogoVariant = 'rainbow' | 'white' | 'chalk';
+import Image from 'next/image';
 
 type LogoProps = {
-  /** `rainbow` is the primary mark; `white` and `chalk` are monochrome variants. */
-  variant?: LogoVariant;
+  /** Height in px. Minimum per brand guide: 24. */
   size?: number;
   className?: string;
   title?: string;
+  priority?: boolean;
 };
 
-const RAINBOW = ['#e8574a', '#ef9a3c', '#e9d25a', '#6cc07a', '#4aa6d8', '#7a6fd6', '#b06cc6'];
-
-/** The e1-4 mark: a Ψ set over a π, divided by a hairline rule. */
-export function Logo({ variant = 'rainbow', size = 32, className, title = 'e1-4' }: LogoProps) {
-  const gradientId = 'e14-logo-rainbow';
-  const stroke =
-    variant === 'rainbow'
-      ? `url(#${gradientId})`
-      : variant === 'white'
-        ? '#ffffff'
-        : 'rgb(var(--color-chalk))';
-  const weight = variant === 'chalk' ? 1.6 : 2;
-  const ruleOpacity = variant === 'chalk' ? 0.5 : 0.8;
-
+/** The Ψπ mark from /brand/logo (raster; never redrawn or recoloured). */
+export function Logo({ size = 32, className, title = 'e1-4', priority }: LogoProps) {
+  const src = size > 256 ? '/brand/e1-4_mark_1024.png' : '/brand/e1-4_mark_512.png';
   return (
-    <svg
-      role="img"
-      aria-label={title}
+    <Image
+      src={src}
+      alt={title}
       width={size}
       height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+      priority={priority}
       className={className}
+      style={{ width: size, height: size }}
+    />
+  );
+}
+
+type LockupProps = {
+  /** Rendered width in px. Minimum per brand guide: 160. */
+  width?: number;
+  className?: string;
+  priority?: boolean;
+};
+
+/**
+ * Full lockup (mark, wordmark, rule, tagline). Renders the light-background
+ * file by default and swaps to the dark-background file in dark mode.
+ */
+export function Lockup({ width = 320, className, priority }: LockupProps) {
+  const height = Math.round((width * 528) / 1280);
+  return (
+    <span
+      className={`inline-block ${className ?? ''}`}
+      style={{ width, height }}
+      role="img"
+      aria-label="e1-4 — earth life-forms"
     >
-      <title>{title}</title>
-      {variant === 'rainbow' ? (
-        <defs>
-          <linearGradient
-            id={gradientId}
-            x1="8"
-            y1="6"
-            x2="40"
-            y2="42"
-            gradientUnits="userSpaceOnUse"
-          >
-            {RAINBOW.map((color, i) => (
-              <stop key={color} offset={i / (RAINBOW.length - 1)} stopColor={color} />
-            ))}
-          </linearGradient>
-        </defs>
-      ) : null}
-      <g stroke={stroke} strokeLinecap="round" strokeLinejoin="round">
-        {/* Ψ */}
-        <path d="M16 8v8a8 8 0 0 0 16 0V8" strokeWidth={weight} />
-        <path d="M24 6v16" strokeWidth={weight} />
-        {/* hairline rule */}
-        <path d="M6 24h36" strokeWidth={1} strokeOpacity={ruleOpacity} />
-        {/* π */}
-        <path d="M14 30h20" strokeWidth={weight} />
-        <path d="M20 30v12" strokeWidth={weight} />
-        <path d="M29 30v9a3 3 0 0 0 4 3" strokeWidth={weight} />
-      </g>
-    </svg>
+      <Image
+        src="/brand/e1-4_lockup_light.png"
+        alt=""
+        width={width}
+        height={height}
+        priority={priority}
+        className="block dark:hidden"
+        style={{ width, height }}
+      />
+      <Image
+        src="/brand/e1-4_lockup_dark.png"
+        alt=""
+        width={width}
+        height={height}
+        priority={priority}
+        className="hidden dark:block"
+        style={{ width, height }}
+      />
+    </span>
+  );
+}
+
+/** The tagline set as a heading: e, l and f in bold, the rest regular. */
+export function Tagline({ className }: { className?: string }) {
+  return (
+    <span className={`font-display tracking-display ${className ?? ''}`}>
+      <b className="font-bold">e</b>arth <b className="font-bold">l</b>ife-
+      <b className="font-bold">f</b>orms
+    </span>
   );
 }

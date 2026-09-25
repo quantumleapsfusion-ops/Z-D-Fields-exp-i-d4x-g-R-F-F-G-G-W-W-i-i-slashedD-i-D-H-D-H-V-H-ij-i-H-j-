@@ -20,7 +20,7 @@ export async function Nav() {
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
         <Link href="/" className="flex items-center gap-3" aria-label={`${site.name} home`}>
           <Logo size={28} />
-          <span className="font-display text-lg tracking-tight">{site.name}</span>
+          <span className="font-display text-lg font-bold tracking-display">{site.name}</span>
         </Link>
         <div className="flex items-center gap-4 sm:gap-6">
           <ul className="hidden items-center gap-5 md:flex">
@@ -32,15 +32,8 @@ export async function Nav() {
               </li>
             ))}
           </ul>
-          <a
-            href={site.philosophyUrl}
-            className="label transition-colors hover:text-ochre"
-            rel="noreferrer"
-          >
-            {site.philosophyLabel}
-          </a>
           {user ? (
-            <Link href="/profile" className="flex items-center gap-2" aria-label="Your profile">
+            <Link href="/settings" className="flex items-center gap-2" aria-label="Your account">
               <Avatar userId={user.id} image={user.image} name={user.name} size={28} />
             </Link>
           ) : (
