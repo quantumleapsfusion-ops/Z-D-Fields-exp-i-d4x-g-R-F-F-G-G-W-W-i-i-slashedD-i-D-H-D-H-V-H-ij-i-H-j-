@@ -1,3 +1,21 @@
+-- Drop v1 RLS objects that reference columns removed below (only present if the
+-- Supabase 20260924000000 hardening was applied). Replacements live in
+-- supabase/migrations/20260925090000_rls_v2_boards_ai.sql.
+DO $$ BEGIN
+  IF to_regclass('storage.objects') IS NOT NULL THEN
+    EXECUTE 'DROP POLICY IF EXISTS "voice_read" ON storage.objects';
+  END IF;
+END $$;
+DROP POLICY IF EXISTS "voice_streams_select" ON "voice_streams";
+DROP POLICY IF EXISTS "voice_streams_insert_own" ON "voice_streams";
+DROP POLICY IF EXISTS "voice_streams_update_own" ON "voice_streams";
+DROP POLICY IF EXISTS "voice_streams_delete_own" ON "voice_streams";
+DROP POLICY IF EXISTS "voice_segments_select" ON "voice_segments";
+DROP POLICY IF EXISTS "voice_segments_write_owner" ON "voice_segments";
+DROP POLICY IF EXISTS "shares_select" ON "shares";
+DROP POLICY IF EXISTS "shares_write_owner" ON "shares";
+DROP FUNCTION IF EXISTS public.can_read_stream(uuid);
+
 -- CreateEnum
 CREATE TYPE "TranscriptionStatus" AS ENUM ('PENDING', 'DONE', 'FAILED', 'SKIPPED');
 
