@@ -1,0 +1,123 @@
+@import '../brand/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Tailwind palette, exposed as space-separated RGB channels so `<alpha-value>`
+ * opacity modifiers (e.g. `text-chalk/70`) work. Values mirror brand/tokens.css:
+ *   blackboard = --bg · surface = --surface · chalk = --text · dust = --text-2
+ *   ochre (legacy accent name) = --text, so the UI stays monochrome.
+ */
+:root {
+  --color-blackboard: 255 255 255;
+  --color-surface: 245 245 247;
+  --color-chalk: 32 33 36;
+  --color-dust: 95 99 104;
+  --color-ochre: 32 33 36;
+  --color-spec-red: 218 49 62;
+  --color-spec-orange: 236 109 47;
+  --color-spec-yellow: 238 207 37;
+  --color-spec-green: 73 172 111;
+  --color-spec-teal: 32 167 141;
+  --color-spec-blue: 30 90 152;
+  --color-spec-violet: 130 53 121;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-blackboard: 11 14 13;
+    --color-surface: 22 26 25;
+    --color-chalk: 245 245 247;
+    --color-dust: 170 174 180;
+    --color-ochre: 245 245 247;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-blackboard text-chalk;
+  }
+
+  ::selection {
+    @apply bg-chalk text-blackboard;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--color-spec-teal));
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .hairline {
+    @apply h-px w-full bg-chalk/15;
+  }
+
+  /* The divider under the wordmark, reused between a title and its subtitle. */
+  .rule {
+    @apply h-px w-full bg-chalk;
+  }
+
+  .label {
+    @apply font-sans text-[0.72rem] uppercase tracking-label text-dust;
+  }
+
+  .spectrum-text {
+    background: var(--spectrum-x);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .spectrum-bar {
+    background: var(--spectrum-x);
+  }
+
+  /* Blackboard surface for the chalkboard canvas: always dark slate. */
+  .chalk-surface {
+    background-color: #0e1a13;
+    background-image: radial-gradient(ellipse at 20% 10%, rgb(241 237 225 / 0.05), transparent 55%),
+      radial-gradient(ellipse at 80% 90%, rgb(147 162 148 / 0.06), transparent 60%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Voice Stream scrubber: transparent track over the segment bar. */
+.stream-scrubber {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 1rem;
+}
+.stream-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 0.85rem;
+  width: 0.85rem;
+  border-radius: 9999px;
+  background: rgb(var(--color-chalk));
+  cursor: pointer;
+}
+.stream-scrubber::-moz-range-thumb {
+  height: 0.85rem;
+  width: 0.85rem;
+  border: 0;
+  border-radius: 9999px;
+  background: rgb(var(--color-chalk));
+  cursor: pointer;
+}

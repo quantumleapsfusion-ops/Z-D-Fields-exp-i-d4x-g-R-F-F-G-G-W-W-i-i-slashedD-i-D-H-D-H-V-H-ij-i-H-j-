@@ -1,35 +1,12 @@
--- Supabase-specific hardening: Row Level Security + Storage buckets/policies.
--- Run AFTER the Prisma migrations have created the tables
--- (`npm run prisma:deploy`), via `supabase db push` or the SQL editor.
+-- Supabase-specific hardening: profile trigger, Row Level Security, Storage buckets/policies.
+-- Run AFTER the Prisma migration has created the tables (`npm run db:deploy`), via
+-- `supabase db push` or the SQL editor.
 --
--- Prisma connects as the `postgres` role and therefore bypasses RLS; these
--- policies protect the PostgREST / anon-key path that browser clients use.
-
--- ---------------------------------------------------------------------------
--- Helper: does the current user have access to a stream (owner or share)?
--- ---------------------------------------------------------------------------
-create or replace function public.can_read_stream(p_stream_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.voice_streams vs
-    where vs.id = p_stream_id and vs.owner_id = auth.uid()
-  )
-  or exists (
-    select 1 from public.shares s
-    where s.stream_id = p_stream_id
-      and s.scope = 'USER'
-      and s.recipient_id = auth.uid()
-      and (s.expires_at is null or s.expires_at > now())
-  );
-$$;
-
-revoke all on function public.can_read_stream(uuid) from public;
-grant execute on function public.can_read_stream(uuid) to authenticated, anon;
+-- The Next.js server talks to Postgres through Prisma as the `postgres` role and to Storage with
+-- the service-role key, so it bypasses RLS and performs its own authorization (every query is
+-- scoped to the signed-in user's id). These policies are defence in depth: they lock down the
+-- PostgREST / anon-key surface so a leaked anon key or a future browser client can only ever see
+-- the caller's own rows and objects.
 
 -- ---------------------------------------------------------------------------
 -- Auto-create a profile row when a Supabase Auth user signs up.
@@ -41,12 +18,12 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.users (id, email, display_name, avatar_path, created_at, updated_at)
+  insert into public."User" (id, email, name, image, "createdAt", "updatedAt")
   values (
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name'),
-    null,
+    coalesce(new.raw_user_meta_data ->> 'avatar_url', new.raw_user_meta_data ->> 'picture'),
     now(),
     now()
   )
@@ -60,83 +37,88 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_auth_user();
 
--- ---------------------------------------------------------------------------
--- Row Level Security
--- ---------------------------------------------------------------------------
-alter table public.users          enable row level security;
-alter table public.voice_streams  enable row level security;
-alter table public.voice_segments enable row level security;
-alter table public.shares         enable row level security;
+-- Deleting the auth identity removes the profile and, by cascade, every user-owned row.
+create or replace function public.handle_deleted_auth_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  delete from public."User" where id = old.id;
+  return old;
+end;
+$$;
 
--- users: a user may read/update/delete only their own profile row.
-drop policy if exists "users_select_own" on public.users;
-create policy "users_select_own" on public.users
+drop trigger if exists on_auth_user_deleted on auth.users;
+create trigger on_auth_user_deleted
+  after delete on auth.users
+  for each row execute function public.handle_deleted_auth_user();
+
+-- ---------------------------------------------------------------------------
+-- Row Level Security (table names are Prisma's defaults, quoted)
+-- ---------------------------------------------------------------------------
+alter table public."User"         enable row level security;
+alter table public."VoiceStream"  enable row level security;
+alter table public."VoiceSegment" enable row level security;
+alter table public."Share"        enable row level security;
+alter table public."Board"        enable row level security;
+
+-- User: only your own profile row.
+drop policy if exists "user_select_own" on public."User";
+create policy "user_select_own" on public."User"
   for select to authenticated using (id = auth.uid());
 
-drop policy if exists "users_insert_own" on public.users;
-create policy "users_insert_own" on public.users
-  for insert to authenticated with check (id = auth.uid());
-
-drop policy if exists "users_update_own" on public.users;
-create policy "users_update_own" on public.users
+drop policy if exists "user_update_own" on public."User";
+create policy "user_update_own" on public."User"
   for update to authenticated using (id = auth.uid()) with check (id = auth.uid());
 
-drop policy if exists "users_delete_own" on public.users;
-create policy "users_delete_own" on public.users
+drop policy if exists "user_delete_own" on public."User";
+create policy "user_delete_own" on public."User"
   for delete to authenticated using (id = auth.uid());
 
--- voice_streams: owner has full access; recipients of a USER share may read.
-drop policy if exists "voice_streams_select" on public.voice_streams;
-create policy "voice_streams_select" on public.voice_streams
-  for select to authenticated using (public.can_read_stream(id));
-
-drop policy if exists "voice_streams_insert_own" on public.voice_streams;
-create policy "voice_streams_insert_own" on public.voice_streams
-  for insert to authenticated with check (owner_id = auth.uid());
-
-drop policy if exists "voice_streams_update_own" on public.voice_streams;
-create policy "voice_streams_update_own" on public.voice_streams
-  for update to authenticated using (owner_id = auth.uid()) with check (owner_id = auth.uid());
-
-drop policy if exists "voice_streams_delete_own" on public.voice_streams;
-create policy "voice_streams_delete_own" on public.voice_streams
-  for delete to authenticated using (owner_id = auth.uid());
-
--- voice_segments: inherit access from the parent stream.
-drop policy if exists "voice_segments_select" on public.voice_segments;
-create policy "voice_segments_select" on public.voice_segments
-  for select to authenticated using (public.can_read_stream(stream_id));
-
-drop policy if exists "voice_segments_write_owner" on public.voice_segments;
-create policy "voice_segments_write_owner" on public.voice_segments
+-- VoiceStream: owner only (one stream per user).
+drop policy if exists "voice_stream_owner_all" on public."VoiceStream";
+create policy "voice_stream_owner_all" on public."VoiceStream"
   for all to authenticated
-  using (exists (select 1 from public.voice_streams vs where vs.id = stream_id and vs.owner_id = auth.uid()))
-  with check (exists (select 1 from public.voice_streams vs where vs.id = stream_id and vs.owner_id = auth.uid()));
+  using ("userId" = auth.uid()) with check ("userId" = auth.uid());
 
--- shares: owner manages; recipient may see shares addressed to them.
-drop policy if exists "shares_select" on public.shares;
-create policy "shares_select" on public.shares
-  for select to authenticated using (owner_id = auth.uid() or recipient_id = auth.uid());
-
-drop policy if exists "shares_write_owner" on public.shares;
-create policy "shares_write_owner" on public.shares
+-- VoiceSegment: inherits ownership from the parent stream.
+drop policy if exists "voice_segment_owner_all" on public."VoiceSegment";
+create policy "voice_segment_owner_all" on public."VoiceSegment"
   for all to authenticated
-  using (owner_id = auth.uid())
-  with check (
-    owner_id = auth.uid()
-    and exists (select 1 from public.voice_streams vs where vs.id = stream_id and vs.owner_id = auth.uid())
-  );
+  using (exists (select 1 from public."VoiceStream" vs where vs.id = "streamId" and vs."userId" = auth.uid()))
+  with check (exists (select 1 from public."VoiceStream" vs where vs.id = "streamId" and vs."userId" = auth.uid()));
+
+-- Share: owner manages share links. Public /s/<token> pages are rendered by the server
+-- (service role) after validating the token, so anon needs no direct table access.
+drop policy if exists "share_owner_all" on public."Share";
+create policy "share_owner_all" on public."Share"
+  for all to authenticated
+  using ("userId" = auth.uid()) with check ("userId" = auth.uid());
+
+-- Board (Infinity Chalkboard): owner only.
+drop policy if exists "board_owner_all" on public."Board";
+create policy "board_owner_all" on public."Board"
+  for all to authenticated
+  using ("userId" = auth.uid()) with check ("userId" = auth.uid());
 
 -- ---------------------------------------------------------------------------
--- Storage buckets
---   avatars : public-read, owner-write. Object path: <uid>/<filename>
---   voice   : private, owner-write, read via signed URLs (server issues them
---             after checking the sharing model). Object path: <uid>/<streamId>/<file>
+-- Storage buckets. Object paths always start with the owner's uid:
+--   avatars : <uid>/avatar/<timestamp>.<ext>   public-read, owner-write
+--   voice   : <uid>/segments/<segmentId>.<ext> private; read only via signed URLs
+--             issued by the server (/api/stream/... and /api/share/...) after
+--             checking ownership or a valid share token.
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
-  ('avatars', 'avatars', true, 5242880, array['image/png', 'image/jpeg', 'image/webp', 'image/gif']),
-  ('voice', 'voice', false, 104857600, array['audio/webm', 'audio/ogg', 'audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/x-m4a'])
+  ('avatars', 'avatars', true, 4194304, array['image/png', 'image/jpeg', 'image/webp', 'image/gif']),
+  ('voice', 'voice', false, 52428800, array[
+    'audio/webm', 'audio/webm;codecs=opus',
+    'audio/ogg', 'audio/ogg;codecs=opus',
+    'audio/mp4', 'audio/mp4;codecs=mp4a.40.2', 'audio/aac', 'audio/x-m4a',
+    'audio/mpeg', 'audio/wav'
+  ])
 on conflict (id) do update
   set public = excluded.public,
       file_size_limit = excluded.file_size_limit,
@@ -147,46 +129,16 @@ drop policy if exists "avatars_public_read" on storage.objects;
 create policy "avatars_public_read" on storage.objects
   for select using (bucket_id = 'avatars');
 
-drop policy if exists "avatars_owner_insert" on storage.objects;
-create policy "avatars_owner_insert" on storage.objects
-  for insert to authenticated
+drop policy if exists "avatars_owner_write" on storage.objects;
+create policy "avatars_owner_write" on storage.objects
+  for all to authenticated
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text)
   with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
 
-drop policy if exists "avatars_owner_update" on storage.objects;
-create policy "avatars_owner_update" on storage.objects
-  for update to authenticated
-  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
-
-drop policy if exists "avatars_owner_delete" on storage.objects;
-create policy "avatars_owner_delete" on storage.objects
-  for delete to authenticated
-  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
-
--- voice: owner full access; USER-share recipients may read (second path
--- segment is the stream id). LINK shares are served by the server via signed
--- URLs using the service role, so they need no object-level policy.
-drop policy if exists "voice_read" on storage.objects;
-create policy "voice_read" on storage.objects
-  for select to authenticated
-  using (
-    bucket_id = 'voice'
-    and (
-      (storage.foldername(name))[1] = auth.uid()::text
-      or public.can_read_stream(((storage.foldername(name))[2])::uuid)
-    )
-  );
-
-drop policy if exists "voice_owner_insert" on storage.objects;
-create policy "voice_owner_insert" on storage.objects
-  for insert to authenticated
+-- voice: owner only. Nobody else gets object-level access; shared playback goes through
+-- server-issued signed URLs.
+drop policy if exists "voice_owner_all" on storage.objects;
+create policy "voice_owner_all" on storage.objects
+  for all to authenticated
+  using (bucket_id = 'voice' and (storage.foldername(name))[1] = auth.uid()::text)
   with check (bucket_id = 'voice' and (storage.foldername(name))[1] = auth.uid()::text);
-
-drop policy if exists "voice_owner_update" on storage.objects;
-create policy "voice_owner_update" on storage.objects
-  for update to authenticated
-  using (bucket_id = 'voice' and (storage.foldername(name))[1] = auth.uid()::text);
-
-drop policy if exists "voice_owner_delete" on storage.objects;
-create policy "voice_owner_delete" on storage.objects
-  for delete to authenticated
-  using (bucket_id = 'voice' and (storage.foldername(name))[1] = auth.uid()::text);

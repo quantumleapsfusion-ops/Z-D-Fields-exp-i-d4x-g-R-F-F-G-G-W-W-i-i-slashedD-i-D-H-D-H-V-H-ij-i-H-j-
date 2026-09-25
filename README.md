@@ -1,133 +1,185 @@
-# e1-4 — earth life-forms
+# e1-4.com
 
-Flagship of **Earth One Global Coalescent** (sibling: [earth1.co](https://earth1.co)).
+**e1-4** — _earth life-forms_ — is a voice-only social network: you speak, and transcription,
+translation and visuals follow. Every person gets an audio diary through Voice Stream. e1-4 is a
+product of [Earth One Global Coalescent](https://earth1.co).
 
-> Greetings Earthling. _Think._
+Build plan and owner questions: [`PLAN.md`](./PLAN.md). Spell the name exactly `e1-4`; the only
+tagline is `earth life-forms`.
 
-This repo is the Next.js + Supabase **app shell** that the four features plug into:
-Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (not yet implemented).
+## What ships, and how mature it is
+
+| Surface             | Route         | Status                     | Notes                                                                                    |
+| ------------------- | ------------- | -------------------------- | ---------------------------------------------------------------------------------------- |
+| Voice Stream        | `/stream`     | **Production-ready**       | One continuous stream per user; record/pause/resume/stop; timeline; sharing; hard delete |
+| Infinity Chalkboard | `/chalkboard` | **Production-ready (2D)**  | Infinite pan/zoom Konva canvas, drawing primitives, voice placement, autosave            |
+| Infinity 3D / 4D    | `/chalkboard` | Experimental / future      | 3D is a read-only Three.js view behind a flag; 4D is a documented placeholder            |
+| Da Vinci            | `/davinci`    | Early access               | Live animated transcription works everywhere; LLM visuals need a key (stub otherwise)    |
+| Gravity Board       | `/gravity`    | Experimental, **flag OFF** | Superposition of LLM/random interpretations + 2D→3D collapse mock-up; no 4D walk-in      |
+
+Codenames are kept verbatim in `lib/site.ts` (including their spellings — do not auto-correct):
+`Inteligence // ARI // Stochastic I // Schroodinger`, `Speech to Text // Binary // Sparks // Big-Bang`,
+`Topologoical Black Hole // Event Horizon // Superposition // Quantum`.
 
 ## Stack
 
-| Layer     | Choice                                                               |
-| --------- | -------------------------------------------------------------------- |
-| Framework | Next.js 16 (App Router, Server Actions, TypeScript), Tailwind CSS v4 |
-| Auth      | Supabase Auth — Google, Facebook (Meta), Microsoft (Azure) OAuth     |
-| Database  | Supabase Postgres, schema + migrations via Prisma 7 (`pg` adapter)   |
-| Storage   | Supabase Storage — `avatars` (public) and `voice` (private) buckets  |
-| Tooling   | ESLint, Prettier, GitHub Actions (lint + typecheck + build)          |
+- Next.js 15 (App Router, Server Actions) + TypeScript + Tailwind CSS 3
+- `next/font/local` — TeX Gyre Adventor (display, self-hosted from `brand/fonts`); system UI stack for body
+- Installable PWA — `app/manifest.ts`, `public/sw.js` (shell cache + `/offline` fallback), Apple touch icon
+- Supabase Auth via `@supabase/ssr` — Google, Facebook, Microsoft (Azure) OAuth, cookie sessions refreshed in `middleware.ts`
+- Supabase Postgres via Prisma 6 (`DATABASE_URL` pooler at runtime, `DIRECT_URL` for migrations); RLS on every table
+- Supabase Storage behind `lib/storage` — bucket `voice` (private, 15-minute signed URLs) and `avatars` (public read)
+- Speech-to-text behind `lib/stt` — Deepgram or OpenAI Whisper (batch), Deepgram live or browser Web Speech (live)
+- LLM behind `lib/llm` — Anthropic Claude or OpenAI GPT-4o
+- Konva (`react-konva`) for 2D canvases, Three.js for 3D experiments
 
-Brand: chalkboard palette (`#0e1a13` board, `#f1ede1` chalk, `#93a294` dust, `#d3a34c` ochre),
-Fraunces (display) + Space Grotesk (body) via `next/font`, Ψ-over-π rainbow `Logo`.
+## Requirements
 
-## Project layout
+- Node.js 22 (`.nvmrc`) and npm 10+
+- A Supabase project (free tier is enough for development)
 
-```
-prisma/schema.prisma             User, VoiceStream, VoiceSegment, Share
-prisma/migrations/               Prisma-managed table migrations
-prisma.config.ts                 Prisma CLI config (uses DIRECT_URL)
-supabase/migrations/*.sql        RLS policies, auth->profile trigger, storage buckets + policies
-src/proxy.ts                     Next 16 middleware: refreshes the Supabase session, guards /profile
-src/lib/env.ts                   Typed env access (public vs server-only)
-src/lib/supabase/client.ts       Browser client (Client Components)
-src/lib/supabase/server.ts       Cookie-backed server client (RSC, Server Actions, Route Handlers)
-src/lib/supabase/admin.ts        Service-role client (server only, bypasses RLS)
-src/lib/db.ts                    Prisma client over the pooled DATABASE_URL
-src/lib/storage/                 StorageProvider interface + Supabase implementation
-src/lib/auth/                    OAuth provider list + sign-in/sign-out Server Actions
-src/lib/account/                 Profile actions (avatar upload) + hard-delete routine
-src/app/auth/callback/route.ts   OAuth code -> session exchange
-src/app/{page,login,profile}     Home, sign-in, profile
-src/components/                  Logo, SiteHeader, AvatarForm
-```
-
-## Local setup
-
-Requires Node 22+ (`.nvmrc`).
-
-### 1. Create the Supabase project
-
-1. [supabase.com/dashboard](https://supabase.com/dashboard) → **New project**. Save the DB password.
-2. **Project Settings → API**: copy the Project URL, `anon` key and `service_role` key.
-3. **Project Settings → Database → Connection string**: copy
-   - the **Transaction** pooler URI (port `6543`) → `DATABASE_URL` (append `?pgbouncer=true`)
-   - the **Session** pooler or **Direct** URI (port `5432`) → `DIRECT_URL`
-
-### 2. Configure OAuth providers (in the Supabase dashboard, not in code)
-
-**Authentication → Providers**, enable and paste the client ID/secret for each:
-
-| Provider  | Where to create the app                                                 | Redirect URI to register                             |
-| --------- | ----------------------------------------------------------------------- | ---------------------------------------------------- |
-| Google    | Google Cloud Console → APIs & Services → Credentials → OAuth client ID  | `https://<project-ref>.supabase.co/auth/v1/callback` |
-| Facebook  | Meta for Developers → Create app → Facebook Login                       | same                                                 |
-| Microsoft | Azure Portal → App registrations → New (Web platform); Supabase "Azure" | same                                                 |
-
-Then under **Authentication → URL Configuration** set the Site URL (e.g. `http://localhost:3000`)
-and add `http://localhost:3000/auth/callback` (and your production URL) to **Redirect URLs**.
-
-Provider secrets never live in this repo — the app only calls `supabase.auth.signInWithOAuth`.
-
-### 3. Environment
+## Local setup (exact commands)
 
 ```bash
-cp .env.example .env.local
-# fill in NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
-# SUPABASE_SERVICE_ROLE_KEY, DATABASE_URL, DIRECT_URL
+# 1. Supabase project
+#    Dashboard → Settings → API: copy URL, anon key, service-role key.
+#    Dashboard → Settings → Database: copy the pooler (6543) and direct (5432) connection strings.
+#    Dashboard → Authentication → Providers: enable Google, Facebook, Azure with your OAuth app credentials.
+#    Dashboard → Authentication → URL Configuration: add http://localhost:3000/auth/callback to Redirect URLs.
+
+# 2. Environment
+cp .env.example .env     # fill in the Supabase values above
+
+# 3. Install (also runs `prisma generate`), create tables, then apply RLS + storage buckets
+npm install
+npm run db:deploy                       # prisma migrate deploy  (uses DIRECT_URL)
+supabase db push                        # or paste supabase/migrations/*.sql into the SQL editor
+
+# 4. Run
+npm run dev              # http://localhost:3000
+npm run build && npm start
 ```
 
-`SUPABASE_SERVICE_ROLE_KEY` bypasses RLS: it is only read in `src/lib/supabase/admin.ts`
-(server-only). Never prefix it with `NEXT_PUBLIC_`.
-
-### 4. Install, migrate, run
+Quality checks (the same commands CI runs in `.github/workflows/ci.yml`):
 
 ```bash
-npm install                 # also runs `prisma generate`
-npm run prisma:deploy       # applies prisma/migrations to DIRECT_URL (creates the tables)
-npm run dev                 # http://localhost:3000
+npm run lint             # ESLint via next lint
+npm run format:check     # Prettier (npm run format to fix)
+npm run typecheck        # tsc --noEmit
+npm run build            # prisma generate && next build
 ```
 
-### 5. Apply RLS + storage buckets
+## Environment variables
 
-`supabase/migrations/20260924000000_rls_and_storage.sql` enables Row Level Security on every
-table, adds a trigger that creates a `users` row when someone signs up, and creates the
-`avatars` (public-read) and `voice` (private, signed URLs) buckets with their object policies.
+All keys are documented in `.env.example`. The Supabase block (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, `DIRECT_URL`) is required; everything else degrades gracefully when absent.
 
-Apply it **after** step 4, either:
+| Variable                                                                                       | Required | Purpose                                                        |
+| ---------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`                                    | yes      | Supabase project URL + anon key (browser + server auth)        |
+| `SUPABASE_SERVICE_ROLE_KEY`                                                                    | yes      | Server-only: storage writes, signed URLs, auth user deletion   |
+| `DATABASE_URL`                                                                                 | yes      | Supabase pooler (6543, `pgbouncer=true`) used by Prisma Client |
+| `DIRECT_URL`                                                                                   | yes      | Direct connection (5432) used by `prisma migrate`              |
+| `NEXT_PUBLIC_SITE_URL`                                                                         | yes      | Public origin; builds the `/auth/callback` redirect            |
+| `STT_PROVIDER`, `DEEPGRAM_API_KEY`, `DEEPGRAM_MODEL`, `OPENAI_API_KEY`, `OPENAI_WHISPER_MODEL` | no       | Segment transcription + Deepgram live streaming                |
+| `LLM_PROVIDER`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `OPENAI_MODEL`                         | no       | Da Vinci visuals/translate, Gravity Board superposition        |
+| `NEXT_PUBLIC_FEATURE_GRAVITY_BOARD`                                                            | no       | `true` to enable the Gravity Board (default `false`)           |
+| `NEXT_PUBLIC_FEATURE_CHALKBOARD_3D`, `NEXT_PUBLIC_FEATURE_CHALKBOARD_4D`                       | no       | Enable the experimental 3D view / 4D placeholder (default off) |
 
-- **SQL editor**: paste the file's contents and run it, or
-- **Supabase CLI**: `supabase link --project-ref <ref>` then `supabase db push`.
+`NEXT_PUBLIC_*` flags are inlined at build time — rebuild after changing them.
 
-Bucket access model:
+### Degradation without keys
 
-- `avatars/<uid>/avatar.<ext>` — anyone can read, only the owner can write. Served via public URL.
-- `voice/<uid>/<streamId>/<n>.<ext>` — owner can read/write; recipients of a `USER` share can read;
-  `LINK` shares are served by the server with signed URLs (`storage.getSignedUrl`).
+- **No OAuth keys** → only providers with both ID and secret are shown; dev login covers local use.
+- **No STT key** → Voice Stream still records, stores and plays; segments are marked "not transcribed"
+  and can be retried later. Live surfaces fall back to the browser Web Speech API (Chrome/Edge/Safari),
+  and every live surface also accepts typed input.
+- **No LLM key** → Da Vinci draws with a small keyword sketcher (labelled "Stub sketcher"), translate is
+  disabled; Gravity Board samples interpretations with a random stub.
 
-## Scripts
+## Features
 
-| Command                  | What it does                                          |
-| ------------------------ | ----------------------------------------------------- |
-| `npm run dev`            | Dev server on http://localhost:3000                   |
-| `npm run build`          | `prisma generate` + production build                  |
-| `npm start`              | Serve the production build                            |
-| `npm run lint`           | ESLint                                                |
-| `npm run typecheck`      | `next typegen` + `tsc --noEmit`                       |
-| `npm run format`         | Prettier (write) / `format:check` to verify           |
-| `npm run prisma:migrate` | Create + apply a new migration in dev (`migrate dev`) |
-| `npm run prisma:deploy`  | Apply pending migrations (`migrate deploy`)           |
-| `npm run prisma:studio`  | Browse the database                                   |
+### Voice Stream (production-ready)
 
-## Data model & deletion
+- Model: one `VoiceStream` per user; ordered `VoiceSegment` rows (`index`, `audioKey`, `durationMs`,
+  `startedAt`/`endedAt`, `transcription`, `transcriptionStatus`). Unique `(streamId, index)`.
+- Recorder (`features/voice-stream/useRecorder.ts`): MediaRecorder with record / pause / resume / stop.
+  Every pause or stop closes a span that is uploaded and appended to the same stream — never a post.
+- Upload (`POST /api/stream/segments`): blob is written to storage first, then the row is committed;
+  transcription runs after the response and the client polls until it lands.
+- Timeline: vertical, grouped by day; one continuous player with a single scrubber across all segments.
+- Sharing: `Share` rows with random tokens → `/s/<token>` (whole stream or one segment; audio and/or
+  transcript; revocable).
 
-`User.id` equals the Supabase Auth user id. `VoiceStream` → `VoiceSegment` (audio blob path +
-transcript) and `Share` (scope `PRIVATE | LINK | USER`) all cascade-delete from the user.
+### Infinity Chalkboard (2D production-ready; 3D/4D experimental)
 
-`hardDeleteUser(userId)` in `src/lib/account/delete.ts` removes, in order: every object under
-`<uid>/` in the `voice` and `avatars` buckets, the Postgres rows, then the Supabase Auth user.
-It is exposed to the signed-in user as **Delete account** on `/profile`.
+- `features/chalkboard/Board2D.tsx`: infinite canvas — wheel/trackpad zoom around the pointer, Pan tool
+  or hold Space, chalk pen, line, arrow, box, ellipse, text, eraser, select/move, undo/redo, 7 chalk colours.
+- Voice: finalised phrases are placed at the ochre voice cursor; "draw a circle / box / arrow / line" and
+  "undo" are recognised as commands.
+- Boards are saved (debounced) as JSON documents on `Board` via Server Actions (`app/actions/boards.ts`).
+- 3D (`NEXT_PUBLIC_FEATURE_CHALKBOARD_3D`): read-only Three.js projection with orbit controls, element
+  creation time as depth, and a time slider. 4D (`NEXT_PUBLIC_FEATURE_CHALKBOARD_4D`): placeholder only.
 
-## Later: Da Vinci keys
+### Da Vinci (early access)
 
-`.env.example` reserves `OPENAI_API_KEY`, `DEEPGRAM_API_KEY` and `ANTHROPIC_API_KEY` for the
-speech-to-text and LLM steps. They are unused by the shell.
+- Live transcription rendered as typography: words ink in, questions lean, exclamations warm to ochre,
+  numbers set in mono, older phrases recede.
+- Visual loop: after each pause in speech, `POST /api/davinci/draw` asks the LLM for incremental,
+  schema-validated drawing ops (`lib/davinci/ops.ts`) which animate onto a Konva canvas.
+- Translate: `POST /api/davinci/translate` through the same LLM interface.
+
+### Gravity Board (experimental, off by default)
+
+- Density heuristic over the transcript; crossing the event horizon (0.7) triggers the stochastic step.
+- `POST /api/gravity/superpose` samples four distinct interpretations at temperature 1.0 (or a random
+  stub), shown simultaneously until the user picks one or asks the board to resolve (heuristic).
+- Three.js particle mock-up: the flat transcript collapses through a black-hole core into the chosen
+  topology (sphere, torus, knot, spiral, wave, lattice). **A walk-in 4D spacetime is future work.**
+
+## Privacy (GDPR / CCPA scaffolding)
+
+- `/privacy`, `/terms` and `/content-policy` are drafts pending counsel. `/settings` offers
+  **Download my data** (JSON export), **Destroy all my voice data** (typed `DESTROY` confirmation;
+  removes every segment's audio, transcript and share link, keeps the account) and **Delete my account**.
+- `components/CookieConsent.tsx` — essential-only vs allow-all, stored in `localStorage` (`e1-4:consent`).
+- Hard delete (`lib/privacy/hard-delete.ts`) removes every storage object (segment audio, avatar, and
+  a sweep of the user's key prefix) and then the database rows (cascading streams, segments, shares,
+  boards, sessions, accounts). Segment and whole-stream deletes use the same routine.
+- Audio is never public unless the owner creates a share link; revoking deletes the link.
+
+## Structure
+
+```
+app/
+  page.tsx, layout.tsx, opengraph-image.tsx   landing + metadata
+  signin/ profile/ privacy/                   app shell
+  stream/ s/[token]/                          Voice Stream + public shares
+  davinci/ chalkboard/ gravity/               feature surfaces
+  actions/                                    Server Actions (profile, stream, boards)
+  api/                                        auth, avatar, account export, stream, share, davinci, gravity, stt/live (Deepgram token)
+brand/                                        supplied brand kit: logo/ (PNG lockups, mark, favicons, OG), fonts/ (Adventor), tokens.css
+public/brand/                                 web-served copies of brand/logo
+components/                                   Logo/Lockup/Tagline (supplied PNGs), Nav, Footer, PageShell, DemoStream, CookieConsent, LegalPage
+features/                                     client feature code (live STT, voice-stream, davinci, chalkboard, gravity)
+lib/                                          env, flags, auth, db, storage, stt, llm, privacy, voice, chalkboard, gravity, site copy
+prisma/                                       schema + migrations
+```
+
+## Brand system
+
+Assets live in `brand/` exactly as supplied — never redraw, recolour, stretch or shadow them.
+Tokens are declared in `brand/tokens.css` (light + dark via `prefers-color-scheme`) and mapped into
+Tailwind in `app/globals.css` / `tailwind.config.ts`:
+
+| Tailwind     | Light               | Dark      | Use                                               |
+| ------------ | ------------------- | --------- | ------------------------------------------------- |
+| `blackboard` | `#FFFFFF`           | `#0B0E0D` | background                                        |
+| `surface`    | `#F5F5F7`           | `#161A19` | cards, inputs                                     |
+| `chalk`      | `#202124`           | `#F5F5F7` | text, hairlines                                   |
+| `dust`       | `#5F6368`           | `#AAAEB4` | secondary text                                    |
+| `spec-*`     | red…violet spectrum | same      | accents only: mark, recording, progress, Da Vinci |
+
+The UI is monochrome; the spectrum never colours chrome. Display type is Adventor with `tracking-display`
+(0.01em). Lockup ≥160px wide, mark ≥24px tall. Favicon: `app/favicon.ico`; OG image:
+`public/brand/og-image_1200x630.png`.

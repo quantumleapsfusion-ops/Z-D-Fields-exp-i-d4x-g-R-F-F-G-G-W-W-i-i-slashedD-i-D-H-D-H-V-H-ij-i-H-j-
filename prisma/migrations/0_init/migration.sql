@@ -2,91 +2,106 @@
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
-CREATE TYPE "ShareScope" AS ENUM ('PRIVATE', 'LINK', 'USER');
+CREATE TYPE "TranscriptionStatus" AS ENUM ('PENDING', 'DONE', 'FAILED', 'SKIPPED');
 
 -- CreateTable
-CREATE TABLE "users" (
+CREATE TABLE "User" (
     "id" UUID NOT NULL,
+    "name" TEXT,
     "email" TEXT,
-    "display_name" TEXT,
-    "avatar_path" TEXT,
-    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL,
+    "image" TEXT,
+    "avatarKey" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "voice_streams" (
-    "id" UUID NOT NULL,
-    "owner_id" UUID NOT NULL,
-    "title" TEXT,
-    "started_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "ended_at" TIMESTAMPTZ,
-    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL,
+CREATE TABLE "VoiceStream" (
+    "id" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "voice_streams_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "VoiceStream_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "voice_segments" (
-    "id" UUID NOT NULL,
-    "stream_id" UUID NOT NULL,
-    "sequence" INTEGER NOT NULL,
-    "audio_path" TEXT NOT NULL,
-    "mime_type" TEXT NOT NULL,
-    "duration_ms" INTEGER,
-    "transcript" TEXT,
-    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE "VoiceSegment" (
+    "id" TEXT NOT NULL,
+    "streamId" TEXT NOT NULL,
+    "index" INTEGER NOT NULL,
+    "audioKey" TEXT NOT NULL,
+    "mimeType" TEXT NOT NULL,
+    "sizeBytes" INTEGER NOT NULL,
+    "durationMs" INTEGER NOT NULL,
+    "startedAt" TIMESTAMP(3) NOT NULL,
+    "endedAt" TIMESTAMP(3) NOT NULL,
+    "transcription" TEXT,
+    "transcriptionStatus" "TranscriptionStatus" NOT NULL DEFAULT 'PENDING',
+    "transcriptionError" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "voice_segments_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "VoiceSegment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "shares" (
-    "id" UUID NOT NULL,
-    "stream_id" UUID NOT NULL,
-    "owner_id" UUID NOT NULL,
-    "recipient_id" UUID,
-    "scope" "ShareScope" NOT NULL DEFAULT 'PRIVATE',
-    "token" TEXT,
-    "expires_at" TIMESTAMPTZ,
-    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE "Share" (
+    "id" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "segmentId" TEXT,
+    "includeAudio" BOOLEAN NOT NULL DEFAULT true,
+    "includeTranscript" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "revokedAt" TIMESTAMP(3),
 
-    CONSTRAINT "shares_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Share_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Board" (
+    "id" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "title" TEXT NOT NULL DEFAULT 'Untitled board',
+    "data" JSONB NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Board_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE INDEX "voice_streams_owner_id_idx" ON "voice_streams"("owner_id");
+CREATE UNIQUE INDEX "VoiceStream_userId_key" ON "VoiceStream"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "voice_segments_stream_id_sequence_key" ON "voice_segments"("stream_id", "sequence");
+CREATE INDEX "VoiceSegment_streamId_startedAt_idx" ON "VoiceSegment"("streamId", "startedAt");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "shares_token_key" ON "shares"("token");
+CREATE UNIQUE INDEX "VoiceSegment_streamId_index_key" ON "VoiceSegment"("streamId", "index");
 
 -- CreateIndex
-CREATE INDEX "shares_stream_id_idx" ON "shares"("stream_id");
+CREATE UNIQUE INDEX "Share_token_key" ON "Share"("token");
 
 -- CreateIndex
-CREATE INDEX "shares_recipient_id_idx" ON "shares"("recipient_id");
+CREATE INDEX "Board_userId_updatedAt_idx" ON "Board"("userId", "updatedAt");
 
 -- AddForeignKey
-ALTER TABLE "voice_streams" ADD CONSTRAINT "voice_streams_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "VoiceStream" ADD CONSTRAINT "VoiceStream_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "voice_segments" ADD CONSTRAINT "voice_segments_stream_id_fkey" FOREIGN KEY ("stream_id") REFERENCES "voice_streams"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "VoiceSegment" ADD CONSTRAINT "VoiceSegment_streamId_fkey" FOREIGN KEY ("streamId") REFERENCES "VoiceStream"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "shares" ADD CONSTRAINT "shares_stream_id_fkey" FOREIGN KEY ("stream_id") REFERENCES "voice_streams"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Share" ADD CONSTRAINT "Share_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "shares" ADD CONSTRAINT "shares_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Share" ADD CONSTRAINT "Share_segmentId_fkey" FOREIGN KEY ("segmentId") REFERENCES "VoiceSegment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "shares" ADD CONSTRAINT "shares_recipient_id_fkey" FOREIGN KEY ("recipient_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Board" ADD CONSTRAINT "Board_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
