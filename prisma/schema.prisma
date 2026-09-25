@@ -1,3 +1,9 @@
+// e1-4.com data model — Prisma on Supabase Postgres.
+// Identity lives in Supabase Auth (`auth.users`); `users` is the app profile row with the same id.
+// Every user-owned row cascades from `User`, so `hardDeleteUser` (lib/privacy/hard-delete.ts)
+// only has to purge Storage objects, delete the profile row and then the auth user.
+// Row Level Security + Storage policies: supabase/migrations/*.sql
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -12,76 +18,135 @@ model User {
   id          String   @id @db.Uuid
   email       String?  @unique
   displayName String?  @map("display_name")
-  /// Storage object path inside the `avatars` bucket (e.g. "<uid>/avatar.png").
+  /// Object path inside the `avatars` bucket (e.g. "<uid>/avatar.png").
   avatarPath  String?  @map("avatar_path")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  voiceStreams VoiceStream[]
-  sharesOwned  Share[]       @relation("ShareOwner")
-  sharesGiven  Share[]       @relation("ShareRecipient")
+  stream      VoiceStream?
+  shares      Share[]
+  boards      Board[]
+  usageEvents AiUsageEvent[]
 
   @@map("users")
 }
 
-/// A continuous voice recording session (Voice Stream feature).
+// ---------- Voice Stream ----------
+
+/// One continuous stream per user. Recording appends segments; it never creates posts.
 model VoiceStream {
-  id        String    @id @default(uuid()) @db.Uuid
-  ownerId   String    @map("owner_id") @db.Uuid
-  title     String?
-  startedAt DateTime  @default(now()) @map("started_at") @db.Timestamptz
-  endedAt   DateTime? @map("ended_at") @db.Timestamptz
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  owner    User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   segments VoiceSegment[]
-  shares   Share[]
 
-  @@index([ownerId])
   @@map("voice_streams")
 }
 
-/// One audio blob + (optional) transcript inside a stream.
+enum TranscriptionStatus {
+  PENDING
+  DONE
+  FAILED
+  SKIPPED
+}
+
+/// A contiguous span of audio (record/resume → pause/stop) inside a user's stream.
 model VoiceSegment {
-  id         String   @id @default(uuid()) @db.Uuid
-  streamId   String   @map("stream_id") @db.Uuid
-  sequence   Int
-  /// Storage object path inside the `voice` bucket (e.g. "<uid>/<streamId>/<seq>.webm").
-  audioPath  String   @map("audio_path")
-  mimeType   String   @map("mime_type")
-  durationMs Int?     @map("duration_ms")
-  transcript String?
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  id                  String              @id @default(uuid()) @db.Uuid
+  streamId            String              @map("stream_id") @db.Uuid
+  /// Monotonic position inside the stream (0-based); playback stitches segments in this order.
+  index               Int
+  /// Object path inside the `voice` bucket: "<uid>/<streamId>/<segmentId>.<ext>".
+  audioPath           String              @map("audio_path")
+  mimeType            String              @map("mime_type")
+  sizeBytes           Int                 @map("size_bytes")
+  durationMs          Int                 @map("duration_ms")
+  startedAt           DateTime            @map("started_at") @db.Timestamptz
+  endedAt             DateTime            @map("ended_at") @db.Timestamptz
+  transcription       String?
+  transcriptionStatus TranscriptionStatus @default(PENDING) @map("transcription_status")
+  transcriptionError  String?             @map("transcription_error")
+  createdAt           DateTime            @default(now()) @map("created_at") @db.Timestamptz
 
   stream VoiceStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  shares Share[]
 
-  @@unique([streamId, sequence])
+  @@unique([streamId, index])
+  @@index([streamId, startedAt])
   @@map("voice_segments")
 }
 
-enum ShareScope {
-  PRIVATE
-  LINK
-  USER
+/// Unlisted link to a single segment (segmentId set) or to the whole stream (segmentId null).
+model Share {
+  id                String    @id @default(uuid()) @db.Uuid
+  token             String    @unique
+  userId            String    @map("user_id") @db.Uuid
+  segmentId         String?   @map("segment_id") @db.Uuid
+  includeAudio      Boolean   @default(true) @map("include_audio")
+  includeTranscript Boolean   @default(true) @map("include_transcript")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  revokedAt         DateTime? @map("revoked_at") @db.Timestamptz
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  segment VoiceSegment? @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("shares")
 }
 
-/// Grants access to a VoiceStream: to a specific user, or via an unlisted link token.
-model Share {
-  id          String     @id @default(uuid()) @db.Uuid
-  streamId    String     @map("stream_id") @db.Uuid
-  ownerId     String     @map("owner_id") @db.Uuid
-  recipientId String?    @map("recipient_id") @db.Uuid
-  scope       ShareScope @default(PRIVATE)
-  token       String?    @unique
-  expiresAt   DateTime?  @map("expires_at") @db.Timestamptz
-  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
+// ---------- Infinity Chalkboard ----------
 
-  stream    VoiceStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
-  owner     User        @relation("ShareOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  recipient User?       @relation("ShareRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+model Board {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  title     String   @default("Untitled board")
+  /// Serialized board document (elements + viewport). See lib/chalkboard/types.ts.
+  data      Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  @@index([streamId])
-  @@index([recipientId])
-  @@map("shares")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
+  @@map("boards")
+}
+
+// ---------- AI usage ledger (per-user rate limit + monthly spend cap) ----------
+
+enum AiTier {
+  EVERYDAY
+  HEAVY
+}
+
+/// One row per model call. Drives the per-user rate limit and the monthly spend cap
+/// (lib/ai/budget.ts). Cost is stored in micro-dollars (1 USD = 1_000_000).
+model AiUsageEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  feature      String
+  tier         AiTier
+  model        String
+  inputTokens  Int      @map("input_tokens")
+  outputTokens Int      @map("output_tokens")
+  costMicros   BigInt   @map("cost_micros")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("ai_usage_events")
+}
+
+/// Remembers which spend-cap thresholds were already announced for a month ("2026-09").
+model AiBudgetAlert {
+  month            String
+  thresholdPercent Int      @map("threshold_percent")
+  sentAt           DateTime @default(now()) @map("sent_at") @db.Timestamptz
+
+  @@id([month, thresholdPercent])
+  @@map("ai_budget_alerts")
 }

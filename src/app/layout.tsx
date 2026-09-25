@@ -1,56 +1,64 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Space_Grotesk } from "next/font/google";
-import { SiteHeader } from "@/components/SiteHeader";
-import { publicEnv } from "@/lib/env";
+
 import "./globals.css";
+import { site } from "@/lib/site";
 
 const fraunces = Fraunces({
-  variable: "--font-fraunces",
   subsets: ["latin"],
-  axes: ["opsz", "SOFT"],
+  display: "swap",
+  variable: "--font-fraunces",
 });
 
 const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
   subsets: ["latin"],
+  display: "swap",
+  variable: "--font-space-grotesk",
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(publicEnv.siteUrl),
+  metadataBase: new URL(site.url),
   title: {
-    default: "e1-4 — earth life-forms",
-    template: "%s · e1-4",
+    default: `${site.name} — ${site.tagline}`,
+    template: `%s — ${site.name}`,
   },
-  description:
-    "Greetings Earthling. Think. — e1-4.com, flagship of Earth One Global Coalescent.",
+  description: site.description,
+  applicationName: site.name,
+  authors: [{ name: site.org, url: site.philosophyUrl }],
+  keywords: [
+    "e1-4",
+    "earth life-forms",
+    "Earth One Global Coalescent",
+    "voice",
+    "chalkboard",
+  ],
   openGraph: {
-    title: "e1-4 — earth life-forms",
-    description: "Greetings Earthling. Think.",
-    siteName: "e1-4",
     type: "website",
+    url: site.url,
+    siteName: site.name,
+    title: `${site.name} — ${site.tagline}`,
+    description: site.description,
   },
-  twitter: { card: "summary_large_image" },
+  twitter: {
+    card: "summary_large_image",
+    title: `${site.name} — ${site.tagline}`,
+    description: site.description,
+  },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export const viewport: Viewport = {
+  themeColor: "#0e1a13",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${fraunces.variable} ${spaceGrotesk.variable} h-full antialiased`}
-    >
-      <body className="flex min-h-full flex-col">
-        <SiteHeader />
-        <main className="flex flex-1 flex-col">{children}</main>
-        <footer className="text-dust mx-auto w-full max-w-5xl px-6 py-8 text-xs">
-          <div className="chalk-rule mb-6" />
-          <p>
-            e1-4.com · earth life-forms · a flagship of Earth One Global Coalescent ·
-            sibling:{" "}
-            <a className="hover:text-chalk underline" href="https://earth1.co">
-              earth1.co
-            </a>
-          </p>
-        </footer>
+    <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
+      <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
+        {children}
       </body>
     </html>
   );
