@@ -284,7 +284,6 @@ export default function Board2D({
   function render(el: BoardElement, isDraft = false) {
     const common = {
       id: el.id,
-      key: el.id,
       draggable: tool === "select" && !isDraft,
       onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => {
         e.cancelBubble = true;
@@ -299,6 +298,7 @@ export default function Board2D({
       case "stroke":
         return (
           <Line
+            key={el.id}
             {...common}
             points={el.points}
             stroke={el.color}
@@ -311,6 +311,7 @@ export default function Board2D({
       case "line":
         return el.arrow ? (
           <Arrow
+            key={el.id}
             {...common}
             points={el.points}
             stroke={el.color}
@@ -322,6 +323,7 @@ export default function Board2D({
           />
         ) : (
           <Line
+            key={el.id}
             {...common}
             points={el.points}
             stroke={el.color}
@@ -332,6 +334,7 @@ export default function Board2D({
       case "rect":
         return (
           <Rect
+            key={el.id}
             {...common}
             x={el.x}
             y={el.y}
@@ -345,6 +348,7 @@ export default function Board2D({
       case "ellipse":
         return (
           <Ellipse
+            key={el.id}
             {...common}
             x={el.x}
             y={el.y}
@@ -357,6 +361,7 @@ export default function Board2D({
       case "text":
         return (
           <Text
+            key={el.id}
             {...common}
             x={el.x}
             y={el.y}
