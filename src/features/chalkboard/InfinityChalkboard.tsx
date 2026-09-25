@@ -295,7 +295,7 @@ export function InfinityChalkboard({
             setRevision((r) => r + 1);
           }}
           aria-label="Board title"
-          className="font-display text-chalk min-w-0 flex-1 bg-transparent text-2xl focus:outline-none"
+          className="font-display text-chalk min-w-0 basis-full bg-transparent text-2xl focus:outline-none sm:flex-1 sm:basis-auto"
         />
         <span className="label" aria-live="polite">
           {saveState === "saving"
