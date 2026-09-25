@@ -22,7 +22,7 @@ export default function DaVinciCanvas({ ops }: { ops: DrawOp[] }) {
   const scale = width / CANVAS.width;
 
   return (
-    <div ref={wrapper} className="w-full">
+    <div ref={wrapper} className="w-full min-w-0 overflow-hidden">
       <Stage width={width} height={CANVAS.height * scale} scaleX={scale} scaleY={scale}>
         <Layer>
           {ops.map((op, i) => (

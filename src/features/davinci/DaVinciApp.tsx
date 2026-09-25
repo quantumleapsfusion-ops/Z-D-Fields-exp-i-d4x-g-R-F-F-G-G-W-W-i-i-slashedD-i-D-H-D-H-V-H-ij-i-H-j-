@@ -127,10 +127,10 @@ export function DaVinciApp({ llmReady }: { llmReady: boolean }) {
 
       <LiveControls live={live} placeholder="Describe something to draw…" />
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <AnimatedTranscript phrases={live.phrases} interim={live.interim} />
 
-        <figure className="flex flex-col gap-2">
+        <figure className="flex min-w-0 flex-col gap-2">
           <div className="chalk-surface border-chalk/10 overflow-hidden rounded-2xl border">
             <DaVinciCanvas ops={ops} />
           </div>
