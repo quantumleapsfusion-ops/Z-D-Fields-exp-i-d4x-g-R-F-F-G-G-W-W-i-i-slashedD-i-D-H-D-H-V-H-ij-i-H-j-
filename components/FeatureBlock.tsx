@@ -1,7 +1,9 @@
-import type { Feature } from '@/lib/site';
+import Link from 'next/link';
 
-export function FeatureBlock({ feature }: { feature: Feature }) {
-  const { title, codenames, body, keywords, emphasis } = feature;
+import { statusLabel, type Feature } from '@/lib/site';
+
+export function FeatureBlock({ feature, enabled }: { feature: Feature; enabled: boolean }) {
+  const { title, codenames, body, keywords, emphasis, href, status } = feature;
 
   return (
     <article
@@ -46,6 +48,21 @@ export function FeatureBlock({ feature }: { feature: Feature }) {
           ))}
         </ul>
       ) : null}
+
+      <div className="mt-6 flex items-center gap-4">
+        {enabled ? (
+          <Link
+            href={href}
+            className="inline-flex items-center gap-2 border-b border-ochre/60 pb-0.5 font-sans text-sm text-ochre transition-colors hover:border-ochre hover:text-chalk"
+          >
+            Open {title}
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : (
+          <span className="font-sans text-sm text-dust">Not yet open</span>
+        )}
+        <span className="label">{statusLabel[status]}</span>
+      </div>
     </article>
   );
 }

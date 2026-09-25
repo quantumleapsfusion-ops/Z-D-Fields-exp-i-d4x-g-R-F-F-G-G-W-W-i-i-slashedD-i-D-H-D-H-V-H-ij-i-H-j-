@@ -1,4 +1,5 @@
 import { FeatureBlock } from '@/components/FeatureBlock';
+import { isFeatureEnabled } from '@/lib/features';
 import { features, site } from '@/lib/site';
 
 export function Features() {
@@ -8,7 +9,7 @@ export function Features() {
       <div className="hairline" />
       <div className="divide-y divide-chalk/10">
         {features.map((feature) => (
-          <FeatureBlock key={feature.title} feature={feature} />
+          <FeatureBlock key={feature.title} feature={feature} enabled={isFeatureEnabled(feature)} />
         ))}
       </div>
     </section>

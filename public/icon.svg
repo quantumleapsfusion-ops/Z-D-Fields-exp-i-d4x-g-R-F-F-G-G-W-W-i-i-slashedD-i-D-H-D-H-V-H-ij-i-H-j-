@@ -1,11 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="r" x1="8" y1="6" x2="40" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e8574a"/>
+      <stop offset="0.17" stop-color="#ef9a3c"/>
+      <stop offset="0.33" stop-color="#e9d25a"/>
+      <stop offset="0.5" stop-color="#6cc07a"/>
+      <stop offset="0.67" stop-color="#4aa6d8"/>
+      <stop offset="0.83" stop-color="#7a6fd6"/>
+      <stop offset="1" stop-color="#b06cc6"/>
+    </linearGradient>
+  </defs>
   <rect width="48" height="48" rx="8" fill="#0e1a13"/>
-  <g stroke="#f1ede1" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M16 10v7a8 8 0 0 0 16 0v-7" stroke-width="1.8"/>
-    <path d="M24 8v15" stroke-width="1.8"/>
-    <path d="M8 24h32" stroke-width="1" stroke-opacity="0.5"/>
-    <path d="M14 30h20" stroke-width="1.8"/>
-    <path d="M20 30v11" stroke-width="1.8"/>
-    <path d="M29 30v8a3 3 0 0 0 4 3" stroke-width="1.8"/>
+  <g stroke="url(#r)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 10v7a8 8 0 0 0 16 0v-7" stroke-width="2"/>
+    <path d="M24 8v15" stroke-width="2"/>
+    <path d="M8 24h32" stroke-width="1" stroke-opacity="0.6"/>
+    <path d="M14 30h20" stroke-width="2"/>
+    <path d="M20 30v11" stroke-width="2"/>
+    <path d="M29 30v8a3 3 0 0 0 4 3" stroke-width="2"/>
   </g>
 </svg>
