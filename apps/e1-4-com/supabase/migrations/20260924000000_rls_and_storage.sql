@@ -4,32 +4,11 @@
 --
 -- Prisma connects as the `postgres` role and therefore bypasses RLS; these
 -- policies protect the PostgREST / anon-key path that browser clients use.
-
--- ---------------------------------------------------------------------------
--- Helper: does the current user have access to a stream (owner or share)?
--- ---------------------------------------------------------------------------
-create or replace function public.can_read_stream(p_stream_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.voice_streams vs
-    where vs.id = p_stream_id and vs.owner_id = auth.uid()
-  )
-  or exists (
-    select 1 from public.shares s
-    where s.stream_id = p_stream_id
-      and s.scope = 'USER'
-      and s.recipient_id = auth.uid()
-      and (s.expires_at is null or s.expires_at > now())
-  );
-$$;
-
-revoke all on function public.can_read_stream(uuid) from public;
-grant execute on function public.can_read_stream(uuid) to authenticated, anon;
+--
+-- Scope: profile trigger, users policies, storage buckets and avatar/voice
+-- object write policies. Row policies for voice_streams / voice_segments /
+-- shares and voice object reads live in 20260925090000_rls_v2_boards_ai.sql,
+-- which targets the v2 column names produced by the full Prisma migration set.
 
 -- ---------------------------------------------------------------------------
 -- Auto-create a profile row when a Supabase Auth user signs up.
@@ -85,48 +64,6 @@ drop policy if exists "users_delete_own" on public.users;
 create policy "users_delete_own" on public.users
   for delete to authenticated using (id = auth.uid());
 
--- voice_streams: owner has full access; recipients of a USER share may read.
-drop policy if exists "voice_streams_select" on public.voice_streams;
-create policy "voice_streams_select" on public.voice_streams
-  for select to authenticated using (public.can_read_stream(id));
-
-drop policy if exists "voice_streams_insert_own" on public.voice_streams;
-create policy "voice_streams_insert_own" on public.voice_streams
-  for insert to authenticated with check (owner_id = auth.uid());
-
-drop policy if exists "voice_streams_update_own" on public.voice_streams;
-create policy "voice_streams_update_own" on public.voice_streams
-  for update to authenticated using (owner_id = auth.uid()) with check (owner_id = auth.uid());
-
-drop policy if exists "voice_streams_delete_own" on public.voice_streams;
-create policy "voice_streams_delete_own" on public.voice_streams
-  for delete to authenticated using (owner_id = auth.uid());
-
--- voice_segments: inherit access from the parent stream.
-drop policy if exists "voice_segments_select" on public.voice_segments;
-create policy "voice_segments_select" on public.voice_segments
-  for select to authenticated using (public.can_read_stream(stream_id));
-
-drop policy if exists "voice_segments_write_owner" on public.voice_segments;
-create policy "voice_segments_write_owner" on public.voice_segments
-  for all to authenticated
-  using (exists (select 1 from public.voice_streams vs where vs.id = stream_id and vs.owner_id = auth.uid()))
-  with check (exists (select 1 from public.voice_streams vs where vs.id = stream_id and vs.owner_id = auth.uid()));
-
--- shares: owner manages; recipient may see shares addressed to them.
-drop policy if exists "shares_select" on public.shares;
-create policy "shares_select" on public.shares
-  for select to authenticated using (owner_id = auth.uid() or recipient_id = auth.uid());
-
-drop policy if exists "shares_write_owner" on public.shares;
-create policy "shares_write_owner" on public.shares
-  for all to authenticated
-  using (owner_id = auth.uid())
-  with check (
-    owner_id = auth.uid()
-    and exists (select 1 from public.voice_streams vs where vs.id = stream_id and vs.owner_id = auth.uid())
-  );
-
 -- ---------------------------------------------------------------------------
 -- Storage buckets
 --   avatars : public-read, owner-write. Object path: <uid>/<filename>
@@ -162,20 +99,8 @@ create policy "avatars_owner_delete" on storage.objects
   for delete to authenticated
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
 
--- voice: owner full access; USER-share recipients may read (second path
--- segment is the stream id). LINK shares are served by the server via signed
--- URLs using the service role, so they need no object-level policy.
-drop policy if exists "voice_read" on storage.objects;
-create policy "voice_read" on storage.objects
-  for select to authenticated
-  using (
-    bucket_id = 'voice'
-    and (
-      (storage.foldername(name))[1] = auth.uid()::text
-      or public.can_read_stream(((storage.foldername(name))[2])::uuid)
-    )
-  );
-
+-- voice: owner write. Reads are defined in the v2 migration (owner only;
+-- link shares are streamed by the server via the service role).
 drop policy if exists "voice_owner_insert" on storage.objects;
 create policy "voice_owner_insert" on storage.objects
   for insert to authenticated
