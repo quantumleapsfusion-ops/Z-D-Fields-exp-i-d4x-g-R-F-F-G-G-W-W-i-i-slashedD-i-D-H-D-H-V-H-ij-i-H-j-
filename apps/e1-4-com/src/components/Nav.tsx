@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Logo } from "@/components/Logo";
+import { Logo } from "@earth-one/ui";
 import { getSessionUser } from "@/lib/auth/user";
 import { enabledFeatures } from "@/lib/features";
 import { site } from "@/lib/site";

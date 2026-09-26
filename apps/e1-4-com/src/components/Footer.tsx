@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Logo } from "@/components/Logo";
+import { Logo } from "@earth-one/ui";
 import { site } from "@/lib/site";
 
 export function Footer() {

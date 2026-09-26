@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Logo } from "@/components/Logo";
+import { Logo } from "@earth-one/ui";
 import { PageShell } from "@/components/PageShell";
 import { signInWithOAuth } from "@/lib/auth/actions";
 import { OAUTH_PROVIDERS, type OAuthProvider } from "@/lib/auth/providers";

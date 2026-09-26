@@ -1,8 +1,9 @@
 node_modules
 .next
+.turbo
 out
 build
 coverage
 package-lock.json
-src/generated
-prisma/migrations
+apps/e1-4-com/src/generated
+apps/e1-4-com/prisma/migrations
