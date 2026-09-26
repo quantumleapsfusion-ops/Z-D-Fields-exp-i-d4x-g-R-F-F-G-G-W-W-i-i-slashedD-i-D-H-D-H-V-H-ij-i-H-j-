@@ -6,13 +6,15 @@ test.describe("smoke: login → record → share", () => {
   test("landing renders and links into the app", async ({ page }) => {
     await page.goto("/");
     await expect(page).toHaveTitle(/e1-4/i);
-    await expect(page.locator('a[href="/stream"]').first()).toBeVisible();
+    await expect(page.locator('a[href="/stream"]:visible').first()).toBeVisible();
   });
 
   test("anonymous visitors are bounced from /stream to /login", async ({ page }) => {
     await expectLoggedOut(page);
     await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /continue with/i }).first()).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /continue with/i }).first(),
+    ).toBeVisible();
   });
 
   test("a signed-in user records a segment and generates a share link", async ({
