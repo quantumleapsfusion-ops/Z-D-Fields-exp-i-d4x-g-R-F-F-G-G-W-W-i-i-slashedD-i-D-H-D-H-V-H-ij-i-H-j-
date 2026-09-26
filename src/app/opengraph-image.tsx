@@ -20,8 +20,9 @@ export default async function OpengraphImage() {
         padding: "80px",
       }}
     >
-      <div style={{ fontSize: 104, letterSpacing: "-0.04em" }}>{site.tagline}</div>
-      <div style={{ fontSize: 44, color: "#93a294", marginTop: 16 }}>{site.pitch}</div>
+      <div style={{ fontSize: 104, letterSpacing: "-0.04em" }}>{site.hero}</div>
+      <div style={{ fontSize: 56, color: "#93a294", marginTop: 12 }}>{site.motto}</div>
+      <div style={{ fontSize: 44, color: "#93a294", marginTop: 16 }}>{site.subhead}</div>
       <div
         style={{ display: "flex", marginTop: 56, height: 2, backgroundColor: "#d3a34c" }}
       />
