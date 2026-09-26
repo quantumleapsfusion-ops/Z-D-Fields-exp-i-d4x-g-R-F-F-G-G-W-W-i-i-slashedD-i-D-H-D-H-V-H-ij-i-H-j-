@@ -1,53 +1,102 @@
-import { existsSync } from "node:fs";
-
 import { expect, test } from "@playwright/test";
 
-const storageState = process.env.E2E_STORAGE_STATE;
-const signedIn = Boolean(storageState && existsSync(storageState));
+import { expectLoggedOut, loginAs } from "./helpers/auth";
 
-test.describe("public surfaces", () => {
+test.describe("smoke: login → record → share", () => {
   test("landing renders and links into the app", async ({ page }) => {
     await page.goto("/");
     await expect(page).toHaveTitle(/e1-4/i);
-    await expect(page.locator('a[href="/stream"]').first()).toBeVisible();
+    await expect(page.locator('a[href="/stream"]:visible').first()).toBeVisible();
   });
 
-  test("protected routes bounce to /login with a return path", async ({ page }) => {
-    await page.goto("/stream");
-    await expect(page).toHaveURL(/\/login\?next=%2Fstream/);
-    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+  test("anonymous visitors are bounced from /stream to /login", async ({ page }) => {
+    await expectLoggedOut(page);
+    await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
     await expect(
       page.getByRole("button", { name: /continue with/i }).first(),
     ).toBeVisible();
   });
-});
 
-test.describe("login -> record -> share", () => {
-  test.skip(!signedIn, "set E2E_STORAGE_STATE to a signed-in storageState.json to run");
-  test.use({ storageState });
+  test("a signed-in user records a segment and generates a share link", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await loginAs(context, baseURL!);
+    page.on("dialog", (d) => void d.accept());
 
-  test("records a segment and publishes a share link", async ({ page, context }) => {
     await page.goto("/stream");
     await expect(page).toHaveURL(/\/stream$/);
+    await expect(page.getByRole("heading", { name: /voice stream/i })).toBeVisible();
 
-    await page.getByRole("button", { name: "Record" }).click();
-    await expect(page.getByText(/^Recording/)).toBeVisible();
+    // Start clean: the shared test user may have leftovers from an aborted run.
+    const wipe = page.getByRole("button", { name: "Delete entire stream" });
+    if (await wipe.isVisible()) {
+      await wipe.click();
+      await expect(wipe).toBeHidden();
+    }
+
+    const record = page.getByRole("button", { name: "Record" });
+    await expect(record).toBeEnabled();
+
+    const upload = page.waitForResponse(
+      (r) => r.url().endsWith("/api/stream/segments") && r.request().method() === "POST",
+    );
+    await record.click();
+    await expect(page.getByRole("button", { name: "Stop" })).toBeVisible();
+    await expect(page.getByTestId("recorder-error")).toHaveCount(0);
     await page.waitForTimeout(2500);
     await page.getByRole("button", { name: "Stop" }).click();
 
-    const segment = page.getByRole("button", { name: "Share" }).first();
-    await expect(segment).toBeVisible({ timeout: 30_000 });
-    await segment.click();
+    const res = await upload;
+    expect(res.status(), await res.text()).toBe(201);
+    const { segment } = (await res.json()) as {
+      segment: { id: string; mimeType: string; durationMs: number; audioPath: string };
+    };
+    expect(segment.mimeType).toMatch(/^audio\/(webm|mp4|ogg)$/);
+    expect(segment.durationMs).toBeGreaterThan(1500);
+
+    // The uploaded segment appears on the timeline with its actions.
+    const shareSegment = page.getByRole("button", { name: "Share", exact: true }).first();
+    await expect(shareSegment).toBeVisible();
+
+    // Stored audio streams back through the signed-URL proxy.
+    const audio = await page.request.get(`/api/stream/segments/${segment.id}/audio`);
+    expect(audio.status()).toBe(200);
+    expect((await audio.body()).byteLength).toBeGreaterThan(1000);
+
+    // Share one segment.
+    await shareSegment.click();
     await page.getByRole("button", { name: "Create link" }).click();
+    const linkInput = page.locator("input[readonly]").first();
+    await expect(linkInput).toHaveValue(/\/s\/[A-Za-z0-9_-]{16,}$/);
+    const link = await linkInput.inputValue();
 
-    const url = await page.locator("input[readonly]").inputValue();
-    expect(url).toMatch(/\/s\/[A-Za-z0-9_-]{8,64}$/);
+    // The link works for a stranger (fresh context, no cookies).
+    const stranger = await page.context().browser()!.newContext();
+    const strangerPage = await stranger.newPage();
+    await strangerPage.goto(link);
+    await expect(
+      strangerPage.getByRole("heading", { name: /shared a moment of their stream/i }),
+    ).toBeVisible();
+    // Stranger cannot reach the owner's private API.
+    const forbidden = await strangerPage.request.get(
+      `/api/stream/segments/${segment.id}/audio`,
+    );
+    expect([401, 403, 404]).toContain(forbidden.status());
+    await stranger.close();
 
-    const visitor = await context.browser()!.newContext();
-    const shared = await visitor.newPage();
-    await shared.goto(url);
-    await expect(shared).toHaveURL(url);
-    await expect(shared.locator("audio, [data-audio-dock]").first()).toBeAttached();
-    await visitor.close();
+    // Close the segment popover (it overlaps the footer on phone viewports), then share the whole stream.
+    await shareSegment.click();
+    await expect(linkInput).toBeHidden();
+    await page.getByRole("button", { name: "Share whole stream" }).click();
+    await page.getByRole("button", { name: "Create link" }).click();
+    await expect(page.locator("input[readonly]").last()).toHaveValue(
+      /\/s\/[A-Za-z0-9_-]{16,}$/,
+    );
+
+    // Cleanup so the shared test account does not accumulate audio.
+    await page.getByRole("button", { name: "Delete entire stream" }).click();
+    await expect(page.getByText(/your stream is silent/i)).toBeVisible();
   });
 });
