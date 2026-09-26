@@ -1,55 +1,117 @@
 @import "tailwindcss";
 
-/* e1-4 chalkboard brand system */
-:root {
-  --color-board: #0e1a13; /* blackboard green-black */
-  --color-board-2: #142419; /* raised panel */
-  --color-chalk: #f1ede1; /* chalk cream */
-  --color-dust: #93a294; /* dusty grey-green */
-  --color-ochre: #d3a34c; /* ochre accent */
-  --color-line: rgba(147, 162, 148, 0.25);
-}
+/*
+ * e1-4 chalkboard brand system (Tailwind v4 theme).
+ *   blackboard #0e1a13 · chalk #f1ede1 · dust #93a294 · ochre #d3a34c
+ * `board` is an alias of `blackboard`; `board-2` is a raised panel.
+ */
+@theme {
+  --color-blackboard: #0e1a13;
+  --color-board: #0e1a13;
+  --color-board-2: #142419;
+  --color-chalk: #f1ede1;
+  --color-dust: #93a294;
+  --color-ochre: #d3a34c;
+  --color-line: rgb(147 162 148 / 0.25);
 
-@theme inline {
-  --color-board: var(--color-board);
-  --color-board-2: var(--color-board-2);
-  --color-chalk: var(--color-chalk);
-  --color-dust: var(--color-dust);
-  --color-ochre: var(--color-ochre);
-  --color-line: var(--color-line);
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --font-display: var(--font-fraunces);
-  --font-sans: var(--font-space-grotesk);
-
+  --tracking-label: 0.18em;
   --radius-board: 0.75rem;
+
+  --animate-wave: wave 1.4s ease-in-out infinite;
+  --animate-drift: drift 6s ease-in-out infinite;
+  --animate-ink-in: ink-in 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+
+  @keyframes wave {
+    0%,
+    100% {
+      transform: scaleY(0.25);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
+  @keyframes drift {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
+  @keyframes ink-in {
+    0% {
+      opacity: 0;
+      filter: blur(6px);
+      transform: translateY(0.35em);
+    }
+    100% {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+  }
+  @keyframes shimmer {
+    0%,
+    100% {
+      opacity: 0.45;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
 }
 
-html {
-  color-scheme: dark;
+@layer base {
+  html {
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: var(--color-blackboard);
+    color: var(--color-chalk);
+  }
+
+  ::selection {
+    background: var(--color-ochre);
+    color: var(--color-blackboard);
+  }
 }
 
-body {
-  background: var(--color-board);
-  color: var(--color-chalk);
-  font-family: var(--font-sans), system-ui, sans-serif;
-  background-image: radial-gradient(
-    ellipse at 20% 0%,
-    rgba(147, 162, 148, 0.08),
-    transparent 60%
-  );
+@utility hairline {
+  height: 1px;
+  width: 100%;
+  background-color: --alpha(var(--color-chalk) / 15%);
 }
 
-::selection {
-  background: var(--color-ochre);
-  color: var(--color-board);
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-dust);
 }
 
-.font-display {
-  font-family: var(--font-display), Georgia, serif;
+/* Blackboard surface with a faint chalk-dust haze. */
+@utility chalk-surface {
+  background-color: var(--color-blackboard);
+  background-image:
+    radial-gradient(
+      ellipse at 20% 10%,
+      --alpha(var(--color-chalk) / 5%),
+      transparent 55%
+    ),
+    radial-gradient(ellipse at 80% 90%, --alpha(var(--color-dust) / 6%), transparent 60%);
 }
 
 /* Chalk-line: a faint hand-drawn rule under headings */
-.chalk-rule {
+@utility chalk-rule {
   height: 1px;
   background: linear-gradient(
     90deg,
@@ -59,4 +121,38 @@ body {
     transparent
   );
   opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Voice Stream scrubber: transparent track over the segment bar, chalk thumb. */
+.stream-scrubber {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 1rem;
+}
+.stream-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 0.85rem;
+  width: 0.85rem;
+  border-radius: 9999px;
+  background: var(--color-chalk);
+  cursor: pointer;
+}
+.stream-scrubber::-moz-range-thumb {
+  height: 0.85rem;
+  width: 0.85rem;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--color-chalk);
+  cursor: pointer;
 }

@@ -15,3 +15,6 @@ function createPrismaClient() {
 export const db = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+
+/** Alias kept for feature code that reads more naturally as `prisma.*`. */
+export const prisma = db;
