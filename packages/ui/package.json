@@ -1,0 +1,29 @@
+{
+  "name": "@earth-one/ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared chalkboard design tokens and marks for earth1.co and e1-4.com.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens.css": "./src/tokens.css"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "eslint-config-prettier": "^10.1.8",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "typescript": "^5"
+  }
+}
