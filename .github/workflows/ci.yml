@@ -24,4 +24,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run format:check
-      - run: npx turbo run lint typecheck build
+      - run: npx turbo run lint typecheck test build

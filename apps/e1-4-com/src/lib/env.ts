@@ -15,6 +15,21 @@ function readNumber(name: string, fallback: number): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+/**
+ * Origin used to build absolute URLs (OAuth callback). Explicit `NEXT_PUBLIC_SITE_URL` wins;
+ * on Vercel, fall back to the production domain or the per-deployment URL so Preview
+ * deployments get a callback on their own host.
+ */
+function resolveSiteUrl(): string {
+  const explicit = read("NEXT_PUBLIC_SITE_URL");
+  if (explicit) return explicit;
+  const vercel =
+    process.env.VERCEL_ENV === "production"
+      ? read("VERCEL_PROJECT_PRODUCTION_URL")
+      : (read("VERCEL_BRANCH_URL") ?? read("VERCEL_URL"));
+  return vercel ? `https://${vercel}` : "http://localhost:3000";
+}
+
 /** Safe for the browser. Inlined at build time by Next.js. */
 export const publicEnv = {
   supabaseUrl: required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL),
@@ -22,7 +37,7 @@ export const publicEnv = {
     "NEXT_PUBLIC_SUPABASE_ANON_KEY",
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   ),
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  siteUrl: resolveSiteUrl(),
 };
 
 /** Server only. Never import from a client component. */

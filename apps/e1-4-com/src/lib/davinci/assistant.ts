@@ -9,12 +9,12 @@ export type AssistantAction =
 const ROUTES: { match: RegExp; href: string; label: string }[] = [
   { match: /\b(streams?|feed|voice)\b/i, href: "/stream", label: "Voice Stream" },
   {
-    match: /\b(boards?|chalk|canvas|draw)\b/i,
+    match: /\b(boards?|chalk(board)?s?|canvas|draw)\b/i,
     href: "/chalkboard",
     label: "Infinity Chalkboard",
   },
   { match: /\b(da ?vinci|assistant|sketch)\b/i, href: "/davinci", label: "Da Vinci" },
-  { match: /\b(profile|account|me|settings)\b/i, href: "/profile", label: "Profile" },
+  { match: /\b(profile|account|settings)\b/i, href: "/profile", label: "Profile" },
   { match: /\b(home|landing|start)\b/i, href: "/", label: "Home" },
 ];
 
