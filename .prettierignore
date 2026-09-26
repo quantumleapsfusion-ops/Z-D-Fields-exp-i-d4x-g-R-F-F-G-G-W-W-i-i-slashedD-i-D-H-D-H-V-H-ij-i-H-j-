@@ -6,3 +6,5 @@ coverage
 package-lock.json
 src/generated
 prisma/migrations
+playwright-report
+test-results
