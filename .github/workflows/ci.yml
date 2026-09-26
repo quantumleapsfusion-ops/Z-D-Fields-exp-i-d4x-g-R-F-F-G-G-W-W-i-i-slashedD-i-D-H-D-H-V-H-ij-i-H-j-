@@ -6,9 +6,11 @@ on:
   pull_request:
 
 jobs:
-  lint-and-build:
+  check:
     runs-on: ubuntu-latest
     env:
+      TURBO_TELEMETRY_DISABLED: 1
+      NEXT_TELEMETRY_DISABLED: 1
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
       SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key
@@ -21,7 +23,5 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run lint
       - run: npm run format:check
-      - run: npm run typecheck
-      - run: npm run build
+      - run: npx turbo run lint typecheck test build
