@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
+import { AppShell } from "@/components/AppShell";
 import { site } from "@/lib/site";
 
 const fraunces = Fraunces({
@@ -58,7 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
       <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
-        {children}
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

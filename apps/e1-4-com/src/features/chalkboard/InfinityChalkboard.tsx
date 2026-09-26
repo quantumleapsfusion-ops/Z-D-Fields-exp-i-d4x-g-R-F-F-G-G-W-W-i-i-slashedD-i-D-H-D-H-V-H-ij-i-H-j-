@@ -14,6 +14,7 @@ import {
   useLiveTranscription,
   type FinalPhrase,
 } from "@/features/live/useLiveTranscription";
+import { DRAFT_KEY, localBoards } from "@/lib/chalkboard/local";
 import type { BoardDocument, BoardElement } from "@/lib/chalkboard/types";
 import { flags } from "@/lib/flags";
 
@@ -34,6 +35,7 @@ const TOOLS: { id: Tool; label: string; key: string }[] = [
   { id: "rect", label: "Box", key: "r" },
   { id: "ellipse", label: "Ellipse", key: "o" },
   { id: "text", label: "Text", key: "t" },
+  { id: "math", label: "Math", key: "m" },
   { id: "eraser", label: "Erase", key: "e" },
 ];
 
@@ -115,6 +117,10 @@ export function InfinityChalkboard({
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [revision, setRevision] = useState(0);
   const [voiceCursor, setVoiceCursor] = useState<Point>({ x: 80, y: 80 });
+  const [localRestore, setLocalRestore] = useState<{
+    doc: BoardDocument;
+    updatedAt: number;
+  } | null>(null);
 
   const elements = history.present;
   const viewportRef = useRef(viewport);
@@ -196,6 +202,7 @@ export function InfinityChalkboard({
         title: cur.title,
         doc: { version: 1, elements: cur.elements, viewport: cur.viewport },
       });
+      if (cur.boardId !== id) void localBoards.rename(cur.boardId ?? DRAFT_KEY, id);
       latest.current.boardId = id;
       setBoardId(id);
       setBoards((prev) => {
@@ -229,6 +236,50 @@ export function InfinityChalkboard({
     const timer = setTimeout(() => void save(), 1200);
     return () => clearTimeout(timer);
   }, [revision, save]);
+
+  // Local-first mirror: every change lands in IndexedDB immediately; the server save follows.
+  useEffect(() => {
+    if (revision === 0) return;
+    void localBoards.put({
+      key: boardId ?? DRAFT_KEY,
+      title,
+      doc: { version: 1, elements, viewport },
+      syncedAt: null,
+    });
+  }, [revision, boardId, title, elements, viewport]);
+
+  useEffect(() => {
+    if (saveState === "saved" && boardId) void localBoards.markSynced(boardId);
+  }, [saveState, boardId]);
+
+  // Offer to restore a local copy that never made it to the server (crash, offline, failed save).
+  const initialKey = initial.id ?? DRAFT_KEY;
+  const initialCount = initial.doc.elements.length;
+  useEffect(() => {
+    let cancelled = false;
+    void localBoards.get(initialKey).then((local) => {
+      if (cancelled || !local || local.syncedAt !== null) return;
+      if (local.doc.elements.length > initialCount) {
+        setLocalRestore({ doc: local.doc, updatedAt: local.updatedAt });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [initialKey, initialCount]);
+
+  const restoreLocal = useCallback(() => {
+    if (!localRestore) return;
+    dispatch({ type: "reset", elements: localRestore.doc.elements });
+    setViewport(localRestore.doc.viewport);
+    setLocalRestore(null);
+    setRevision((r) => r + 1);
+  }, [localRestore]);
+
+  const dismissLocal = useCallback(() => {
+    setLocalRestore(null);
+    void localBoards.remove(initialKey);
+  }, [initialKey]);
 
   const changeViewport = useCallback((v: Viewport) => {
     setViewport(v);
@@ -306,6 +357,29 @@ export function InfinityChalkboard({
                 ? "Save failed"
                 : ""}
         </span>
+        {localRestore ? (
+          <span
+            role="status"
+            className="border-ochre/50 text-chalk flex items-center gap-3 rounded-full border px-3 py-1 font-sans text-sm"
+          >
+            Unsaved local copy from{" "}
+            {new Date(localRestore.updatedAt).toLocaleTimeString()}
+            <button
+              type="button"
+              onClick={restoreLocal}
+              className="label hover:text-ochre"
+            >
+              Restore
+            </button>
+            <button
+              type="button"
+              onClick={dismissLocal}
+              className="label hover:text-chalk"
+            >
+              Discard
+            </button>
+          </span>
+        ) : null}
         <select
           value={boardId ?? ""}
           onChange={(e) => (e.target.value ? void openBoard(e.target.value) : newBoard())}

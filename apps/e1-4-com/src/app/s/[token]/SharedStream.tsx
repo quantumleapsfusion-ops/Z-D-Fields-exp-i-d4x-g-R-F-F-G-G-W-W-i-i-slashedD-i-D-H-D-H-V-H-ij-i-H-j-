@@ -1,12 +1,10 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useMemo } from "react";
 
-import {
-  StreamPlayer,
-  type StreamPlayerHandle,
-} from "@/features/voice-stream/StreamPlayer";
 import { Timeline } from "@/features/voice-stream/Timeline";
+import type { Playlist } from "@/lib/audio/store";
+import { usePlaylist } from "@/lib/audio/usePlaylist";
 import type { SegmentDTO } from "@/lib/voice/stream";
 
 export function SharedStream({
@@ -20,34 +18,35 @@ export function SharedStream({
   includeAudio: boolean;
   includeTranscript: boolean;
 }) {
-  const player = useRef<StreamPlayerHandle>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const audioUrl = useCallback(
-    (id: string) => `/api/share/${token}/audio/${id}`,
-    [token],
+  const playlist = useMemo<Playlist | null>(
+    () =>
+      includeAudio && segments.length > 0
+        ? {
+            key: `share:${token}`,
+            title: "Shared stream",
+            segments: segments.map((s) => ({
+              id: s.id,
+              durationMs: s.durationMs,
+              transcript: includeTranscript ? s.transcription : null,
+            })),
+            audioUrl: (id) => `/api/share/${token}/audio/${id}`,
+          }
+        : null,
+    [includeAudio, includeTranscript, segments, token],
   );
+  const { activeId, playFrom } = usePlaylist(playlist);
 
   if (segments.length === 0) {
     return <p className="text-dust mt-8">Nothing here yet.</p>;
   }
 
   return (
-    <div className="mt-8">
-      {includeAudio ? (
-        <div className="sticky top-[4.25rem] z-10 mb-10">
-          <StreamPlayer
-            ref={player}
-            segments={segments}
-            audioUrl={audioUrl}
-            onActiveChange={setActiveId}
-          />
-        </div>
-      ) : null}
+    <div className="mt-8 pb-32">
       {!includeTranscript ? <p className="label mb-6">Audio only</p> : null}
       <Timeline
         items={segments.map((segment) => ({ kind: "segment", segment }))}
         activeId={activeId}
-        onPlay={includeAudio ? (id) => player.current?.playFrom(id) : undefined}
+        onPlay={includeAudio ? playFrom : undefined}
       />
     </div>
   );

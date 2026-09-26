@@ -51,9 +51,10 @@ export default function Board3D({
         bounds.expandByPoint(new THREE.Vector2(e.x, e.y));
         bounds.expandByPoint(new THREE.Vector2(e.x + e.width, e.y + e.height));
       } else {
+        const label = e.type === "text" ? e.text : e.tex;
         bounds.expandByPoint(new THREE.Vector2(e.x, e.y));
         bounds.expandByPoint(
-          new THREE.Vector2(e.x + e.text.length * e.fontSize * 0.5, e.y + e.fontSize),
+          new THREE.Vector2(e.x + label.length * e.fontSize * 0.5, e.y + e.fontSize),
         );
       }
     }
@@ -84,17 +85,19 @@ export default function Board3D({
       const z = toZ(e.createdAt);
       const material = new THREE.LineBasicMaterial({ color: e.color });
       let object: THREE.Object3D;
-      if (e.type === "text") {
+      if (e.type === "text" || e.type === "math") {
+        const label = e.type === "text" ? e.text : e.tex;
+        const font = e.type === "text" ? "Georgia, serif" : "ui-monospace, monospace";
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d")!;
         const px = 64;
-        ctx.font = `${px}px Georgia, serif`;
-        canvas.width = Math.ceil(ctx.measureText(e.text).width) + 16;
+        ctx.font = `${px}px ${font}`;
+        canvas.width = Math.ceil(ctx.measureText(label).width) + 16;
         canvas.height = px * 1.4;
-        ctx.font = `${px}px Georgia, serif`;
+        ctx.font = `${px}px ${font}`;
         ctx.fillStyle = e.color;
         ctx.textBaseline = "top";
-        ctx.fillText(e.text, 8, px * 0.15);
+        ctx.fillText(label, 8, px * 0.15);
         const sprite = new THREE.Sprite(
           new THREE.SpriteMaterial({
             map: new THREE.CanvasTexture(canvas),

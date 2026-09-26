@@ -6,8 +6,19 @@ import { Arrow, Ellipse, Layer, Line, Rect, Stage, Text } from "react-konva";
 
 import type { BoardDocument, BoardElement } from "@/lib/chalkboard/types";
 
+import { MathLayer, renderTex } from "./MathLayer";
+
 export type Tool =
-  "select" | "pan" | "pen" | "line" | "arrow" | "rect" | "ellipse" | "text" | "eraser";
+  | "select"
+  | "pan"
+  | "pen"
+  | "line"
+  | "arrow"
+  | "rect"
+  | "ellipse"
+  | "text"
+  | "math"
+  | "eraser";
 export type Viewport = BoardDocument["viewport"];
 export type Point = { x: number; y: number };
 
@@ -26,7 +37,7 @@ type Props = {
   onVoiceCursor: (point: Point) => void;
 };
 
-type TextEdit = { id: string | null; world: Point; value: string };
+type TextEdit = { id: string | null; world: Point; value: string; kind: "text" | "math" };
 
 export function zoomAround(viewport: Viewport, screen: Point, factor: number): Viewport {
   const scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, viewport.scale * factor));
@@ -43,6 +54,23 @@ const newId = () => crypto.randomUUID();
  * Production 2D infinite canvas (Konva). The stage transform is the viewport: pan moves it,
  * wheel/pinch-free zoom scales it around the pointer, and every element lives in world space.
  */
+function MathPreview({ tex, color }: { tex: string; color: string }) {
+  const rendered = renderTex(tex);
+  if (!tex.trim()) return null;
+  return (
+    <div
+      className="border-chalk/15 bg-blackboard/90 mt-1 rounded border px-3 py-2 text-xl"
+      style={{ color }}
+    >
+      {rendered.error ? (
+        <span className="text-ochre font-mono text-xs">Invalid LaTeX</span>
+      ) : (
+        <span dangerouslySetInnerHTML={{ __html: rendered.html }} />
+      )}
+    </div>
+  );
+}
+
 export default function Board2D({
   elements,
   viewport,
@@ -118,7 +146,10 @@ export default function Board2D({
         if (!onEmpty) eraseAt(e.target);
         return;
       case "text":
-        setTextEdit({ id: null, world: p, value: "" });
+        setTextEdit({ id: null, world: p, value: "", kind: "text" });
+        return;
+      case "math":
+        setTextEdit({ id: null, world: p, value: "", kind: "math" });
         return;
       case "pen":
         setDraft({ ...base, type: "stroke", points: [p.x, p.y], width: strokeWidth });
@@ -240,25 +271,28 @@ export default function Board2D({
     if (edit.id) {
       onChange((prev) =>
         value
-          ? prev.map((el) =>
-              el.id === edit.id && el.type === "text" ? { ...el, text: value } : el,
-            )
+          ? prev.map((el) => {
+              if (el.id !== edit.id) return el;
+              if (el.type === "text") return { ...el, text: value };
+              if (el.type === "math") return { ...el, tex: value };
+              return el;
+            })
           : prev.filter((el) => el.id !== edit.id),
       );
     } else if (value) {
+      const base = {
+        id: newId(),
+        color,
+        createdAt: Date.now(),
+        x: edit.world.x,
+        y: edit.world.y,
+        fontSize: 28 / viewport.scale,
+      };
       onChange((prev) => [
         ...prev,
-        {
-          id: newId(),
-          type: "text",
-          color,
-          createdAt: Date.now(),
-          x: edit.world.x,
-          y: edit.world.y,
-          text: value,
-          fontSize: 28 / viewport.scale,
-          source: "typed",
-        },
+        edit.kind === "math"
+          ? { ...base, type: "math", tex: value }
+          : { ...base, type: "text", text: value, source: "typed" },
       ]);
     }
   }
@@ -375,10 +409,17 @@ export default function Board2D({
             }
             onDblClick={() =>
               tool === "select" &&
-              setTextEdit({ id: el.id, world: { x: el.x, y: el.y }, value: el.text })
+              setTextEdit({
+                id: el.id,
+                world: { x: el.x, y: el.y },
+                value: el.text,
+                kind: "text",
+              })
             }
           />
         );
+      case "math":
+        return null;
     }
   }
 
@@ -386,7 +427,7 @@ export default function Board2D({
     ? "grab"
     : tool === "select"
       ? "default"
-      : tool === "text"
+      : tool === "text" || tool === "math"
         ? "text"
         : tool === "eraser"
           ? "cell"
@@ -447,20 +488,47 @@ export default function Board2D({
           />
         </Layer>
       </Stage>
+      <MathLayer
+        elements={elements}
+        viewport={viewport}
+        tool={tool}
+        onMove={(id, world) =>
+          onChange((prev) =>
+            prev.map((el) => (el.id === id ? { ...el, x: world.x, y: world.y } : el)),
+          )
+        }
+        onErase={(id) => onChange((prev) => prev.filter((el) => el.id !== id))}
+        onEdit={(el) =>
+          setTextEdit({
+            id: el.id,
+            world: { x: el.x, y: el.y },
+            value: el.tex,
+            kind: "math",
+          })
+        }
+      />
       {textEdit && editScreen ? (
-        <input
-          autoFocus
-          value={textEdit.value}
-          onChange={(e) => setTextEdit({ ...textEdit, value: e.target.value })}
-          onBlur={commitText}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commitText();
-            if (e.key === "Escape") setTextEdit(null);
-          }}
-          aria-label="Board text"
-          className="border-ochre/60 bg-blackboard/90 text-chalk absolute min-w-[12rem] rounded border px-2 py-1 font-sans focus:outline-none"
-          style={{ left: editScreen.left, top: editScreen.top, fontSize: 18 }}
-        />
+        <div className="absolute" style={{ left: editScreen.left, top: editScreen.top }}>
+          <input
+            autoFocus
+            value={textEdit.value}
+            onChange={(e) => setTextEdit({ ...textEdit, value: e.target.value })}
+            onBlur={commitText}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitText();
+              if (e.key === "Escape") setTextEdit(null);
+            }}
+            aria-label={textEdit.kind === "math" ? "LaTeX source" : "Board text"}
+            placeholder={textEdit.kind === "math" ? "\\int_0^1 x^2\\,dx" : undefined}
+            className={`border-ochre/60 bg-blackboard/90 text-chalk min-w-[12rem] rounded border px-2 py-1 focus:outline-none ${
+              textEdit.kind === "math" ? "font-mono" : "font-sans"
+            }`}
+            style={{ fontSize: 18 }}
+          />
+          {textEdit.kind === "math" ? (
+            <MathPreview tex={textEdit.value} color={color} />
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

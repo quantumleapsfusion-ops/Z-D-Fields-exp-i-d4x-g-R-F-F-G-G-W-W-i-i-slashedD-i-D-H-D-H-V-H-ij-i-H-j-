@@ -1,13 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 
 import { deleteSegmentAction, deleteStreamAction } from "@/app/actions/stream";
+import type { Playlist } from "@/lib/audio/store";
+import { usePlaylist } from "@/lib/audio/usePlaylist";
 import type { SegmentDTO } from "@/lib/voice/stream";
 
 import { formatDuration } from "./format";
 import { ShareButton } from "./ShareButton";
-import { StreamPlayer, type StreamPlayerHandle } from "./StreamPlayer";
 import { Timeline, type TimelineItem } from "./Timeline";
 import { useRecorder, type CapturedSpan } from "./useRecorder";
 
@@ -18,9 +19,24 @@ const segmentAudioUrl = (id: string) => `/api/stream/segments/${id}/audio`;
 export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDTO[] }) {
   const [segments, setSegments] = useState(initialSegments);
   const [pending, setPending] = useState<Pending[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
-  const player = useRef<StreamPlayerHandle>(null);
+  const playlist = useMemo<Playlist | null>(
+    () =>
+      segments.length > 0
+        ? {
+            key: "stream:mine",
+            title: "Your stream",
+            segments: segments.map((s) => ({
+              id: s.id,
+              durationMs: s.durationMs,
+              transcript: s.transcription,
+            })),
+            audioUrl: segmentAudioUrl,
+          }
+        : null,
+    [segments],
+  );
+  const { activeId, playFrom } = usePlaylist(playlist);
 
   const upload = useCallback(async (item: Pending) => {
     const form = new FormData();
@@ -107,7 +123,7 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
   const totalMs = segments.reduce((sum, s) => sum + s.durationMs, 0);
 
   return (
-    <div>
+    <div className="pb-32">
       <RecorderPanel recorder={recorder} totalMs={totalMs} />
 
       {pending.some((p) => p.failed) ? (
@@ -115,15 +131,6 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
           Retry failed uploads
         </button>
       ) : null}
-
-      <div className="sticky top-[4.25rem] z-10 mt-10">
-        <StreamPlayer
-          ref={player}
-          segments={segments}
-          audioUrl={segmentAudioUrl}
-          onActiveChange={setActiveId}
-        />
-      </div>
 
       <div className="mt-10">
         {items.length === 0 ? (
@@ -135,7 +142,7 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
           <Timeline
             items={items}
             activeId={activeId}
-            onPlay={(id) => player.current?.playFrom(id)}
+            onPlay={playFrom}
             renderActions={(segment) => (
               <>
                 <ShareButton segmentId={segment.id} label="Share" />

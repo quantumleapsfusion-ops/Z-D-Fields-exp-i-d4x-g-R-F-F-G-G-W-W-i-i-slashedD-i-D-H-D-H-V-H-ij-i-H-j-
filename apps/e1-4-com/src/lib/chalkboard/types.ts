@@ -51,6 +51,15 @@ export const elementSchema = z.discriminatedUnion("type", [
     /** `voice` text was placed by speech-to-text; `typed` by the keyboard. */
     source: z.enum(["voice", "typed"]),
   }),
+  z.object({
+    ...base,
+    type: z.literal("math"),
+    x: point,
+    y: point,
+    /** LaTeX source, rendered with KaTeX. */
+    tex: z.string().max(5000),
+    fontSize: z.number().positive().max(2000),
+  }),
 ]);
 
 export const boardDocumentSchema = z.object({
