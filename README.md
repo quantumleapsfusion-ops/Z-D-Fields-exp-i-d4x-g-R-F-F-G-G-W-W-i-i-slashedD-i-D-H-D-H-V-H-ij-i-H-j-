@@ -2,10 +2,10 @@
 
 Flagship of **Earth One Global Coalescent** (sibling: [earth1.co](https://earth1.co)).
 
-> Greetings Earthling. _Think._
+> A social network with no typing. You speak; everything else follows.
 
 This repo is the Next.js + Supabase **app shell** that the four features plug into:
-Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (not yet implemented).
+Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (feature-flagged).
 
 ## Stack
 
