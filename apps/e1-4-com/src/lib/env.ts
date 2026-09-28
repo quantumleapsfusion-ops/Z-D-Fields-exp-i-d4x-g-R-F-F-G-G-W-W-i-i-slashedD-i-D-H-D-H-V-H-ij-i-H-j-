@@ -67,6 +67,9 @@ export const env = {
   llm: {
     provider: read("LLM_PROVIDER") as "anthropic" | "openai" | "none" | undefined,
     anthropicKey: read("ANTHROPIC_API_KEY"),
+    /** Vercel AI Gateway key; when set, Anthropic calls go through the gateway. */
+    gatewayKey: read("AI_GATEWAY_API_KEY"),
+    gatewayUrl: read("AI_GATEWAY_BASE_URL"),
     /** Everyday Da Vinci work: summaries, labels, translation. */
     everydayModel: read("LLM_MODEL_EVERYDAY") ?? "claude-sonnet-5",
     /** Gravity Board superposition + heavy chalkboard breakdowns only. */

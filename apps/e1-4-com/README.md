@@ -159,7 +159,11 @@ transcript) and `Share` (scope `PRIVATE | LINK | USER`) all cascade-delete from 
 `<uid>/` in the `voice` and `avatars` buckets, the Postgres rows, then the Supabase Auth user.
 It is exposed to the signed-in user as **Delete account** on `/profile`.
 
-## Later: Da Vinci keys
+## AI keys
 
-`.env.example` reserves `OPENAI_API_KEY`, `DEEPGRAM_API_KEY` and `ANTHROPIC_API_KEY` for the
-speech-to-text and LLM steps. They are unused by the shell.
+`DEEPGRAM_API_KEY` / `OPENAI_API_KEY` drive speech-to-text. The LLM tiers (`LLM_MODEL_EVERYDAY`,
+`LLM_MODEL_HEAVY`) go through [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) when
+`AI_GATEWAY_API_KEY` is set (models are sent as `anthropic/<id>`, e.g. `anthropic/claude-fable-5.1`;
+the gateway needs paid credits for Claude models), otherwise straight to Anthropic via
+`ANTHROPIC_API_KEY`. Without either key each feature falls back to a
+clearly-labelled stub (`source: "stub"` / `transcriptionStatus: "SKIPPED"`) instead of failing.
