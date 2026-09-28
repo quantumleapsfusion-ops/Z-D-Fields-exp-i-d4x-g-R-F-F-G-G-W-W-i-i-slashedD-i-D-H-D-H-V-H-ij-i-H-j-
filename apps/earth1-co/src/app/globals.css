@@ -1,0 +1,61 @@
+@import "tailwindcss";
+@import "@earth-one/ui/tokens.css";
+@source "../../../../packages/ui/src";
+
+@layer base {
+  html {
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: var(--color-blackboard);
+    color: var(--color-chalk);
+  }
+
+  ::selection {
+    background: var(--color-ochre);
+    color: var(--color-blackboard);
+  }
+}
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-dust);
+}
+
+@utility chalk-surface {
+  background-color: var(--color-blackboard);
+  background-image:
+    radial-gradient(
+      ellipse at 20% 10%,
+      --alpha(var(--color-chalk) / 5%),
+      transparent 55%
+    ),
+    radial-gradient(ellipse at 80% 90%, --alpha(var(--color-dust) / 6%), transparent 60%);
+}
+
+@utility chalk-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-dust) 20%,
+    var(--color-dust) 80%,
+    transparent
+  );
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
