@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const LLM_VARS = [
   "LLM_PROVIDER",
   "ANTHROPIC_API_KEY",
+  "AI_GATEWAY_API_KEY",
+  "AI_GATEWAY_BASE_URL",
   "OPENAI_API_KEY",
   "LLM_MODEL_EVERYDAY",
   "LLM_MODEL_HEAVY",
@@ -36,6 +38,17 @@ describe("getLanguageModel", () => {
     expect(heavy).toMatchObject({ name: expect.stringMatching(/^anthropic:/) });
     expect(everyday?.model).toBe("claude-sonnet-5");
     expect(heavy?.model).toBe("claude-fable-5-1");
+  });
+
+  it("routes through the AI Gateway when AI_GATEWAY_API_KEY is set, even alongside a direct key", async () => {
+    const { getLanguageModel } = await load({
+      AI_GATEWAY_API_KEY: "g",
+      ANTHROPIC_API_KEY: "a",
+    });
+    expect(getLanguageModel("heavy")?.name).toBe(
+      "anthropic-gateway:anthropic/claude-fable-5.1",
+    );
+    expect(getLanguageModel()?.name).toBe("anthropic-gateway:anthropic/claude-sonnet-5");
   });
 
   it("honours LLM_MODEL_* overrides", async () => {
