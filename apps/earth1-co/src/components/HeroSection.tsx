@@ -31,9 +31,8 @@ export function HeroSection() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease, delay: 0.3 }}
       >
-        The holding shell for a small set of platforms built on one premise: the person
-        speaking owns what they said. We hold the domains, the principles and the accounts
-        — and stay out of the way.
+        One Earth. Many voices. We&apos;re building a place to speak, listen, and belong
+        across borders.
       </motion.p>
       <motion.div
         className="chalk-rule mt-14"

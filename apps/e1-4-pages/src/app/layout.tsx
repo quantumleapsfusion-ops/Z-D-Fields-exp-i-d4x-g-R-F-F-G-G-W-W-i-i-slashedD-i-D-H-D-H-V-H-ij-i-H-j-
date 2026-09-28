@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
-import { site } from "@/lib/site";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -16,26 +15,25 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
 });
 
+const description =
+  "Greetings Earthling. Four ways to speak: Voice Stream, Da Vinci, Infinity Chalkboard, and Gravity Board. Built by Earth One Global Coalescent.";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  title: {
-    default: `${site.org}`,
-    template: `%s — ${site.name}`,
-  },
-  description: site.description,
-  applicationName: site.name,
+  metadataBase: new URL("https://e1-4.com"),
+  title: "e1-4 — Greetings Earthling.",
+  description,
   openGraph: {
     type: "website",
-    url: site.url,
-    siteName: site.org,
-    title: site.org,
-    description: site.description,
-    images: [{ url: "/icon.svg", alt: "Earth One Ψ over π" }],
+    url: "https://e1-4.com",
+    siteName: "e1-4",
+    title: "e1-4 — Greetings Earthling.",
+    description,
+    images: [{ url: "/icon.svg", alt: "e1-4 Ψ over π" }],
   },
   twitter: {
     card: "summary",
-    title: site.org,
-    description: site.description,
+    title: "e1-4 — Greetings Earthling.",
+    description,
   },
   icons: { icon: "/icon.svg", apple: "/icon.svg" },
 };

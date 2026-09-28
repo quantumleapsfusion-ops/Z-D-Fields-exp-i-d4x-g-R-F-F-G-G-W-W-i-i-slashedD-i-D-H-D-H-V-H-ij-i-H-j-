@@ -3,9 +3,9 @@ export const site = {
   domain: "earth1.co",
   url: "https://earth1.co",
   org: "Earth One Global Coalescent",
-  tagline: "A coalescent, not a corporation.",
+  tagline: "Global citizenship for all, one voice at a time.",
   description:
-    "Earth One Global Coalescent — the holding shell and governance portal behind e1-4.com. Absolute data sovereignty, user-controlled privacy, free speech.",
+    "Earth One Global Coalescent — global citizenship for all, one voice at a time.",
   flagship: {
     name: "e1-4",
     domain: "e1-4.com",

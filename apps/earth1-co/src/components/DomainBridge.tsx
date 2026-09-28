@@ -43,7 +43,7 @@ export function DomainBridge() {
           </motion.span>
         </div>
         <p className="text-blackboard/60 mt-8 font-mono text-xs tracking-[0.18em] uppercase">
-          Enter {flagship.domain}
+          See what we&apos;re building at {flagship.domain}
         </p>
         <span
           aria-hidden

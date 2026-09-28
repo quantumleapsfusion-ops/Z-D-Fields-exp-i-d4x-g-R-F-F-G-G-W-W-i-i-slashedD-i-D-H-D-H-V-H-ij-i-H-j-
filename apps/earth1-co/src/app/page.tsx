@@ -1,7 +1,6 @@
 import { Logo } from "@earth-one/ui";
 
 import { DomainBridge } from "@/components/DomainBridge";
-import { GovernanceManifesto } from "@/components/GovernanceManifesto";
 import { HeroSection } from "@/components/HeroSection";
 import { site } from "@/lib/site";
 
@@ -23,7 +22,6 @@ export default function HomePage() {
       </header>
       <main>
         <HeroSection />
-        <GovernanceManifesto />
         <DomainBridge />
       </main>
       <footer className="border-chalk/10 border-t">
@@ -31,7 +29,9 @@ export default function HomePage() {
           <p>
             {site.org} / {site.domain}
           </p>
-          <p className="label">est. earth</p>
+          <a href={site.flagship.url} className="hover:text-ochre transition-colors">
+            See what we&apos;re building at {site.flagship.domain} →
+          </a>
         </div>
       </footer>
     </div>
