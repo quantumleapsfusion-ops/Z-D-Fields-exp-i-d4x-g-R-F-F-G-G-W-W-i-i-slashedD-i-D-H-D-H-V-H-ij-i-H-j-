@@ -36,11 +36,15 @@ jobs:
           cache-dependency-path: quantum/requirements.txt
       - run: pip install -r quantum/requirements.txt
       - name: Run on Aer simulator
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          CIRCUIT: ${{ inputs.circuit }}
+          SHOTS: ${{ inputs.shots }}
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [ "$EVENT_NAME" = "pull_request" ]; then
             python quantum/run.py --target simulator --all
           else
-            python quantum/run.py --target simulator --circuit "${{ inputs.circuit }}" --shots "${{ inputs.shots }}"
+            python quantum/run.py --target simulator --circuit "$CIRCUIT" --shots "$SHOTS"
           fi
       - uses: actions/upload-artifact@v4
         with:
@@ -64,11 +68,16 @@ jobs:
           cache-dependency-path: quantum/requirements.txt
       - run: pip install -r quantum/requirements.txt
       - name: Run on IBM hardware
+        timeout-minutes: 105
         env:
           IBM_QUANTUM_TOKEN: ${{ secrets.IBM_QUANTUM_TOKEN }}
           IBM_QUANTUM_INSTANCE: ${{ secrets.IBM_QUANTUM_INSTANCE }}
-        run: python quantum/run.py --target ibm-hardware --circuit "${{ inputs.circuit }}" --shots "${{ inputs.shots }}"
-      - uses: actions/upload-artifact@v4
+          CIRCUIT: ${{ inputs.circuit }}
+          SHOTS: ${{ inputs.shots }}
+        run: python quantum/run.py --target ibm-hardware --circuit "$CIRCUIT" --shots "$SHOTS"
+      - if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: quantum-results-hardware
+          if-no-files-found: ignore
           path: results/

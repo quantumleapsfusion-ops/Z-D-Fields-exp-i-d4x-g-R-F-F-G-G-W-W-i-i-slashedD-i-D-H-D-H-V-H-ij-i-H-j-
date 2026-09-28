@@ -33,7 +33,21 @@ def run_simulator(qc, shots):
     return {"backend": "aer_simulator", "counts": counts}
 
 
-def run_hardware(qc, shots):
+def circuit_path(name: str) -> Path:
+    path = CIRCUITS / name
+    if path.name != name or path.suffix != ".py" or not path.is_file():
+        sys.exit(f"Unknown circuit {name!r}: pass a file name from quantum/circuits, e.g. bell.py.")
+    return path
+
+
+def append_summary(lines):
+    step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if step_summary:
+        with open(step_summary, "a") as fh:
+            fh.write("\n".join(lines) + "\n")
+
+
+def run_hardware(qc, shots, submitted_path: Path):
     token = os.environ.get("IBM_QUANTUM_TOKEN")
     instance = os.environ.get("IBM_QUANTUM_INSTANCE")
     if not token or not instance:
@@ -45,10 +59,12 @@ def run_hardware(qc, shots):
     from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
 
     service = QiskitRuntimeService(channel="ibm_quantum_platform", token=token, instance=instance)
-    backend = service.least_busy(operational=True, simulator=False)
+    backend = service.least_busy(min_num_qubits=qc.num_qubits, operational=True, simulator=False)
     isa = generate_preset_pass_manager(backend=backend, optimization_level=1).run(qc)
     job = SamplerV2(mode=backend).run([isa], shots=shots)
     print(f"Submitted job {job.job_id()} to {backend.name}; waiting...", flush=True)
+    submitted_path.write_text(json.dumps({"backend": backend.name, "job_id": job.job_id(), "status": "submitted"}, indent=2))
+    append_summary([f"Submitted job `{job.job_id()}` to `{backend.name}`.", ""])
     counts = job.result()[0].join_data().get_counts()
     return {"backend": backend.name, "job_id": job.job_id(), "counts": counts}
 
@@ -63,23 +79,21 @@ def main():
 
     if a.all and a.target != "simulator":
         sys.exit("--all is simulator-only.")
-    files = sorted(CIRCUITS.glob("*.py")) if a.all else [CIRCUITS / (a.circuit or "bell.py")]
+    files = sorted(CIRCUITS.glob("*.py")) if a.all else [circuit_path(a.circuit or "bell.py")]
 
     RESULTS.mkdir(exist_ok=True)
     summary = ["| Circuit | Backend | Top outcomes |", "|---|---|---|"]
     for f in files:
         qc = load(f)
-        out = run_simulator(qc, a.shots) if a.target == "simulator" else run_hardware(qc, a.shots)
+        result_path = RESULTS / f"{f.stem}-{a.target}.json"
+        out = run_simulator(qc, a.shots) if a.target == "simulator" else run_hardware(qc, a.shots, result_path)
         out.update(circuit=f.name, shots=a.shots, target=a.target)
-        (RESULTS / f"{f.stem}-{a.target}.json").write_text(json.dumps(out, indent=2))
+        result_path.write_text(json.dumps(out, indent=2))
         top = sorted(out["counts"].items(), key=lambda kv: -kv[1])[:4]
         summary.append(f"| {f.name} | {out['backend']} | " + ", ".join(f"`{k}`: {v}" for k, v in top) + " |")
         print(json.dumps(out))
 
-    step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
-    if step_summary:
-        with open(step_summary, "a") as fh:
-            fh.write("\n".join(summary) + "\n")
+    append_summary(summary)
 
 
 if __name__ == "__main__":
