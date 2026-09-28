@@ -3,7 +3,13 @@ export const site = {
   domain: "e1-4.com",
   url: "https://e1-4.com",
   org: "Earth One Global Coalescent",
-  /** Approved tagline (DEVIN_BRIEF). No other motto appears on e1-4.com. */
+  /** Large standalone hero statement. */
+  hero: "Greetings Earthling.",
+  /** Brand motto, shown as a quiet line beneath the hero statement. */
+  motto: "Think.",
+  /** Hero subhead. */
+  subhead: "four ways to speak",
+  /** Approved tagline (DEVIN_BRIEF); used in metadata. */
   tagline: "earth life-forms",
   /** The one sentence on the homepage. */
   pitch: "A social network with no typing. You speak; everything else follows.",
