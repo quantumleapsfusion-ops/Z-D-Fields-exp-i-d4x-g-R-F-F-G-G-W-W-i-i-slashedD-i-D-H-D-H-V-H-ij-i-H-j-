@@ -1,0 +1,74 @@
+name: Quantum circuits
+
+on:
+  pull_request:
+    paths: ["quantum/**", ".github/workflows/quantum.yml"]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Where to run
+        type: choice
+        options: [simulator, ibm-hardware]
+        default: simulator
+      circuit:
+        description: File in quantum/circuits
+        default: bell.py
+        required: true
+      shots:
+        description: Shots (hardware capped at 4000)
+        default: "1024"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  simulate:
+    if: github.event_name == 'pull_request' || inputs.target == 'simulator'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: quantum/requirements.txt
+      - run: pip install -r quantum/requirements.txt
+      - name: Run on Aer simulator
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            python quantum/run.py --target simulator --all
+          else
+            python quantum/run.py --target simulator --circuit "${{ inputs.circuit }}" --shots "${{ inputs.shots }}"
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quantum-results-simulator
+          path: results/
+
+  hardware:
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'ibm-hardware'
+    runs-on: ubuntu-latest
+    environment: ibm-quantum
+    timeout-minutes: 120
+    concurrency:
+      group: ibm-quantum-hardware
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: quantum/requirements.txt
+      - run: pip install -r quantum/requirements.txt
+      - name: Run on IBM hardware
+        env:
+          IBM_QUANTUM_TOKEN: ${{ secrets.IBM_QUANTUM_TOKEN }}
+          IBM_QUANTUM_INSTANCE: ${{ secrets.IBM_QUANTUM_INSTANCE }}
+        run: python quantum/run.py --target ibm-hardware --circuit "${{ inputs.circuit }}" --shots "${{ inputs.shots }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quantum-results-hardware
+          path: results/

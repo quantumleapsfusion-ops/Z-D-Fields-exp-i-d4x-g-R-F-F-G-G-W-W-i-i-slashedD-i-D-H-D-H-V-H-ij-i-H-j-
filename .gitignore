@@ -40,3 +40,7 @@ next-env.d.ts
 
 # prisma generated client
 apps/e1-4-com/src/generated/
+
+# quantum run outputs
+results/
+__pycache__/
