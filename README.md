@@ -131,7 +131,7 @@ Bucket access model:
   same suite against a deployed URL (e.g. a Vercel preview).
 
 Anything that needs a real session (OAuth, uploads, transcription, sharing, deletion) is exercised
-manually against the live Supabase project — see `docs/live-e2e.md`.
+against the live Supabase project with `npm run test:live` — see `docs/live-e2e.md`.
 
 ## Deploying to Vercel
 
