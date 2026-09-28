@@ -31,7 +31,7 @@ export function Logo({
       ? `url(#${gradientId})`
       : variant === "white"
         ? "#ffffff"
-        : "rgb(var(--color-chalk))";
+        : "var(--color-chalk)";
   const weight = variant === "chalk" ? 1.6 : 2;
   const ruleOpacity = variant === "chalk" ? 0.5 : 0.8;
 
