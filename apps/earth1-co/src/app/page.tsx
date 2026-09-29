@@ -24,6 +24,12 @@ export default function HomePage() {
         description: site.description,
         knowsAbout: ["Global citizenship", "Data sovereignty", "Free speech", "Privacy"],
         sameAs: [site.flagship.url],
+        contactPoint: {
+          "@type": "ContactPoint",
+          contactType: "human resources",
+          email: site.contact.email,
+          availableLanguage: "en",
+        },
       },
       {
         "@type": "WebSite",
@@ -62,12 +68,30 @@ export default function HomePage() {
         <HeroSection />
         <GovernanceManifesto />
         <DomainBridge />
+        <section id="contact" className="mx-auto max-w-5xl px-5 pb-28 sm:px-8">
+          <p className="label mb-4">Reach us</p>
+          <a
+            href={`mailto:${site.contact.email}`}
+            className="font-display hover:text-ochre text-3xl tracking-tight transition-colors sm:text-5xl"
+          >
+            {site.contact.email}
+          </a>
+          <p className="text-dust mt-4 max-w-xl font-sans text-lg">
+            {site.contact.purpose}
+          </p>
+        </section>
       </main>
       <footer className="border-chalk/10 border-t">
         <div className="text-dust mx-auto flex max-w-5xl flex-col gap-2 px-5 py-10 font-sans text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <p>
             {site.org} / {site.domain}
           </p>
+          <a
+            href={`mailto:${site.contact.email}`}
+            className="hover:text-ochre transition-colors"
+          >
+            {site.contact.email}
+          </a>
           <p className="label">est. earth</p>
         </div>
       </footer>

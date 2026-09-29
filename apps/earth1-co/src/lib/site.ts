@@ -26,6 +26,13 @@ export const site = {
     tagline: "earth life-forms",
     pitch:
       "A social network with no typing. Think out loud — you speak; everything else follows.",
+    talk: "Talk by voice. No number needed. Send a voice note or go live — they reply when they're ready, and the whole conversation is kept.",
+    shortPath: "/e1-4",
+  },
+  contact: {
+    name: "Candace",
+    email: "candace@earth1.co",
+    purpose: "HR, careers, partnerships and anything else — reach out to us.",
   },
 } as const;
 
