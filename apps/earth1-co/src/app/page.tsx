@@ -10,7 +10,7 @@ export default function HomePage() {
     <div className="min-h-screen">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6 sm:px-8">
         <div className="flex items-center gap-3">
-          <Logo size={26} variant="chalk" title={site.org} />
+          <Logo size={26} brand="earth1" title={site.org} />
           <span className="font-display text-lg tracking-tight">{site.name}</span>
         </div>
         <a

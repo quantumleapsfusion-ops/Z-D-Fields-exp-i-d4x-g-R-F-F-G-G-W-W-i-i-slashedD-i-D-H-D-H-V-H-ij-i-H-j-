@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: site.org,
     description: site.description,
   },
-  icons: { icon: "/icon.svg", apple: "/icon.svg" },
+  icons: { icon: "/icon.png", apple: "/apple-icon.png" },
 };
 
 export const viewport: Viewport = {
