@@ -48,13 +48,14 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
   const { activeId, playFrom } = usePlaylist(playlist);
 
   const spokenLive = live.phrases.map((phrase) => phrase.text).join(" ");
-  useEffect(() => {
-    const transcribed = segments
+  const carried =
+    segments
       .map((segment) => segment.transcription?.trim())
       .filter((text): text is string => Boolean(text))
-      .join(" ");
-    setCarryText(transcribed || spokenLive);
-  }, [segments, spokenLive, setCarryText]);
+      .join(" ") || spokenLive;
+  useEffect(() => {
+    setCarryText(carried);
+  }, [carried, setCarryText]);
 
   const upload = useCallback(async (item: Pending) => {
     const form = new FormData();
@@ -88,9 +89,12 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
   const recorder = useRecorder(onSpan);
 
   const waiting = segments.some((s) => s.transcriptionStatus === "PENDING");
-  const uploading = pending.some((p) => !p.failed);
+  const failedUploads = pending.some((p) => p.failed);
+  const settled = finished && !awaitingSpan && pending.length === 0 && !waiting;
+  const silent = settled && !carried;
 
   const record = async () => {
+    setFinished(false);
     await recorder.record();
     if (!live.listening) void live.start();
   };
@@ -112,10 +116,8 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
   }, [awaitingSpan]);
 
   useEffect(() => {
-    if (!finished || awaitingSpan || uploading || waiting) return;
-    if (segments.length === 0 && !spokenLive) return;
-    router.push("/journey");
-  }, [finished, awaitingSpan, uploading, waiting, segments.length, spokenLive, router]);
+    if (settled && carried) router.push("/journey");
+  }, [settled, carried, router]);
   useEffect(() => {
     if (!waiting) return;
     const timer = setInterval(async () => {
@@ -126,8 +128,11 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
     return () => clearInterval(timer);
   }, [waiting]);
 
-  const retryFailed = () =>
-    pending.filter((p) => p.failed).forEach((p) => void upload(p));
+  const retryFailed = () => {
+    const failed = pending.filter((p) => p.failed);
+    setPending((prev) => prev.map((p) => (p.failed ? { ...p, failed: false } : p)));
+    failed.forEach((p) => void upload({ ...p, failed: false }));
+  };
 
   const removeSegment = (id: string) => {
     if (
@@ -176,8 +181,15 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
         onRecord={() => void record()}
         onPause={pause}
         onStop={finish}
-        finishing={finished}
+        finishing={finished && !silent && !failedUploads}
       />
+
+      {silent ? (
+        <p role="status" className="text-dust mt-4 text-center font-sans text-sm">
+          No words came through this time, so there is nothing to carry up yet. Speak
+          closer to the microphone, or try Chrome or Safari.
+        </p>
+      ) : null}
 
       {pending.some((p) => p.failed) ? (
         <button type="button" onClick={retryFailed} className="text-ochre mt-4 text-sm">

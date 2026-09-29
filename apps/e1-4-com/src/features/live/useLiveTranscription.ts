@@ -58,12 +58,19 @@ export function useLiveTranscription(
   const onPhraseRef = useRef(onPhrase);
   const cleanupRef = useRef<(() => void) | null>(null);
   const wantListening = useRef(false);
+  const attempt = useRef(0);
 
   useEffect(() => {
     onPhraseRef.current = onPhrase;
   }, [onPhrase]);
 
-  useEffect(() => () => cleanupRef.current?.(), []);
+  useEffect(
+    () => () => {
+      attempt.current += 1;
+      cleanupRef.current?.();
+    },
+    [],
+  );
 
   const pushText = useCallback((raw: string) => {
     const text = raw.trim();
@@ -159,17 +166,26 @@ export function useLiveTranscription(
   const start = useCallback(async () => {
     setError(null);
     cleanupRef.current?.();
+    const id = ++attempt.current;
+    const stale = () => id !== attempt.current;
     wantListening.current = true;
     try {
       const res = await fetch("/api/stt/live", { cache: "no-store" });
       const config: LiveTranscriptionConfig = res.ok
         ? ((await res.json()) as LiveTranscriptionConfig)
         : { provider: "browser" };
+      if (stale()) return;
       setProvider(config.provider);
       if (config.provider === "deepgram") await startDeepgram(config.token, config.model);
       else startBrowser();
+      if (stale()) {
+        cleanupRef.current?.();
+        cleanupRef.current = null;
+        return;
+      }
       setListening(true);
     } catch (err) {
+      if (stale()) return;
       wantListening.current = false;
       setListening(false);
       setError(err instanceof Error ? err.message : "Could not start listening.");
@@ -177,6 +193,7 @@ export function useLiveTranscription(
   }, [startBrowser, startDeepgram]);
 
   const stop = useCallback(() => {
+    attempt.current += 1;
     wantListening.current = false;
     cleanupRef.current?.();
     cleanupRef.current = null;
