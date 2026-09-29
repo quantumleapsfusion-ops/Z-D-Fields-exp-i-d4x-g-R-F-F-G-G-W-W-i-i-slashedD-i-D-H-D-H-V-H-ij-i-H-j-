@@ -5,7 +5,19 @@ export const site = {
   org: "Earth One Global Coalescent",
   motto: "Global Citizenship For All.",
   description:
-    "Earth One Global Coalescent — the philosophy behind e1-4.com. Global citizenship for all, one voice at a time.",
+    "Earth One Global Coalescent is a home for global citizenship: every person on Earth is a citizen of it, owns their own voice and data, and speaks freely across borders. The philosophy behind e1-4.com.",
+  keywords: [
+    "global citizenship",
+    "global citizen",
+    "world citizen",
+    "citizen of the world",
+    "Earth One Global Coalescent",
+    "earth1",
+    "data sovereignty",
+    "digital rights",
+    "free speech",
+    "privacy",
+  ],
   flagship: {
     name: "e1-4",
     domain: "e1-4.com",

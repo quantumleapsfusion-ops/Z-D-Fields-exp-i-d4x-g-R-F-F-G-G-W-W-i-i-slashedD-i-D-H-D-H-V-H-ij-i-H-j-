@@ -13,10 +13,24 @@ export const site = {
   tagline: "earth life-forms",
   /** The one sentence on the homepage. */
   pitch: "A social network with no typing. You speak; everything else follows.",
+  seoTitle: "Think out loud with your voice",
+  keywords: [
+    "think out loud",
+    "thinking",
+    "voice",
+    "voice notes",
+    "voice journal",
+    "voice social network",
+    "speech to text",
+    "transcription",
+    "thinking tools",
+    "e1-4",
+    "Earth One Global Coalescent",
+  ],
   philosophyUrl: "https://earth1.co",
   philosophyLabel: "earth1.co",
   description:
-    "e1-4 — earth life-forms. A voice-only social network: speak, and transcription, translation and visuals follow. Built by Earth One Global Coalescent.",
+    "e1-4 is a place to think out loud. A voice-first social network with no typing: speak, and your voice becomes transcripts, translations, drawings and an infinite chalkboard for working ideas through. Built by Earth One Global Coalescent.",
 } as const;
 
 export type FeatureStatus = "ready" | "early" | "experimental";
