@@ -1,34 +1,35 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useTransition } from "react";
 
 import { deleteSegmentAction, deleteStreamAction } from "@/app/actions/stream";
-import { useLiveTranscription } from "@/features/live/useLiveTranscription";
 import type { Playlist } from "@/lib/audio/store";
 import { usePlaylist } from "@/lib/audio/usePlaylist";
-import { useCarry } from "@/lib/carry";
 import type { SegmentDTO } from "@/lib/voice/stream";
 
 import { formatDuration } from "./format";
 import { ShareButton } from "./ShareButton";
 import { Timeline, type TimelineItem } from "./Timeline";
-import { useRecorder, type CapturedSpan } from "./useRecorder";
-
-type Pending = { id: string; span: CapturedSpan; failed?: boolean };
+import type { useRecorder } from "./useRecorder";
+import { useVoiceCapture } from "./useVoiceCapture";
 
 const segmentAudioUrl = (id: string) => `/api/stream/segments/${id}/audio`;
-const SPAN_GRACE_MS = 4000;
 
 export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDTO[] }) {
-  const [segments, setSegments] = useState(initialSegments);
-  const [pending, setPending] = useState<Pending[]>([]);
+  const {
+    recorder,
+    segments,
+    setSegments,
+    pending,
+    failedUploads,
+    carrying,
+    silent,
+    record,
+    pause,
+    finish,
+    retryFailed,
+  } = useVoiceCapture(initialSegments);
   const [, startTransition] = useTransition();
-  const setCarryText = useCarry((state) => state.setText);
-  const router = useRouter();
-  const live = useLiveTranscription();
-  const [finished, setFinished] = useState(false);
-  const [awaitingSpan, setAwaitingSpan] = useState(false);
   const playlist = useMemo<Playlist | null>(
     () =>
       segments.length > 0
@@ -46,93 +47,6 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
     [segments],
   );
   const { activeId, playFrom } = usePlaylist(playlist);
-
-  const spokenLive = live.phrases.map((phrase) => phrase.text).join(" ");
-  const carried =
-    segments
-      .map((segment) => segment.transcription?.trim())
-      .filter((text): text is string => Boolean(text))
-      .join(" ") || spokenLive;
-  useEffect(() => {
-    setCarryText(carried);
-  }, [carried, setCarryText]);
-
-  const upload = useCallback(async (item: Pending) => {
-    const form = new FormData();
-    form.append("audio", item.span.blob);
-    form.append("startedAt", item.span.startedAt.toISOString());
-    form.append("endedAt", item.span.endedAt.toISOString());
-    form.append("durationMs", String(Math.round(item.span.durationMs)));
-    try {
-      const res = await fetch("/api/stream/segments", { method: "POST", body: form });
-      if (!res.ok) throw new Error(String(res.status));
-      const { segment } = (await res.json()) as { segment: SegmentDTO };
-      setSegments((prev) => [...prev, segment].sort((a, b) => a.index - b.index));
-      setPending((prev) => prev.filter((p) => p.id !== item.id));
-    } catch {
-      setPending((prev) =>
-        prev.map((p) => (p.id === item.id ? { ...p, failed: true } : p)),
-      );
-    }
-  }, []);
-
-  const onSpan = useCallback(
-    (span: CapturedSpan) => {
-      const item = { id: crypto.randomUUID(), span };
-      setAwaitingSpan(false);
-      setPending((prev) => [...prev, item]);
-      void upload(item);
-    },
-    [upload],
-  );
-
-  const recorder = useRecorder(onSpan);
-
-  const waiting = segments.some((s) => s.transcriptionStatus === "PENDING");
-  const failedUploads = pending.some((p) => p.failed);
-  const settled = finished && !awaitingSpan && pending.length === 0 && !waiting;
-  const silent = settled && !carried;
-
-  const record = async () => {
-    setFinished(false);
-    await recorder.record();
-    if (!live.listening) void live.start();
-  };
-  const pause = () => {
-    recorder.pause();
-    live.stop();
-  };
-  const finish = () => {
-    setAwaitingSpan(recorder.state === "recording");
-    recorder.stop();
-    live.stop();
-    setFinished(true);
-  };
-
-  useEffect(() => {
-    if (!awaitingSpan) return;
-    const timer = setTimeout(() => setAwaitingSpan(false), SPAN_GRACE_MS);
-    return () => clearTimeout(timer);
-  }, [awaitingSpan]);
-
-  useEffect(() => {
-    if (settled && carried) router.push("/journey");
-  }, [settled, carried, router]);
-  useEffect(() => {
-    if (!waiting) return;
-    const timer = setInterval(async () => {
-      const res = await fetch("/api/stream/segments", { cache: "no-store" });
-      if (res.ok)
-        setSegments(((await res.json()) as { segments: SegmentDTO[] }).segments);
-    }, 2500);
-    return () => clearInterval(timer);
-  }, [waiting]);
-
-  const retryFailed = () => {
-    const failed = pending.filter((p) => p.failed);
-    setPending((prev) => prev.map((p) => (p.failed ? { ...p, failed: false } : p)));
-    failed.forEach((p) => void upload({ ...p, failed: false }));
-  };
 
   const removeSegment = (id: string) => {
     if (
@@ -181,7 +95,7 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
         onRecord={() => void record()}
         onPause={pause}
         onStop={finish}
-        finishing={finished && !silent && !failedUploads}
+        finishing={carrying}
       />
 
       {silent ? (
@@ -191,7 +105,7 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
         </p>
       ) : null}
 
-      {pending.some((p) => p.failed) ? (
+      {failedUploads ? (
         <button type="button" onClick={retryFailed} className="text-ochre mt-4 text-sm">
           Retry failed uploads
         </button>

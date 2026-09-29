@@ -34,10 +34,11 @@ function spread(i: number, salt: number): number {
  */
 export function Journey() {
   const stream = useStreamTranscript();
-  const carried = useCarry((state) => state.text);
-  const text = (stream.text || carried).trim();
+  const [carried] = useState(() => useCarry.getState().text.trim());
+  const text = (carried || stream.text).trim();
   const spoken = useMemo(() => text.split(/\s+/).filter(Boolean), [text]);
-  const ready = !stream.loading && spoken.length > 0;
+  const loading = !carried && stream.loading;
+  const ready = !loading && spoken.length > 0;
 
   const [index, setIndex] = useState(0);
   const [superposition, setSuperposition] = useState<Superposition | null>(null);
@@ -87,7 +88,7 @@ export function Journey() {
     observed?.form,
   );
 
-  if (stream.loading) {
+  if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center">
         <p className="label animate-shimmer">Listening back</p>
@@ -99,8 +100,8 @@ export function Journey() {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
         <p className="font-display text-dust text-2xl">Your stream is silent.</p>
-        <Link href="/stream" className="text-ochre font-sans text-sm">
-          Record in Voice Stream
+        <Link href="/" className="text-ochre font-sans text-sm">
+          Speak
         </Link>
       </main>
     );
@@ -134,32 +135,32 @@ export function Journey() {
           ))}
         </ol>
         <div key={stage.id} className="animate-ink-in">
-          <h1 className="font-display text-chalk text-3xl sm:text-4xl">{stage.title}</h1>
+          <h1 className="font-display text-chalk text-4xl sm:text-6xl">{stage.title}</h1>
           <p className="text-dust mt-1 font-sans text-sm">{stage.line}</p>
         </div>
       </header>
 
       <section className="pointer-events-none absolute inset-x-0 bottom-0 px-6 pb-12 sm:px-10">
         {stage.id === "voice" ? <Waveform /> : null}
-        {stage.id === "text" ? <SpokenWords words={spoken} /> : null}
         {stage.id === "horizon" ? <HorizonMeter score={density(text)} /> : null}
         {stage.id === "superposition" ? <Superposed candidates={candidates} /> : null}
         {stage.id === "observed" && observed ? (
           <div className="animate-ink-in pointer-events-auto max-w-2xl">
             <p className="label">{observed.form}</p>
-            <h2 className="font-display text-chalk mt-2 text-3xl">{observed.title}</h2>
-            <p className="text-chalk/80 mt-3 font-sans leading-relaxed">
+            <h2 className="font-display text-chalk mt-2 text-4xl sm:text-6xl">
+              {observed.title}
+            </h2>
+            <p className="text-chalk/80 mt-4 font-sans text-lg leading-relaxed sm:text-xl">
               {observed.interpretation}
             </p>
-            <Link
-              href="/stream"
-              className="text-ochre mt-6 inline-block font-sans text-sm"
-            >
-              Back to Voice Stream
+            <Link href="/" className="text-ochre mt-6 inline-block font-sans text-sm">
+              Speak again
             </Link>
           </div>
         ) : null}
       </section>
+
+      {stage.id === "text" ? <SpokenWords words={spoken} /> : null}
 
       {stage.id === "board" || stage.id === "gravity" ? (
         <BoardWords
@@ -215,7 +216,7 @@ function SpokenWords({ words }: { words: string[] }) {
   return (
     <p
       aria-live="polite"
-      className="font-display text-chalk max-w-3xl text-2xl leading-snug sm:text-3xl"
+      className="font-display text-chalk pointer-events-none absolute inset-x-0 top-1/2 max-h-[70vh] -translate-y-1/2 overflow-hidden px-8 text-4xl leading-tight sm:px-16 sm:text-6xl"
     >
       {shown.map((word, i) => (
         <span
@@ -237,7 +238,7 @@ function BoardWords({ words, falling }: { words: string[]; falling: boolean }) {
       {words.map((word, i) => (
         <span
           key={i}
-          className="font-display text-chalk/80 absolute text-lg transition-all ease-in"
+          className="font-display text-chalk/80 absolute text-2xl transition-all ease-in sm:text-4xl"
           style={{
             left: falling ? "50%" : `${8 + spread(i, 2) * 80}%`,
             top: falling ? "50%" : `${22 + spread(i, 3) * 56}%`,
@@ -255,12 +256,12 @@ function BoardWords({ words, falling }: { words: string[]; falling: boolean }) {
 
 function HorizonMeter({ score }: { score: number }) {
   const [width, setWidth] = useState(0);
+  const [crossed, setCrossed] = useState(false);
   const target = Math.max(score, EVENT_HORIZON + 0.05);
   useEffect(() => {
     const frame = requestAnimationFrame(() => setWidth(target));
     return () => cancelAnimationFrame(frame);
   }, [target]);
-  const crossed = width >= EVENT_HORIZON;
   return (
     <div className="flex max-w-xl items-center gap-4">
       <span className="label w-20 shrink-0">Density</span>
@@ -268,6 +269,7 @@ function HorizonMeter({ score }: { score: number }) {
         <div
           className="from-dust to-ochre absolute inset-y-0 left-0 rounded-full bg-gradient-to-r transition-[width] duration-[4000ms] ease-in"
           style={{ width: `${Math.round(width * 100)}%` }}
+          onTransitionEnd={() => setCrossed(width >= EVENT_HORIZON)}
         />
         <div
           className="bg-chalk absolute -top-1.5 h-5 w-px"

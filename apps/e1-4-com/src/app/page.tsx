@@ -1,19 +1,7 @@
-import { Features } from "@/components/Features";
-import { CTA } from "@/components/CTA";
-import { Footer } from "@/components/Footer";
-import { Hero } from "@/components/Hero";
-import { Nav } from "@/components/Nav";
+import { MicPortal } from "@/features/portal/MicPortal";
+import { getSessionUser } from "@/lib/auth/user";
 
-export default function Home() {
-  return (
-    <>
-      <Nav />
-      <main>
-        <Hero />
-        <Features />
-        <CTA />
-      </main>
-      <Footer />
-    </>
-  );
+export default async function Home() {
+  const user = await getSessionUser().catch(() => null);
+  return <MicPortal signedIn={Boolean(user)} />;
 }
