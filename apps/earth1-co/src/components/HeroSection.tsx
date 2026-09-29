@@ -1,5 +1,6 @@
 "use client";
 
+import { Logo } from "@earth-one/ui";
 import { motion } from "framer-motion";
 
 import { site } from "@/lib/site";
@@ -9,6 +10,16 @@ const ease = [0.2, 0.7, 0.2, 1] as const;
 export function HeroSection() {
   return (
     <section className="mx-auto max-w-5xl px-5 pt-16 pb-20 sm:px-8 sm:pt-28 sm:pb-28">
+      <motion.div
+        className="mb-14 flex justify-center sm:mb-20"
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.9, ease }}
+      >
+        <span data-spacetime-singularity>
+          <Logo size={96} variant="white" title={site.org} />
+        </span>
+      </motion.div>
       <motion.p
         className="label"
         initial={{ opacity: 0 }}
