@@ -1,6 +1,5 @@
-const VERSION = "e1-4-v1";
+const VERSION = "e1-4-v2";
 const SHELL = [
-  "/",
   "/icon.svg",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
@@ -50,18 +49,19 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Pages and data are per-user: never cache them, so a shared browser can't
+  // replay someone else's profile or conversations offline.
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
-        .then((res) => remember(request, res))
-        .catch(() => caches.match(request).then((hit) => hit ?? caches.match("/"))),
+      fetch(request).catch(
+        () =>
+          new Response(
+            '<!doctype html><title>e1-4</title><body style="background:#000">',
+            {
+              headers: { "Content-Type": "text/html" },
+            },
+          ),
+      ),
     );
-    return;
   }
-
-  event.respondWith(
-    fetch(request)
-      .then((res) => remember(request, res))
-      .catch(() => caches.match(request)),
-  );
 });

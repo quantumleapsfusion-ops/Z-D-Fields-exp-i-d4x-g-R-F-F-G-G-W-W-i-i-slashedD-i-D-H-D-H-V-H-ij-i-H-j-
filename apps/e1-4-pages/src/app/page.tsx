@@ -3,6 +3,9 @@ import { Logo } from "@earth-one/ui";
 
 import { features } from "../../../e1-4-com/src/lib/site";
 
+const emphasized = (feature: (typeof features)[number]) =>
+  (feature as { emphasis?: boolean }).emphasis === true;
+
 const bars = [0.35, 0.6, 0.9, 0.5, 1, 0.45, 0.75, 0.3, 0.85, 0.55, 0.4, 0.7, 0.25];
 
 export default function Home() {
@@ -52,9 +55,18 @@ export default function Home() {
           </div>
           <div className="divide-chalk/10 mt-10 divide-y">
             {features.map((feature) => (
-              <article key={feature.title} className="py-10">
+              <article
+                key={feature.title}
+                className={
+                  emphasized(feature)
+                    ? "border-ochre/40 bg-chalk/[0.03] my-8 rounded-lg border px-6 py-10 sm:px-9"
+                    : "py-10"
+                }
+              >
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-8">
-                  <h3 className="font-display text-3xl tracking-tight sm:text-4xl">
+                  <h3
+                    className={`font-display tracking-tight ${emphasized(feature) ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}
+                  >
                     {feature.title}
                   </h3>
                   {feature.codenames && (
