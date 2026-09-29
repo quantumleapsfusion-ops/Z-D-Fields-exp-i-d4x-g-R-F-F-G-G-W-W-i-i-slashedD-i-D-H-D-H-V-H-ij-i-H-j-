@@ -2,7 +2,7 @@ export const site = {
   name: "e1-4",
   domain: "e1-4.com",
   url: "https://e1-4.com",
-  org: "Earth One Coalescent",
+  org: "Earth 1 Coalescent",
   /** Large standalone hero statement. */
   hero: "Greetings Earthling.",
   /** Brand motto, shown as a quiet line beneath the hero statement. */
@@ -16,7 +16,7 @@ export const site = {
   philosophyUrl: "https://earth1.co",
   philosophyLabel: "earth1.co",
   description:
-    "e1-4 — earth life-forms. A voice-only social network: speak, and transcription, translation and visuals follow. Built by Earth One Coalescent.",
+    "e1-4 — earth life-forms. A voice-only social network: speak, and transcription, translation and visuals follow. Built by Earth 1 Coalescent.",
 } as const;
 
 export type FeatureStatus = "ready" | "early" | "experimental";

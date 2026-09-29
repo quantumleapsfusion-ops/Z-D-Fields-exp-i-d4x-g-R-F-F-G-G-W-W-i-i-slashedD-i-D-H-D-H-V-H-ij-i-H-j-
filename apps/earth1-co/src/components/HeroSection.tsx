@@ -15,7 +15,7 @@ export function HeroSection() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, ease }}
       >
-        Earth One Coalescent
+        Earth 1 Coalescent
       </motion.p>
       <motion.h1
         className="font-display mt-6 text-[2.75rem] leading-[0.95] tracking-tight sm:text-[5rem] lg:text-[6.5rem]"

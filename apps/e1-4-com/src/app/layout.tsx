@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   description: site.description,
   applicationName: site.name,
   authors: [{ name: site.org, url: site.philosophyUrl }],
-  keywords: ["e1-4", "earth life-forms", "Earth One Coalescent", "voice", "chalkboard"],
+  keywords: ["e1-4", "earth life-forms", "Earth 1 Coalescent", "voice", "chalkboard"],
   openGraph: {
     type: "website",
     url: site.url,
