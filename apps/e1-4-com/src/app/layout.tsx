@@ -60,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
       <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
-        <SpacetimeBackground theme="e1-4" palette="chalk" />
+        <SpacetimeBackground theme="e1-4" palette="cosmos" />
         <AppShell>{children}</AppShell>
       </body>
     </html>

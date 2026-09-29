@@ -10,7 +10,7 @@ import { resolveTheme, type SpacetimePalette, type SpacetimeTheme } from "./them
 
 export type SpacetimeBackgroundProps = {
   theme: SpacetimeTheme;
-  /** e1-4 line colour. Ignored by the earth1 theme, which is always white. */
+  /** e1-4 line colour. Ignored by the earth1 theme, which always uses `cosmos`. */
   palette?: SpacetimePalette;
 };
 
@@ -43,14 +43,15 @@ function supportsWebGL() {
 const noop = () => () => {};
 
 /**
- * Fixed, full-viewport spacetime grid painted behind every other element. It never takes pointer
- * events; it observes the window's pointer so the cursor or finger bends the sheet and a tap sends
- * a ripple. With the e1-4 theme it also ripples with `setSpacetimeAmplitude` while a recording
+ * Fixed, full-viewport deep-space backdrop with a polar spacetime grid, painted behind every
+ * other element. It never takes pointer events; it observes the window's pointer so the cursor or
+ * finger bends the sheet and a tap sends a ripple. The earth1 theme bends the grid into a
+ * permanent well behind `[data-spacetime-singularity]`, with rainbow rays and orbit rings. With the e1-4 theme it also ripples with `setSpacetimeAmplitude` while a recording
  * feeds it.
  */
 export function SpacetimeBackground({
   theme,
-  palette = "chalk",
+  palette = "cosmos",
 }: SpacetimeBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [contextLost, setContextLost] = useState(false);
@@ -90,6 +91,7 @@ export function SpacetimeBackground({
     const pointer = { x: 0, z: 0, target: 0, mass: 0 };
     const ripples: [number, number, number][] = [];
     let singularity: [number, number] | null = null;
+    let singularityPx: [number, number, number] | null = null;
     const start = performance.now();
     const now = () => (performance.now() - start) / 1000;
 
@@ -98,9 +100,11 @@ export function SpacetimeBackground({
       if (!spec) return;
       const el = document.querySelector(spec.selector);
       const rect = el?.getBoundingClientRect();
-      singularity = rect
-        ? toSheet(rect.left + rect.width / 2, rect.top + rect.height / 2)
-        : toSheet(width / 2, height / 2);
+      const cx = rect ? rect.left + rect.width / 2 : width / 2;
+      const cy = rect ? rect.top + rect.height / 2 : height * 0.35;
+      const radius = rect ? Math.max(rect.width, rect.height) / 2 : 56;
+      singularity = toSheet(cx, cy);
+      singularityPx = cy + radius * 8 > 0 ? [cx * dpr, cy * dpr, radius * dpr] : null;
     };
     locateSingularity();
 
@@ -176,6 +180,8 @@ export function SpacetimeBackground({
 
       renderer.render({
         time: t,
+        centre: singularity ?? toSheet(width / 2, height / 2) ?? [0, -3],
+        singularity: singularityPx,
         wells,
         ripples: ripples.map(([x, z, born]) => [x, z, t - born, 0.35]),
         voice,
@@ -210,7 +216,7 @@ export function SpacetimeBackground({
         inset: 0,
         zIndex: -1,
         pointerEvents: "none",
-        background: "#000",
+        background: "#06081a",
         overflow: "hidden",
       }}
     >

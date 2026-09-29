@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  gridVertices,
+  polarVertices,
   project,
   screenToSheet,
   viewProjection,
@@ -37,7 +37,7 @@ describe("spacetime geometry", () => {
   });
 
   it("builds whole line segments", () => {
-    const v = gridVertices();
+    const v = polarVertices();
     expect(v.length % 6).toBe(0);
     expect(v.length / 3).toBeLessThan(120_000);
   });

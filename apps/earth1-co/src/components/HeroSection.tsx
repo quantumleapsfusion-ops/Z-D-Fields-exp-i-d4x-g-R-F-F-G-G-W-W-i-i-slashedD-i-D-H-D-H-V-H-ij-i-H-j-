@@ -17,7 +17,7 @@ export function HeroSection() {
         transition={{ duration: 0.9, ease }}
       >
         <span data-spacetime-singularity>
-          <Logo size={96} variant="white" title={site.org} />
+          <Logo size={112} brand="earth1" title={site.org} />
         </span>
       </motion.div>
       <motion.p

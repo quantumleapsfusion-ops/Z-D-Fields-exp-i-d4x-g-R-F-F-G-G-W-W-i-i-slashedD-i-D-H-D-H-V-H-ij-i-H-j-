@@ -5,7 +5,15 @@
  */
 export type Vec3 = [number, number, number];
 
-export const SHEET = { spacing: 0.5, halfWidth: 24, near: 6, far: -26, step: 0.125 };
+/** Polar grid on the sheet: rings every `ringStep` out to `radius`, and `spokes` radial lines. */
+export const SHEET = {
+  radius: 30,
+  innerRadius: 0.3,
+  ringStep: 0.6,
+  spokes: 72,
+  ringSegments: 256,
+  spokeStep: 0.15,
+};
 export const CAMERA = {
   eye: [0, 5, 8] as Vec3,
   target: [0, 0, -3] as Vec3,
@@ -105,16 +113,19 @@ export function screenToSheet(
 }
 
 /**
- * Line-list vertices for the grid: (x, z, kind) per vertex, kind 0 for lines running along x
- * (these drift toward the viewer) and 1 for lines running along z.
+ * Line-list vertices for the polar grid, as (r, θ, kind) per vertex: kind 0 for rings (these fall
+ * inward over time) and 1 for spokes. The shader places them around the well centre.
  */
-export function gridVertices(): Float32Array {
-  const { spacing, halfWidth, near, far, step } = SHEET;
+export function polarVertices(): Float32Array {
+  const { radius, innerRadius, ringStep, spokes, ringSegments, spokeStep } = SHEET;
   const out: number[] = [];
-  for (let z = far; z <= near + 1e-6; z += spacing)
-    for (let x = -halfWidth; x < halfWidth - 1e-6; x += step)
-      out.push(x, z, 0, x + step, z, 0);
-  for (let x = -halfWidth; x <= halfWidth + 1e-6; x += spacing)
-    for (let z = far; z < near - 1e-6; z += step) out.push(x, z, 1, x, z + step, 1);
+  const dt = (Math.PI * 2) / ringSegments;
+  for (let r = innerRadius; r < radius; r += ringStep)
+    for (let i = 0; i < ringSegments; i++) out.push(r, i * dt, 0, r, (i + 1) * dt, 0);
+  for (let i = 0; i < spokes; i++) {
+    const t = (i / spokes) * Math.PI * 2;
+    for (let r = innerRadius; r < radius - 1e-6; r += spokeStep)
+      out.push(r, t, 1, Math.min(radius, r + spokeStep), t, 1);
+  }
   return new Float32Array(out);
 }
