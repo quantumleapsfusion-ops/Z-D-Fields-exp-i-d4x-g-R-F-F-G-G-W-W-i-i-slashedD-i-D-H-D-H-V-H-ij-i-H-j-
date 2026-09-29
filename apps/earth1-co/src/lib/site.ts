@@ -4,14 +4,28 @@ export const site = {
   url: "https://earth1.co",
   org: "Earth One Global Coalescent",
   tagline: "A coalescent, not a corporation.",
+  focus: "Global citizenship for all.",
   description:
-    "Earth One Global Coalescent — the holding shell and governance portal behind e1-4.com. Absolute data sovereignty, user-controlled privacy, free speech.",
+    "Earth One Global Coalescent is a home for global citizenship: every person on Earth is a citizen of it, owns their own voice and data, and speaks freely across borders. The governance portal behind e1-4.com.",
+  keywords: [
+    "global citizenship",
+    "global citizen",
+    "world citizen",
+    "citizen of the world",
+    "Earth One Global Coalescent",
+    "earth1",
+    "data sovereignty",
+    "digital rights",
+    "free speech",
+    "privacy",
+  ],
   flagship: {
     name: "e1-4",
     domain: "e1-4.com",
     url: "https://e1-4.com",
     tagline: "earth life-forms",
-    pitch: "A social network with no typing. You speak; everything else follows.",
+    pitch:
+      "A social network with no typing. Think out loud — you speak; everything else follows.",
   },
 } as const;
 

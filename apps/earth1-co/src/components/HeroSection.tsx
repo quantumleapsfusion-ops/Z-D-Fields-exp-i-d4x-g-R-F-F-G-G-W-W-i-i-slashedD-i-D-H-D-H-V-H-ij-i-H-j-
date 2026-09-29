@@ -33,7 +33,7 @@ export function HeroSection() {
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.7, ease, delay: 0.1 }}
       >
-        {site.tagline}
+        {site.focus}
       </motion.h1>
       <motion.p
         className="text-dust mt-8 max-w-2xl font-sans text-lg leading-relaxed sm:text-2xl"
@@ -41,7 +41,8 @@ export function HeroSection() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease, delay: 0.3 }}
       >
-        The holding shell for a small set of platforms built on one premise: the person
+        A coalescent, not a corporation. Earth One is a home for global citizenship —
+        built on one premise: every person on Earth is a citizen of it, and the person
         speaking owns what they said. We hold the domains, the principles and the accounts
         — and stay out of the way.
       </motion.p>
