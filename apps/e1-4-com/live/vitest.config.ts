@@ -14,7 +14,7 @@ export default defineConfig({
   },
   test: {
     root: fileURLToPath(new URL("..", import.meta.url)),
-    include: ["live/*.live.test.ts"],
+    include: ["live/*.live.test.ts", "live/*.live.ts"],
     environment: "node",
     testTimeout: 60_000,
     hookTimeout: 60_000,

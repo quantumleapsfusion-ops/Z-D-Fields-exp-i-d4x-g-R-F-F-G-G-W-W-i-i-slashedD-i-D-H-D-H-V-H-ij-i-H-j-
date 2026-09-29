@@ -182,7 +182,7 @@ function RecorderPanel({
   recorder: ReturnType<typeof useRecorder>;
   totalMs: number;
 }) {
-  const { state, elapsedMs, level, error } = recorder;
+  const { state, elapsedMs, level, error, supported } = recorder;
   const bars = 28;
 
   return (
@@ -205,7 +205,12 @@ function RecorderPanel({
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         {state === "idle" ? (
-          <RoundButton onClick={() => void recorder.record()} primary label="Record" />
+          <RoundButton
+            onClick={() => void recorder.record()}
+            primary
+            label="Record"
+            disabled={!supported}
+          />
         ) : null}
         {state === "recording" ? (
           <RoundButton onClick={recorder.pause} primary label="Pause" />
@@ -223,7 +228,15 @@ function RecorderPanel({
             ? "Paused — resume on a whim"
             : `Stream length ${formatDuration(totalMs)}`}
       </p>
-      {error ? <p className="text-ochre mt-2 text-center text-sm">{error}</p> : null}
+      {error ? (
+        <p
+          role="alert"
+          data-testid="recorder-error"
+          className="text-ochre mt-2 text-center text-sm"
+        >
+          {error}
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -232,16 +245,19 @@ function RoundButton({
   onClick,
   label,
   primary,
+  disabled,
 }: {
   onClick: () => void;
   label: string;
   primary?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`h-12 min-w-28 rounded-full px-6 font-sans text-sm transition-colors ${
+      disabled={disabled}
+      className={`h-12 min-w-28 rounded-full px-6 font-sans text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
         primary
           ? "bg-ochre text-blackboard font-medium hover:opacity-90"
           : "border-chalk/25 text-chalk hover:border-ochre hover:text-ochre border"
