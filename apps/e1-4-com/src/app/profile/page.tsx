@@ -19,7 +19,7 @@ import {
   RevokeShareButton,
 } from "./ProfileForms";
 
-export const metadata = { title: "Profile" };
+export const metadata = { title: "Profile", robots: { index: false } };
 
 export default async function ProfilePage() {
   const sessionUser = await requireUser("/profile");

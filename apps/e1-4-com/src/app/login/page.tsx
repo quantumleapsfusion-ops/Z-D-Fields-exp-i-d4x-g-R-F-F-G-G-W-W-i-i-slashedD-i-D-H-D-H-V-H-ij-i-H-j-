@@ -7,7 +7,10 @@ import { VoiceGate } from "@/features/voice-id/VoiceGate";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { voiceIdStatus } from "@/lib/voice-id/status";
 
-export const metadata: Metadata = { title: "Speak to enter" };
+export const metadata: Metadata = {
+  title: "Speak to enter",
+  robots: { index: false },
+};
 
 function safeNext(next: string | string[] | undefined): string {
   return typeof next === "string" && next.startsWith("/") && !next.startsWith("//")
