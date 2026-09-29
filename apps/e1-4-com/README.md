@@ -18,7 +18,7 @@ Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (feature-flagged).
 | Tooling   | ESLint, Prettier, GitHub Actions (lint + typecheck + build)          |
 
 Brand: chalkboard palette (`#0e1a13` board, `#f1ede1` chalk, `#93a294` dust, `#d3a34c` ochre),
-Fraunces (display) + Space Grotesk (body) via `next/font`, Ψ-over-π rainbow `Logo`.
+Fraunces (display) + Space Grotesk (body) via `next/font`, rainbow Ψπ `Logo` (`public/brand/e1-4.png`; earth1.co uses the cross-in-circle `brand="earth1"`).
 
 ## Project layout
 
