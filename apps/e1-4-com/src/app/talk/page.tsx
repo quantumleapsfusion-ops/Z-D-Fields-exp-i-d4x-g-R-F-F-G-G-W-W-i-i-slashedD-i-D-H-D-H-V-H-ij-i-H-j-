@@ -18,7 +18,7 @@ export default async function TalkInbox() {
       <section className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
         <PageHeading
           title="Talk"
-          status="Early access"
+          dimension={1}
           tagline="Voice, not calls. Send a voice note or go live; they listen and reply when they want. Every conversation is kept whole, transcribed, and plays back end to end."
         />
 

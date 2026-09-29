@@ -25,7 +25,6 @@
   "dependencies": {
     "@earth-one/spacetime": "*",
     "@earth-one/ui": "*",
-    "@picovoice/eagle-node": "3.0.1",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@simplewebauthn/browser": "^13.3.0",

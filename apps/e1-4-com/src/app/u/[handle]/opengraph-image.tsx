@@ -31,7 +31,7 @@ export default async function PersonCardImage({
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        backgroundColor: "#0e1a13",
+        backgroundColor: "#000000",
         color: "#f1ede1",
         padding: "72px 80px",
       }}

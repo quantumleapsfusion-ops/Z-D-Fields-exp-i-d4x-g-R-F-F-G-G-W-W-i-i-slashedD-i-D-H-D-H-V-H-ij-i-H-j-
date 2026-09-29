@@ -2,7 +2,7 @@
   "name": "earth1-co",
   "version": "0.1.0",
   "private": true,
-  "description": "earth1.co — Earth One Global Coalescent the philosophy behind e1-4.com.",
+  "description": "earth1.co — Earth One Global Coalescent corporate shell and governance portal.",
   "engines": {
     "node": ">=22"
   },
@@ -16,6 +16,7 @@
   "dependencies": {
     "@earth-one/spacetime": "*",
     "@earth-one/ui": "*",
+    "framer-motion": "13.4.0",
     "next": "16.3.6",
     "react": "19.2.8",
     "react-dom": "19.2.8"

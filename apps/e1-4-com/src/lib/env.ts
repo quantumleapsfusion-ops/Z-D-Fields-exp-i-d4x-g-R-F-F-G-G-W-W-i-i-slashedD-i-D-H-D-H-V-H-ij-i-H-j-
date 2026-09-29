@@ -27,7 +27,7 @@ function readNumber(name: string, fallback: number): number {
 }
 
 /**
- * Origin used to build absolute URLs (auth email callback). Explicit `NEXT_PUBLIC_SITE_URL` wins;
+ * Origin used to build absolute URLs (OAuth callback). Explicit `NEXT_PUBLIC_SITE_URL` wins;
  * on Vercel, fall back to the production domain or the per-deployment URL so Preview
  * deployments get a callback on their own host.
  */

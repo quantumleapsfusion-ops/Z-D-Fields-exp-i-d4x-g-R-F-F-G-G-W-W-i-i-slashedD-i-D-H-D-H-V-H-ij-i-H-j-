@@ -67,8 +67,8 @@ export const palettes: Record<
 };
 
 const SKY: ResolvedTheme["sky"] = {
-  top: hex("#0b0e2c"),
-  bottom: hex("#06081a"),
+  top: hex("#05060f"),
+  bottom: hex("#000000"),
   glowA: [0.06, 0.03, 0.13],
   glowB: [0.07, 0.03, 0.03],
 };

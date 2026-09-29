@@ -35,11 +35,6 @@ export const metadata: Metadata = {
     images: [{ url: "/icon.svg", alt: "Earth One Ψ over π" }],
   },
   twitter: {
-    card: "summary",
-    title: site.org,
-    description: site.description,
-  },
-  twitter: {
     card: "summary_large_image",
     title: `${site.org} — Global citizenship for all`,
     description: site.description,
@@ -49,7 +44,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#070a1f",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

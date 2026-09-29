@@ -61,7 +61,7 @@
 
 @utility chalk-surface {
   background-color: var(--color-blackboard);
-
+}
 
 /* Spectrum hairline, as under the EARTH ONE wordmark. */
 @utility rainbow-rule {

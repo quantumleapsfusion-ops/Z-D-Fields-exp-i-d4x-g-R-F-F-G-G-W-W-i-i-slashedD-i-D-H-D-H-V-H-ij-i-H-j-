@@ -108,7 +108,12 @@ function Codex() {
     <Frame
       phase={recording ? "listen" : "rest"}
       level={recorder.state === "recording" ? recorder.level : 0}
-      corner={<StreamLink />}
+      corner={
+        <div className="flex items-center gap-2">
+          <TalkLink />
+          <StreamLink />
+        </div>
+      }
     >
       <Centre docked={docked}>
         <MicButton
@@ -166,6 +171,30 @@ function Frame({
       </div>
       {children}
     </main>
+  );
+}
+
+function TalkLink() {
+  return (
+    <Link
+      href="/talk"
+      aria-label="Talk"
+      className="text-dust hover:text-chalk flex h-10 w-10 items-center justify-center transition-colors"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className="h-6 w-6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M4 5.5h16v10H10l-4 3.5v-3.5H4z" />
+        <path d="M9 9.5v2M12 8v5M15 9.5v2" />
+      </svg>
+    </Link>
   );
 }
 

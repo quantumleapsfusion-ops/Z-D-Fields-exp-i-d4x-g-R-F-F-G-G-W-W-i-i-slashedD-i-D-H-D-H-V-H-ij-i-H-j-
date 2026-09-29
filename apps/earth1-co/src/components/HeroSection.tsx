@@ -9,11 +9,16 @@ import { SaturnRings } from "./SaturnRings";
 
 const ease = [0.2, 0.7, 0.2, 1] as const;
 
+/** Text-free hero: the Earth One mark as the singularity, Saturn's rings drifting around it. */
 export function HeroSection() {
   return (
-    <section className="relative isolate mx-auto max-w-5xl px-5 pt-16 pb-20 sm:px-8 sm:pt-28 sm:pb-28">
+    <section className="relative isolate mx-auto flex min-h-[88svh] max-w-5xl items-center justify-center px-5 sm:px-8">
+      <h1 className="sr-only">
+        {site.org}: {site.focus}
+      </h1>
       <motion.div
-        className="pointer-events-none absolute -top-6 -right-24 -z-10 w-[26rem] opacity-80 sm:-right-16 sm:w-[40rem]"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 mx-auto w-[34rem] -translate-y-1/2 opacity-80 sm:w-[52rem]"
         initial={{ opacity: 0, scale: 0.92, rotate: -4 }}
         animate={{ opacity: 0.8, scale: 1, rotate: 0 }}
         transition={{ duration: 1.6, ease }}
@@ -21,98 +26,14 @@ export function HeroSection() {
         <SaturnRings className="w-full animate-[saturn-drift_24s_ease-in-out_infinite]" />
       </motion.div>
       <motion.div
-        className="mb-14 flex justify-center sm:mb-20"
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.9, ease }}
       >
         <span data-spacetime-singularity>
-          <Logo size={112} brand="earth1" title={site.org} />
+          <Logo size={140} brand="earth1" title={site.org} />
         </span>
       </motion.div>
-      <motion.p
-        className="label"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, ease }}
-      >
-        Earth 1 Coalescent
-      </motion.p>
-      <motion.h1
-        className="font-display mt-6 text-[2.75rem] leading-[0.95] tracking-tight sm:text-[5rem] lg:text-[6.5rem]"
-        initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.7, ease, delay: 0.1 }}
-      >
-        {site.focus}
-      </motion.h1>
-      <motion.p
-        className="text-dust mt-8 max-w-2xl font-sans text-lg leading-relaxed sm:text-2xl"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease, delay: 0.3 }}
-      >
-        A coalescent, not a corporation. Earth One is a home for global citizenship —
-        built on one premise: every person on Earth is a citizen of it, and the person
-        speaking owns what they said. We hold the domains, the principles and the accounts
-        — and stay out of the way.
-      </motion.p>
-      <motion.div
-        className="mx-auto md:mx-0"
-        initial={{ opacity: 0, scale: 0.94 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.9, ease }}
-      >
-        <CosmicMark size={260} />
-      </motion.div>
-      <div>
-        <motion.p
-          className="wordmark text-[2.6rem] leading-none sm:text-[4rem] lg:text-[4.6rem]"
-          initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.7, ease, delay: 0.1 }}
-        >
-          Earth One
-        </motion.p>
-        <motion.div
-          className="rainbow-rule mt-5"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.9, ease, delay: 0.3 }}
-          style={{ originX: 0 }}
-        />
-        <motion.div
-          className="text-dust mt-4 flex flex-wrap gap-x-2 font-sans text-xs tracking-[0.14em] sm:text-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, ease, delay: 0.4 }}
-        >
-          <h1 className="uppercase">{site.focus}</h1>
-          <span aria-hidden="true">•</span>
-          <span>
-            {site.flagship.name} | {site.flagship.tagline}
-          </span>
-        </motion.div>
-        <motion.p
-          className="font-display silver-text mt-8 text-6xl sm:text-7xl"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease, delay: 0.5 }}
-        >
-          Think.
-        </motion.p>
-        <motion.p
-          className="text-dust mt-10 max-w-xl font-sans text-lg leading-relaxed"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease, delay: 0.6 }}
-        >
-          <span className="text-chalk">{site.tagline}</span> Earth One is a home for
-          global citizenship — built on one premise: every person on Earth is a citizen of
-          it, and the person speaking owns what they said. We hold the domains, the
-          principles and the accounts — and stay out of the way.
-        </motion.p>
-      </div>
     </section>
   );
 }

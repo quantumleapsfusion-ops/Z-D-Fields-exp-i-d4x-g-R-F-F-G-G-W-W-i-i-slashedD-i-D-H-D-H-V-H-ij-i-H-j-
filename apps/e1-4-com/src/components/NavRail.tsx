@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { VoiceNavigator } from "@/components/VoiceNavigator";
 import { enabledFeatures } from "@/lib/features";
 import { site } from "@/lib/site";
 
@@ -31,7 +30,6 @@ export function NavRail() {
             />
           ))}
         </ul>
-        <VoiceNavigator variant="rail" />
         <Link
           href="/profile"
           className={`label hover:text-chalk transition-colors ${pathname.startsWith("/profile") ? "text-chalk" : ""}`}
@@ -55,9 +53,6 @@ export function NavRail() {
               horizontal
             />
           ))}
-          <li className="flex-1">
-            <VoiceNavigator variant="tab" />
-          </li>
         </ul>
       </nav>
     </>

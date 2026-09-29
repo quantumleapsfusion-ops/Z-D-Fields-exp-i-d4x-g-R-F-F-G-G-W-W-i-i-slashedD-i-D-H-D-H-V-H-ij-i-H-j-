@@ -226,7 +226,7 @@ export function SpacetimeBackground({
         inset: 0,
         zIndex: -1,
         pointerEvents: "none",
-        background: "#06081a",
+        background: "#000000",
         overflow: "hidden",
       }}
     >

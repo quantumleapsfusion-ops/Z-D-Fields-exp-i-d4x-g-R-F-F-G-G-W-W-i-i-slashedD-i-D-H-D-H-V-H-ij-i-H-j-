@@ -5,8 +5,8 @@
 export const brand = {
   org: "Earth 1 Coalescent",
   colors: {
-    blackboard: "#070a1f",
-    board2: "#0f1433",
+    blackboard: "#000000",
+    board2: "#0b0d18",
     chalk: "#eef1fb",
     dust: "#9db2d6",
     ochre: "#7fd4ff",

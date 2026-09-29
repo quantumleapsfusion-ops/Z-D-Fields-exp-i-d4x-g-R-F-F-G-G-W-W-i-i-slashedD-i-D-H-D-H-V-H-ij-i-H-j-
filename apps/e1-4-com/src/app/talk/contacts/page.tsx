@@ -25,7 +25,7 @@ export default async function ContactsPage() {
     ? await QRCode.toString(myUrl, {
         type: "svg",
         margin: 1,
-        color: { dark: "#f1ede1", light: "#0e1a13" },
+        color: { dark: "#f1ede1", light: "#000000" },
       })
     : null;
 
@@ -34,7 +34,7 @@ export default async function ContactsPage() {
       <section className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
         <PageHeading
           title="Contacts"
-          status="Early access"
+          dimension={1}
           tagline="Your @handle is your number. Share it, show your code, and talk to anyone here with one tap."
         />
 
