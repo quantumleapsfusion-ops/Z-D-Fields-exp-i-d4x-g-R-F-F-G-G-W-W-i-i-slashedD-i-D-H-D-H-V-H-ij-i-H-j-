@@ -22,7 +22,7 @@ export default function PrivacyPage() {
         <h2 className="label mt-10">What we store</h2>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           <li>
-            Your account profile from the sign-in provider you chose (name, email, image).
+            Your account profile (email, and the name and avatar you choose to add).
           </li>
           <li>Voice Stream audio segments, their timestamps and their transcriptions.</li>
           <li>Infinity Chalkboard boards you save while signed in.</li>

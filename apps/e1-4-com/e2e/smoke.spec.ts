@@ -16,9 +16,9 @@ test.describe("public surfaces", () => {
     await page.goto("/stream");
     await expect(page).toHaveURL(/\/login\?next=%2Fstream/);
     await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /continue with/i }).first(),
-    ).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(page.getByLabel("Password")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Create an account" })).toBeVisible();
   });
 });
 

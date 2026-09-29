@@ -33,11 +33,11 @@ Paste `apps/e1-4-com/.env.production.example` into **Settings -> Environment Var
 | Preview     | leave **unset** — the app falls back to the deployment URL |
 | Development | `http://localhost:3000` (from `.env.local`)                |
 
-> The app derives the OAuth callback as `${NEXT_PUBLIC_SITE_URL}/auth/callback`
+> The app derives the auth email callback (sign-up confirmation, password reset) as `${NEXT_PUBLIC_SITE_URL}/auth/callback`
 > (`apps/e1-4-com/src/lib/auth/actions.ts`). Supabase rejects callbacks that are not on its
 > Redirect URL allow-list, so the two lists below must stay in sync.
 
-## 3. OAuth redirect URLs
+## 3. Auth redirect URLs
 
 ### Supabase -> Authentication -> URL Configuration
 
@@ -48,16 +48,11 @@ Paste `apps/e1-4-com/.env.production.example` into **Settings -> Environment Var
   - `https://*-<vercel-team-slug>.vercel.app/auth/callback` (wildcard for Preview deployments)
   - `http://localhost:3000/auth/callback`
 
-### Providers (Google / Facebook / Microsoft consoles)
+### Supabase -> Authentication -> Providers
 
-The redirect URI registered with each identity provider is Supabase's, not ours, and does **not**
-change between environments:
-
-```
-https://<prod-project-ref>.supabase.co/auth/v1/callback
-```
-
-If you use a separate Supabase project for staging, register that project's callback too.
+Enable **Email** (with **Confirm email** on) and disable every other provider — the app only offers
+email sign-up. Configure custom SMTP (**Project Settings -> Authentication -> SMTP**) so confirmation
+and reset emails are not throttled by Supabase's built-in sender.
 
 ## 4. Database
 
@@ -76,5 +71,5 @@ supabase link --project-ref <ref> && supabase db push   # supabase/migrations (R
 E2E_BASE_URL=https://e1-4.com npm run test:e2e   # public surfaces; add E2E_STORAGE_STATE for the signed-in flow
 ```
 
-Then by hand: sign in with each provider, upload an avatar, record a Voice Stream segment, create a
+Then by hand: sign up with a fresh email, confirm it, sign in, reset the password, upload an avatar, record a Voice Stream segment, create a
 share link and open it in a private window.

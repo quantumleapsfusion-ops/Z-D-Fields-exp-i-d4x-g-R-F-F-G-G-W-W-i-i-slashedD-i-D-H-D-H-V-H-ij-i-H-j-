@@ -12,7 +12,7 @@ Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (feature-flagged).
 | Layer     | Choice                                                               |
 | --------- | -------------------------------------------------------------------- |
 | Framework | Next.js 16 (App Router, Server Actions, TypeScript), Tailwind CSS v4 |
-| Auth      | Supabase Auth — Google, Facebook (Meta), Microsoft (Azure) OAuth     |
+| Auth      | Supabase Auth — email + password (confirmation + reset by email)     |
 | Database  | Supabase Postgres, schema + migrations via Prisma 7 (`pg` adapter)   |
 | Storage   | Supabase Storage — `avatars` (public) and `voice` (private) buckets  |
 | Tooling   | ESLint, Prettier, GitHub Actions (lint + typecheck + build)          |
@@ -34,9 +34,9 @@ src/lib/supabase/server.ts       Cookie-backed server client (RSC, Server Action
 src/lib/supabase/admin.ts        Service-role client (server only, bypasses RLS)
 src/lib/db.ts                    Prisma client over the pooled DATABASE_URL
 src/lib/storage/                 StorageProvider interface + Supabase implementation
-src/lib/auth/                    OAuth provider list + sign-in/sign-out Server Actions
+src/lib/auth/                    Email sign-up / sign-in / reset + sign-out Server Actions
 src/lib/account/                 Profile actions (avatar upload) + hard-delete routine
-src/app/auth/callback/route.ts   OAuth code -> session exchange
+src/app/auth/callback/route.ts   Auth email link (code / token_hash) -> session
 src/app/{page,login,profile}     Home, sign-in, profile
 src/components/                  Logo, SiteHeader, AvatarForm
 ```
@@ -53,20 +53,19 @@ Requires Node 22+ (`.nvmrc`).
    - the **Transaction** pooler URI (port `6543`) → `DATABASE_URL` (append `?pgbouncer=true`)
    - the **Session** pooler or **Direct** URI (port `5432`) → `DIRECT_URL`
 
-### 2. Configure OAuth providers (in the Supabase dashboard, not in code)
+### 2. Configure email auth (in the Supabase dashboard, not in code)
 
-**Authentication → Providers**, enable and paste the client ID/secret for each:
-
-| Provider  | Where to create the app                                                 | Redirect URI to register                             |
-| --------- | ----------------------------------------------------------------------- | ---------------------------------------------------- |
-| Google    | Google Cloud Console → APIs & Services → Credentials → OAuth client ID  | `https://<project-ref>.supabase.co/auth/v1/callback` |
-| Facebook  | Meta for Developers → Create app → Facebook Login                       | same                                                 |
-| Microsoft | Azure Portal → App registrations → New (Web platform); Supabase "Azure" | same                                                 |
+**Authentication → Providers → Email**: enable it, keep **Confirm email** on. Leave every other
+provider disabled — the app only offers email + password (`signUp`, `signInWithPassword`,
+`resetPasswordForEmail`).
 
 Then under **Authentication → URL Configuration** set the Site URL (e.g. `http://localhost:3000`)
 and add `http://localhost:3000/auth/callback` (and your production URL) to **Redirect URLs**.
+Confirmation and reset emails link back to `/auth/callback`, which accepts both the PKCE `code`
+and the `token_hash` + `type` forms.
 
-Provider secrets never live in this repo — the app only calls `supabase.auth.signInWithOAuth`.
+For production, set a custom SMTP sender under **Project Settings → Authentication → SMTP**;
+Supabase's built-in sender is rate-limited to a few emails per hour.
 
 ### 3. Environment
 

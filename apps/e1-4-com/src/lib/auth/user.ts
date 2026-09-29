@@ -34,7 +34,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     },
   });
 
-  const oauthPicture =
+  const metadataPicture =
     (authUser.user_metadata.avatar_url as string | undefined) ??
     (authUser.user_metadata.picture as string | undefined) ??
     null;
@@ -45,7 +45,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     name: profile.displayName,
     image: profile.avatarPath
       ? storage.getPublicUrl(AVATARS_BUCKET, profile.avatarPath)
-      : oauthPicture,
+      : metadataPicture,
   };
 }
 

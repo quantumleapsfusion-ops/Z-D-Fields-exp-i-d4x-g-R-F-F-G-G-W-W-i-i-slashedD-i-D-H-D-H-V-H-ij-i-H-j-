@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3000";
 
 /**
- * Smoke tests need a real Supabase project behind the app (sign-in is OAuth-only).
+ * Smoke tests need a real Supabase project behind the app (sign-in is email + password via Supabase Auth).
  *   E2E_BASE_URL       app under test (default: `next dev` on :3000, started automatically)
  *   E2E_STORAGE_STATE  Playwright storageState JSON of a signed-in browser; without it the
  *                      authenticated record -> share flow is skipped and only the public
