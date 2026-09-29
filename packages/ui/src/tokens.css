@@ -1,34 +1,42 @@
 /*
- * Earth One chalkboard brand system (Tailwind v4 theme), shared by earth1.co and e1-4.com.
- *   blackboard #0e1a13 · chalk #f1ede1 · dust #93a294 · ochre #d3a34c
- * `board` is an alias of `blackboard`; `board-2` is a raised panel.
+ * Earth 1 Coalescent design system (Tailwind v4 theme), shared by earth1.co and e1-4.com.
+ * Black, neo-futurist. One accent per site, set by the app:
+ *   earth1.co  --color-accent: #B9C4FF (ice-violet)
+ *   e1-4.com   --color-accent: #7FE7F0 (electric cyan)
+ * Accents are for labels, rings, CTAs and highlights only — never washes.
  */
 @theme {
-  --color-blackboard: #0e1a13;
-  --color-board: #0e1a13;
-  --color-board-2: #142419;
-  --color-chalk: #f1ede1;
-  --color-dust: #93a294;
-  --color-ochre: #d3a34c;
-  --color-glow: #38bdf8;
-  --color-line: rgb(147 162 148 / 0.25);
+  --color-bg: #050507;
+  --color-surface: #0c0d12;
+  --color-surface-2: #12131a;
+  --color-border: rgb(237 238 242 / 0.08);
+  --color-border-strong: rgb(237 238 242 / 0.16);
+  --color-text: #edeef2;
+  --color-text-2: #b4b7c3;
+  --color-text-3: #8a8d9b;
+  --color-accent: #b9c4ff;
+  --color-danger: #ff7a7a;
 
-  --font-display: var(--font-fraunces), Georgia, serif;
-  --font-sans: var(--font-space-grotesk), system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: var(--font-unbounded), system-ui, sans-serif;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --tracking-label: 0.18em;
-  --radius-board: 0.75rem;
+  --tracking-label: 0.24em;
+  --radius-pill: 999px;
+  --radius-card: 20px;
 
   --animate-wave: wave 1.4s ease-in-out infinite;
-  --animate-drift: drift 6s ease-in-out infinite;
-  --animate-ink-in: ink-in 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --animate-drift: drift 8s ease-in-out infinite;
+  --animate-rise: rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-pulse-dot: pulse-dot 1.6s ease-in-out infinite;
+  --animate-orbit: orbit 90s linear infinite;
+  --animate-orbit-reverse: orbit-reverse 140s linear infinite;
+  --animate-horizon: horizon 9s ease-in-out infinite;
 
   @keyframes wave {
     0%,
     100% {
-      transform: scaleY(0.25);
+      transform: scaleY(0.2);
     }
     50% {
       transform: scaleY(1);
@@ -37,31 +45,52 @@
   @keyframes drift {
     0%,
     100% {
-      opacity: 0.35;
+      opacity: 0.4;
     }
     50% {
-      opacity: 0.85;
+      opacity: 0.9;
     }
   }
-  @keyframes ink-in {
+  @keyframes rise {
     0% {
       opacity: 0;
-      filter: blur(6px);
-      transform: translateY(0.35em);
+      transform: translateY(10px);
     }
     100% {
       opacity: 1;
-      filter: blur(0);
       transform: translateY(0);
     }
   }
-  @keyframes shimmer {
+  @keyframes pulse-dot {
     0%,
     100% {
-      opacity: 0.45;
+      opacity: 1;
+      transform: scale(1);
     }
     50% {
-      opacity: 0.8;
+      opacity: 0.35;
+      transform: scale(0.8);
+    }
+  }
+  @keyframes orbit {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes orbit-reverse {
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+  @keyframes horizon {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.35;
+    }
+    50% {
+      transform: scale(1.06);
+      opacity: 0.7;
     }
   }
 }

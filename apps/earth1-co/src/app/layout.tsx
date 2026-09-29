@@ -1,47 +1,65 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Space_Grotesk } from "next/font/google";
+import { IBM_Plex_Mono, Manrope, Unbounded } from "next/font/google";
 
 import "./globals.css";
 import { site } from "@/lib/site";
 
-const fraunces = Fraunces({
+const unbounded = Unbounded({
   subsets: ["latin"],
+  weight: ["300", "500", "700"],
   display: "swap",
-  variable: "--font-fraunces",
+  variable: "--font-unbounded",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const manrope = Manrope({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-space-grotesk",
+  variable: "--font-manrope",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
+  variable: "--font-plex-mono",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.org}`,
+    default: `${site.org} — ${site.motto}`,
     template: `%s — ${site.name}`,
   },
   description: site.description,
   applicationName: site.name,
+  robots: { index: false, follow: false },
   openGraph: {
     type: "website",
     url: site.url,
     siteName: site.org,
-    title: site.org,
+    title: `${site.org} — ${site.motto}`,
     description: site.description,
   },
-  icons: { icon: "/icon.svg", apple: "/icon.svg" },
+  twitter: {
+    card: "summary_large_image",
+    title: `${site.org} — ${site.motto}`,
+    description: site.description,
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0e1a13",
+  themeColor: "#050507",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
-      <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
+    <html
+      lang="en"
+      className={`${unbounded.variable} ${manrope.variable} ${plexMono.variable}`}
+    >
+      <body className="bg-bg text-text min-h-screen font-sans antialiased">
         {children}
       </body>
     </html>
