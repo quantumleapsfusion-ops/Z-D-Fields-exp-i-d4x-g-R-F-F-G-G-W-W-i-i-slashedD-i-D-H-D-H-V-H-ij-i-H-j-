@@ -9,9 +9,25 @@ import type { Form } from "@/lib/gravity/superposition";
 const COUNT = 2400;
 const PALETTE = ["#f1ede1", "#93a294", "#d3a34c", "#e8857a", "#7fb7d9", "#9ccf8f"];
 
-function target(form: Form | "flat", i: number, out: THREE.Vector3): THREE.Vector3 {
+/** `line` is a 1D strand, `flat` the 2D board, `well` a black hole's accretion disk. */
+export type Shape = Form | "flat" | "line" | "well";
+
+function target(form: Shape, i: number, out: THREE.Vector3): THREE.Vector3 {
   const t = i / COUNT;
   switch (form) {
+    case "line": {
+      const wobble = Math.sin(i * 0.37) * 0.04;
+      return out.set((t - 0.5) * 5.5, wobble, 0);
+    }
+    case "well": {
+      const r = 0.45 + (1 - Math.sqrt(1 - t)) * 2.2;
+      const a = i * 2.399 + r * 1.6;
+      return out.set(
+        Math.cos(a) * r,
+        Math.sin(a) * r,
+        -0.9 / (r * r) + Math.sin(i) * 0.02,
+      );
+    }
     case "flat": {
       const side = Math.ceil(Math.sqrt(COUNT));
       return out.set(
@@ -73,18 +89,25 @@ function target(form: Form | "flat", i: number, out: THREE.Vector3): THREE.Vecto
 export default function TopologyCollapse({
   form,
   seed,
+  core: showCore = true,
 }: {
-  form: Form | "flat";
+  form: Shape;
   seed: string;
+  core?: boolean;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const formRef = useRef(form);
+  const coreRef = useRef(showCore);
   const changedAt = useRef(0);
 
   useEffect(() => {
     formRef.current = form;
     changedAt.current = performance.now();
   }, [form]);
+
+  useEffect(() => {
+    coreRef.current = showCore;
+  }, [showCore]);
 
   useEffect(() => {
     const el = container.current;
@@ -145,7 +168,7 @@ export default function TopologyCollapse({
     controls.autoRotate = true;
     controls.autoRotateSpeed = 0.6;
 
-    let lastForm: Form | "flat" = "flat";
+    let lastForm: Shape = "flat";
     let frame = 0;
     const loop = () => {
       const now = performance.now();
@@ -166,6 +189,8 @@ export default function TopologyCollapse({
         }
       }
       geometry.attributes.position.needsUpdate = true;
+      core.visible = coreRef.current;
+      ring.visible = coreRef.current;
       ring.rotation.z += 0.01;
       controls.update();
       renderer.render(scene, camera);

@@ -7,6 +7,7 @@ import { DaVinciDrawer } from "@/components/DaVinciDrawer";
 import { NavRail } from "@/components/NavRail";
 
 const BARE_PREFIXES = ["/login", "/auth", "/s/", "/privacy"];
+const IMMERSIVE_PREFIXES = ["/journey"];
 
 export function AppShell({
   children,
@@ -17,11 +18,13 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const bare = pathname === "/" || BARE_PREFIXES.some((p) => pathname.startsWith(p));
+  const immersive = IMMERSIVE_PREFIXES.some((p) => pathname.startsWith(p));
+  const railed = !bare && !immersive;
 
   return (
     <>
-      {bare ? null : <NavRail />}
-      <div className={bare ? "" : "pb-16 md:pb-0 md:pl-[4.5rem]"}>{children}</div>
+      {railed ? <NavRail /> : null}
+      <div className={railed ? "pb-16 md:pb-0 md:pl-[4.5rem]" : ""}>{children}</div>
       <AudioDock />
       {bare ? null : <DaVinciDrawer llmReady={llmReady} />}
     </>

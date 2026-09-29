@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 
 import { deleteSegmentAction, deleteStreamAction } from "@/app/actions/stream";
+import { useLiveTranscription } from "@/features/live/useLiveTranscription";
 import type { Playlist } from "@/lib/audio/store";
 import { usePlaylist } from "@/lib/audio/usePlaylist";
 import { useCarry } from "@/lib/carry";
@@ -16,12 +18,17 @@ import { useRecorder, type CapturedSpan } from "./useRecorder";
 type Pending = { id: string; span: CapturedSpan; failed?: boolean };
 
 const segmentAudioUrl = (id: string) => `/api/stream/segments/${id}/audio`;
+const SPAN_GRACE_MS = 4000;
 
 export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDTO[] }) {
   const [segments, setSegments] = useState(initialSegments);
   const [pending, setPending] = useState<Pending[]>([]);
   const [, startTransition] = useTransition();
   const setCarryText = useCarry((state) => state.setText);
+  const router = useRouter();
+  const live = useLiveTranscription();
+  const [finished, setFinished] = useState(false);
+  const [awaitingSpan, setAwaitingSpan] = useState(false);
   const playlist = useMemo<Playlist | null>(
     () =>
       segments.length > 0
@@ -40,14 +47,14 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
   );
   const { activeId, playFrom } = usePlaylist(playlist);
 
+  const spokenLive = live.phrases.map((phrase) => phrase.text).join(" ");
   useEffect(() => {
-    setCarryText(
-      segments
-        .map((segment) => segment.transcription?.trim())
-        .filter((text): text is string => Boolean(text))
-        .join(" "),
-    );
-  }, [segments, setCarryText]);
+    const transcribed = segments
+      .map((segment) => segment.transcription?.trim())
+      .filter((text): text is string => Boolean(text))
+      .join(" ");
+    setCarryText(transcribed || spokenLive);
+  }, [segments, spokenLive, setCarryText]);
 
   const upload = useCallback(async (item: Pending) => {
     const form = new FormData();
@@ -71,6 +78,7 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
   const onSpan = useCallback(
     (span: CapturedSpan) => {
       const item = { id: crypto.randomUUID(), span };
+      setAwaitingSpan(false);
       setPending((prev) => [...prev, item]);
       void upload(item);
     },
@@ -80,6 +88,34 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
   const recorder = useRecorder(onSpan);
 
   const waiting = segments.some((s) => s.transcriptionStatus === "PENDING");
+  const uploading = pending.some((p) => !p.failed);
+
+  const record = async () => {
+    await recorder.record();
+    if (!live.listening) void live.start();
+  };
+  const pause = () => {
+    recorder.pause();
+    live.stop();
+  };
+  const finish = () => {
+    setAwaitingSpan(recorder.state === "recording");
+    recorder.stop();
+    live.stop();
+    setFinished(true);
+  };
+
+  useEffect(() => {
+    if (!awaitingSpan) return;
+    const timer = setTimeout(() => setAwaitingSpan(false), SPAN_GRACE_MS);
+    return () => clearTimeout(timer);
+  }, [awaitingSpan]);
+
+  useEffect(() => {
+    if (!finished || awaitingSpan || uploading || waiting) return;
+    if (segments.length === 0 && !spokenLive) return;
+    router.push("/journey");
+  }, [finished, awaitingSpan, uploading, waiting, segments.length, spokenLive, router]);
   useEffect(() => {
     if (!waiting) return;
     const timer = setInterval(async () => {
@@ -134,7 +170,14 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
 
   return (
     <div className="pb-32">
-      <RecorderPanel recorder={recorder} totalMs={totalMs} />
+      <RecorderPanel
+        recorder={recorder}
+        totalMs={totalMs}
+        onRecord={() => void record()}
+        onPause={pause}
+        onStop={finish}
+        finishing={finished}
+      />
 
       {pending.some((p) => p.failed) ? (
         <button type="button" onClick={retryFailed} className="text-ochre mt-4 text-sm">
@@ -188,9 +231,17 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
 function RecorderPanel({
   recorder,
   totalMs,
+  onRecord,
+  onPause,
+  onStop,
+  finishing,
 }: {
   recorder: ReturnType<typeof useRecorder>;
   totalMs: number;
+  onRecord: () => void;
+  onPause: () => void;
+  onStop: () => void;
+  finishing: boolean;
 }) {
   const { state, elapsedMs, level, error, supported } = recorder;
   const bars = 28;
@@ -216,27 +267,29 @@ function RecorderPanel({
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         {state === "idle" ? (
           <RoundButton
-            onClick={() => void recorder.record()}
+            onClick={onRecord}
             primary
             label="Record"
-            disabled={!supported}
+            disabled={!supported || finishing}
           />
         ) : null}
         {state === "recording" ? (
-          <RoundButton onClick={recorder.pause} primary label="Pause" />
+          <RoundButton onClick={onPause} primary label="Pause" />
         ) : null}
         {state === "paused" ? (
-          <RoundButton onClick={() => void recorder.resume()} primary label="Resume" />
+          <RoundButton onClick={onRecord} primary label="Resume" />
         ) : null}
-        {state !== "idle" ? <RoundButton onClick={recorder.stop} label="Stop" /> : null}
+        {state !== "idle" ? <RoundButton onClick={onStop} label="Stop" /> : null}
       </div>
 
       <p className="text-dust mt-4 text-center font-mono text-xs">
-        {state === "recording"
-          ? `Recording · ${formatDuration(elapsedMs)}`
-          : state === "paused"
-            ? "Paused. Resume when ready."
-            : `Stream length ${formatDuration(totalMs)}`}
+        {finishing && state === "idle"
+          ? "Carrying your stream up through the dimensions..."
+          : state === "recording"
+            ? `Recording · ${formatDuration(elapsedMs)}`
+            : state === "paused"
+              ? "Paused. Resume when ready."
+              : `Stream length ${formatDuration(totalMs)}`}
       </p>
       {error ? (
         <p
