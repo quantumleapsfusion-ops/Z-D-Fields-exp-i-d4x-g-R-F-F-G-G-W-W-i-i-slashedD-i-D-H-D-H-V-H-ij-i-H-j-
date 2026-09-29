@@ -25,8 +25,8 @@ export function AppShell({
     <>
       {railed ? <NavRail /> : null}
       <div className={railed ? "pb-16 md:pb-0 md:pl-[4.5rem]" : ""}>{children}</div>
-      <AudioDock />
-      {bare ? null : <DaVinciDrawer llmReady={llmReady} />}
+      {immersive ? null : <AudioDock />}
+      {bare || immersive ? null : <DaVinciDrawer llmReady={llmReady} />}
     </>
   );
 }
