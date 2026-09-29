@@ -9,13 +9,13 @@ Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (feature-flagged).
 
 ## Stack
 
-| Layer     | Choice                                                               |
-| --------- | -------------------------------------------------------------------- |
-| Framework | Next.js 16 (App Router, Server Actions, TypeScript), Tailwind CSS v4 |
-| Auth      | Supabase Auth — Google, Facebook (Meta), Microsoft (Azure) OAuth     |
-| Database  | Supabase Postgres, schema + migrations via Prisma 7 (`pg` adapter)   |
-| Storage   | Supabase Storage — `avatars` (public) and `voice` (private) buckets  |
-| Tooling   | ESLint, Prettier, GitHub Actions (lint + typecheck + build)          |
+| Layer     | Choice                                                                                      |
+| --------- | ------------------------------------------------------------------------------------------- |
+| Framework | Next.js 16 (App Router, Server Actions, TypeScript), Tailwind CSS v4                        |
+| Auth      | Voice only: Picovoice Eagle voiceprint + spoken one-time phrase, sessions via Supabase Auth |
+| Database  | Supabase Postgres, schema + migrations via Prisma 7 (`pg` adapter)                          |
+| Storage   | Supabase Storage — `avatars` (public) and `voice` (private) buckets                         |
+| Tooling   | ESLint, Prettier, GitHub Actions (lint + typecheck + build)                                 |
 
 Brand: chalkboard palette (`#0e1a13` board, `#f1ede1` chalk, `#93a294` dust, `#d3a34c` ochre),
 Fraunces (display) + Space Grotesk (body) via `next/font`, rainbow Ψπ `Logo` (`public/brand/e1-4.png`; earth1.co uses the cross-in-circle `brand="earth1"`).
@@ -34,9 +34,11 @@ src/lib/supabase/server.ts       Cookie-backed server client (RSC, Server Action
 src/lib/supabase/admin.ts        Service-role client (server only, bypasses RLS)
 src/lib/db.ts                    Prisma client over the pooled DATABASE_URL
 src/lib/storage/                 StorageProvider interface + Supabase implementation
-src/lib/auth/                    OAuth provider list + sign-in/sign-out Server Actions
+src/lib/auth/                    Session user helpers + sign-out Server Action
+src/lib/voice-id/                Speaker engine, challenge phrases, voiceprint sealing, session minting
+src/lib/voice-nav/               Spoken navigation command parser
 src/lib/account/                 Profile actions (avatar upload) + hard-delete routine
-src/app/auth/callback/route.ts   OAuth code -> session exchange
+src/app/api/voice-id/            challenge / enroll / verify routes
 src/app/{page,login,profile}     Home, sign-in, profile
 src/components/                  Logo, SiteHeader, AvatarForm
 ```
@@ -53,20 +55,39 @@ Requires Node 22+ (`.nvmrc`).
    - the **Transaction** pooler URI (port `6543`) → `DATABASE_URL` (append `?pgbouncer=true`)
    - the **Session** pooler or **Direct** URI (port `5432`) → `DIRECT_URL`
 
-### 2. Configure OAuth providers (in the Supabase dashboard, not in code)
+### 2. Voice identity (no email, no password)
 
-**Authentication → Providers**, enable and paste the client ID/secret for each:
+People sign in by voice only. `/login` ("Speak to enter") offers two things:
 
-| Provider  | Where to create the app                                                 | Redirect URI to register                             |
-| --------- | ----------------------------------------------------------------------- | ---------------------------------------------------- |
-| Google    | Google Cloud Console → APIs & Services → Credentials → OAuth client ID  | `https://<project-ref>.supabase.co/auth/v1/callback` |
-| Facebook  | Meta for Developers → Create app → Facebook Login                       | same                                                 |
-| Microsoft | Azure Portal → App registrations → New (Web platform); Supabase "Azure" | same                                                 |
+- **New here:** read three short lines aloud. Picovoice Eagle builds a voiceprint from them,
+  the server creates a voice-only Supabase Auth user and signs you straight in.
+- **Sign in:** say a random four-word phrase shown on screen. Access is granted only if
+  server-side speech-to-text hears that phrase (so an old recording can't be replayed) **and**
+  the voice matches exactly one enrolled voiceprint (`VOICE_ID_THRESHOLD`, with a margin over
+  the runner-up).
 
-Then under **Authentication → URL Configuration** set the Site URL (e.g. `http://localhost:3000`)
-and add `http://localhost:3000/auth/callback` (and your production URL) to **Redirect URLs**.
+| Variable                              | Purpose                                                                                                                          |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `PICOVOICE_ACCESS_KEY`                | Eagle speaker recognition ([console.picovoice.ai](https://console.picovoice.ai/)). Unset = voice sign-in off.                    |
+| `VOICE_PROFILE_KEY`                   | 32 random bytes, base64 (`openssl rand -base64 32`). Seals voiceprints at rest (AES-256-GCM).                                    |
+| `DEEPGRAM_API_KEY` / `OPENAI_API_KEY` | Hears the one-time phrase. Required unless `VOICE_ID_REQUIRE_PHRASE_CHECK=false` (not recommended: voiceprint only, replayable). |
+| `VOICE_ID_THRESHOLD`                  | Minimum Eagle similarity (0–1) for a match. Default `0.75`; tune on real users.                                                  |
 
-Provider secrets never live in this repo — the app only calls `supabase.auth.signInWithOAuth`.
+Supabase still issues the session: after the server verifies a voice it mints a one-time
+magic-link token with the service role (nothing is emailed) and redeems it on the cookie client,
+so RLS and `src/proxy.ts` work unchanged. Voice-only users get an internal
+`<uuid>@voice.e1-4.com` address that is never shown or stored on `users`. Voiceprints live in
+`voice_profiles` (server-only, RLS on with no policies) and cascade with the account on hard
+delete; users can delete or re-record theirs on `/profile`.
+
+Early-stage limits: every sign-in compares against all voiceprints (fine for thousands, not
+millions); there is no per-IP rate limit yet; a live voice clone reading the phrase is not
+detected. The Eagle native binary runs in the Node runtime (`serverExternalPackages`).
+
+**Voice navigation.** The mic button in the nav rail / tab bar / header (or Alt+V) listens for
+one command: "open chalkboard", "take me to Da Vinci", "voice stream", "profile", "home",
+"go back", "sign out", "help". It uses the same live transcription as Da Vinci (browser Web
+Speech, or Deepgram when signed in and keyed) and only opens the mic when asked.
 
 ### 3. Environment
 

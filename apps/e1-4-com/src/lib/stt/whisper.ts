@@ -13,7 +13,9 @@ export class WhisperTranscriber implements Transcriber {
       ? "mp4"
       : mimeType.includes("ogg")
         ? "ogg"
-        : "webm";
+        : mimeType.includes("wav")
+          ? "wav"
+          : "webm";
     const form = new FormData();
     form.append("model", this.model);
     form.append(

@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@earth-one/ui": "*",
+    "@picovoice/eagle-node": "3.0.1",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@supabase/ssr": "^0.12.7",

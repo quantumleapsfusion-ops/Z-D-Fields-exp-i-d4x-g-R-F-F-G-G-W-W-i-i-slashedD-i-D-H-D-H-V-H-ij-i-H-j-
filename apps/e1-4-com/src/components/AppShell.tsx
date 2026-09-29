@@ -7,7 +7,7 @@ import { DaVinciDrawer } from "@/components/DaVinciDrawer";
 import { NavRail } from "@/components/NavRail";
 
 /** Routes that render as full pages (marketing, auth, public shares) rather than app surfaces. */
-const BARE_PREFIXES = ["/login", "/auth", "/s/", "/privacy"];
+const BARE_PREFIXES = ["/login", "/s/", "/privacy"];
 
 /**
  * Client shell around every page: the persistent nav rail on app routes and the global audio

@@ -8,6 +8,9 @@ import { requireUser } from "@/lib/auth/user";
 import { prisma } from "@/lib/db";
 import { AVATARS_BUCKET, storage } from "@/lib/storage";
 import { getCurrentUser } from "@/lib/supabase/server";
+import { VoiceGate } from "@/features/voice-id/VoiceGate";
+import { voiceIdStatus } from "@/lib/voice-id/status";
+import { deleteVoiceprint } from "@/app/actions/profile";
 
 import {
   AvatarForm,
@@ -21,13 +24,15 @@ export const metadata = { title: "Profile" };
 export default async function ProfilePage() {
   const sessionUser = await requireUser("/profile");
   const authUser = await getCurrentUser();
-  const providers = authUser?.identities?.map((i) => i.provider) ?? [];
+  const voiceOnly = authUser?.user_metadata.voice_only === true;
+  const providers = voiceOnly ? [] : (authUser?.identities?.map((i) => i.provider) ?? []);
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: sessionUser.id },
     include: {
       shares: { where: { revokedAt: null }, orderBy: { createdAt: "desc" } },
       stream: { select: { _count: { select: { segments: true } } } },
       _count: { select: { boards: true } },
+      voice: { select: { updatedAt: true } },
     },
   });
 
@@ -49,7 +54,10 @@ export default async function ProfilePage() {
               {user.displayName ?? "Earthling"}
             </h1>
             <p className="text-dust mt-1 font-sans text-sm">{user.email}</p>
-            <p className="label mt-2">{providers.join(" · ") || "Supabase Auth"}</p>
+            <p className="label mt-2">
+              {[user.voice ? "Voice" : null, ...providers].filter(Boolean).join(" · ") ||
+                "No voice yet"}
+            </p>
           </div>
         </div>
 
@@ -72,6 +80,23 @@ export default async function ProfilePage() {
             <NameForm defaultName={user.displayName ?? ""} />
           </div>
         </div>
+
+        <div className="hairline my-10" />
+
+        <h2 className="label mb-3">Your voice</h2>
+        <p className="text-chalk/70 mb-6 max-w-xl text-sm leading-relaxed">
+          {user.voice
+            ? `Your voiceprint is your key, last recorded ${user.voice.updatedAt.toLocaleDateString("en-GB")}. Record again to refresh it.`
+            : "Teach e1-4 your voice and you can sign in by speaking — no email or password."}
+        </p>
+        <VoiceGate available={voiceIdStatus().available} signedIn />
+        {user.voice ? (
+          <form action={deleteVoiceprint} className="mt-4 text-center">
+            <button type="submit" className="text-dust hover:text-ochre text-sm">
+              Delete my voiceprint
+            </button>
+          </form>
+        ) : null}
 
         <div className="hairline my-10" />
 
@@ -135,8 +160,8 @@ export default async function ProfilePage() {
         <h2 className="label text-ochre mb-3">Delete account</h2>
         <p className="text-chalk/70 mb-4 max-w-xl text-sm leading-relaxed">
           Permanently destroys your account, every Voice Stream segment and its audio, all
-          transcriptions, share links, chalkboards and your avatar — database rows and
-          stored files. This cannot be undone.
+          transcriptions, share links, chalkboards, your voiceprint and your avatar —
+          database rows and stored files. This cannot be undone.
         </p>
         <DeleteAccountForm />
       </section>

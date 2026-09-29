@@ -27,8 +27,36 @@ model User {
   shares      Share[]
   boards      Board[]
   usageEvents AiUsageEvent[]
+  voice       VoiceProfile?
 
   @@map("users")
+}
+
+// ---------- Voice identity ----------
+
+/// Speaker-recognition voiceprint: the only sign-in credential. `profile` is sealed with
+/// AES-256-GCM under VOICE_PROFILE_KEY (lib/voice-id/seal.ts).
+model VoiceProfile {
+  userId    String   @id @map("user_id") @db.Uuid
+  engine    String
+  profile   Bytes
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("voice_profiles")
+}
+
+/// Single-use spoken phrase for one sign-in attempt. Deleted when used or expired.
+model VoiceChallenge {
+  id        String   @id @default(uuid()) @db.Uuid
+  phrase    String
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([expiresAt])
+  @@map("voice_challenges")
 }
 
 // ---------- Voice Stream ----------

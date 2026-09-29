@@ -16,7 +16,7 @@ function readNumber(name: string, fallback: number): number {
 }
 
 /**
- * Origin used to build absolute URLs (OAuth callback). Explicit `NEXT_PUBLIC_SITE_URL` wins;
+ * Origin used to build absolute URLs. Explicit `NEXT_PUBLIC_SITE_URL` wins;
  * on Vercel, fall back to the production domain or the per-deployment URL so Preview
  * deployments get a callback on their own host.
  */
@@ -73,6 +73,17 @@ export const env = {
     heavyModel: read("LLM_MODEL_HEAVY") ?? "claude-fable-5-1",
     openaiKey: read("OPENAI_API_KEY"),
     openaiModel: read("OPENAI_MODEL") ?? "gpt-4o",
+  },
+
+  voiceId: {
+    /** Picovoice Console AccessKey for Eagle speaker recognition. Unset = voice sign-in off. */
+    picovoiceKey: read("PICOVOICE_ACCESS_KEY"),
+    /** 32 bytes, base64. Seals stored voiceprints (AES-256-GCM). */
+    profileKey: read("VOICE_PROFILE_KEY"),
+    /** Minimum Eagle similarity (0–1) for a sign-in match. */
+    threshold: readNumber("VOICE_ID_THRESHOLD", 0.75),
+    /** Require the spoken one-time phrase to be heard by server-side STT. */
+    requirePhraseCheck: read("VOICE_ID_REQUIRE_PHRASE_CHECK") !== "false",
   },
 
   aiBudget: {

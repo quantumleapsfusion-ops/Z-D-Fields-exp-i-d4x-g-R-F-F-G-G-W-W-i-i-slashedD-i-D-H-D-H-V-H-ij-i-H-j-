@@ -25,6 +25,13 @@ async function authed(): Promise<string> {
   return userId;
 }
 
+/** Removes the stored voiceprint; voice sign-in stops working until the user records again. */
+export async function deleteVoiceprint() {
+  const userId = await authed();
+  await prisma.voiceProfile.deleteMany({ where: { userId } });
+  revalidatePath("/profile");
+}
+
 export async function updateName(
   _prev: ActionState,
   form: FormData,

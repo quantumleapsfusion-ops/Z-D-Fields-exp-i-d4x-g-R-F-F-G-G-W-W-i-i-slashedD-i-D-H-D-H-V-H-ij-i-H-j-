@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { AVATARS_BUCKET, storage } from "@/lib/storage";
 import { getCurrentUser } from "@/lib/supabase/server";
+import { isVoiceAccountEmail } from "@/lib/voice-id/session";
 
 export interface SessionUser {
   id: string;
@@ -26,7 +27,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     update: {},
     create: {
       id: authUser.id,
-      email: authUser.email ?? null,
+      email: isVoiceAccountEmail(authUser.email) ? null : (authUser.email ?? null),
       displayName:
         (authUser.user_metadata.full_name as string | undefined) ??
         (authUser.user_metadata.name as string | undefined) ??
