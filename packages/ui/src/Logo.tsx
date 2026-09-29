@@ -1,7 +1,7 @@
 type LogoBrand = "e1-4" | "earth1";
 
 type LogoProps = {
-  /** `e1-4` is the rainbow Ψπ disc (e1-4.com); `earth1` is the cross-in-circle (earth1.co). */
+  /** `e1-4` is the Ψ avatar (e1-4.com); `earth1` is the Earth One cross icon (earth1.co). */
   brand?: LogoBrand;
   size?: number;
   className?: string;
@@ -14,7 +14,7 @@ const SRC: Record<LogoBrand, string> = {
 };
 
 /**
- * The Ψπ mark. Assets live in each app's `public/brand/`, so both apps must ship both files.
+ * Brand mark, rendered as a rounded square tile. Assets live in each app's `public/brand/`, so both apps must ship both files.
  */
 export function Logo({ brand = "e1-4", size = 32, className, title }: LogoProps) {
   return (
@@ -25,7 +25,12 @@ export function Logo({ brand = "e1-4", size = 32, className, title }: LogoProps)
       width={size}
       height={size}
       className={className}
-      style={{ width: size, height: size, objectFit: "contain" }}
+      style={{
+        width: size,
+        height: size,
+        objectFit: "cover",
+        borderRadius: Math.round(size * 0.22),
+      }}
       draggable={false}
     />
   );
