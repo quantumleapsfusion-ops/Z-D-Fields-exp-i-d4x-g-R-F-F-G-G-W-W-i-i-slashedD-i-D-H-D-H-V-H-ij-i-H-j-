@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { MicMark } from "@/components/MicMark";
 import type { PinPhase } from "@/features/codex/PinField";
 import { useVoiceCapture } from "@/features/voice-stream/useVoiceCapture";
 
@@ -18,13 +19,12 @@ export function MicPortal({ signedIn }: { signedIn: boolean }) {
 function GuestPortal() {
   const router = useRouter();
   return (
-    <Frame phase="rest" corner={<CornerLink href="/stream" label="Sign in" />}>
+    <Frame phase="rest">
       <Centre>
         <MicButton
           onClick={() => router.push("/login?next=/")}
           label="Sign in to speak"
         />
-        <p className="label">Tap and speak</p>
       </Centre>
     </Frame>
   );
@@ -53,7 +53,7 @@ function Codex() {
     <Frame
       phase={recording ? "listen" : "rest"}
       level={recorder.state === "recording" ? recorder.level : 0}
-      corner={<CornerLink href="/stream" label="Your stream" />}
+      corner={<StreamLink />}
     >
       <Centre docked={docked}>
         <MicButton
@@ -63,16 +63,27 @@ function Codex() {
           level={recorder.state === "recording" ? recorder.level : 0}
           disabled={!recorder.supported || (carrying && !recording)}
         />
-        <p role="status" className="label max-w-xs text-center">
+        <p role="status" className="sr-only">
           {status}
         </p>
         {failedUploads ? (
           <button
             type="button"
             onClick={capture.retryFailed}
-            className="text-ochre text-sm"
+            aria-label="Retry"
+            className="text-ochre border-ochre/60 flex h-12 w-12 items-center justify-center rounded-full border"
           >
-            Retry
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              strokeLinecap="round"
+            >
+              <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" />
+            </svg>
           </button>
         ) : null}
       </Centre>
@@ -85,7 +96,7 @@ function Frame({
   children,
   ...pins
 }: {
-  corner: ReactNode;
+  corner?: ReactNode;
   children: ReactNode;
   phase: PinPhase;
   level?: number;
@@ -95,19 +106,30 @@ function Frame({
       <div className="absolute inset-0">
         <PinField {...pins} />
       </div>
-      <p className="font-display text-chalk absolute top-5 left-6 z-10 text-lg tracking-[0.3em] uppercase">
-        Da Vinci
-      </p>
       <div className="absolute top-5 right-6 z-10">{corner}</div>
       {children}
     </main>
   );
 }
 
-function CornerLink({ href, label }: { href: string; label: string }) {
+function StreamLink() {
   return (
-    <Link href={href} className="label hover:text-chalk transition-colors">
-      {label}
+    <Link
+      href="/stream"
+      aria-label="Your stream"
+      className="text-dust hover:text-chalk flex h-10 w-10 items-center justify-center transition-colors"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className="h-6 w-6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+      >
+        <path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2" />
+      </svg>
     </Link>
   );
 }
@@ -143,35 +165,16 @@ function MicButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className={`bg-ochre text-blackboard relative flex items-center justify-center rounded-full shadow-[0_0_60px_rgba(0,0,0,0.8)] transition-all duration-700 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`relative transition-all duration-700 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
         small ? "h-24 w-24" : "h-44 w-44 sm:h-56 sm:w-56"
       }`}
     >
       <span
         aria-hidden="true"
-        className="bg-ochre/25 absolute inset-0 rounded-full transition-transform duration-100"
+        className="absolute inset-0 rounded-[30%] bg-[#1f6bff]/30 blur-xl transition-transform duration-100"
         style={{ transform: `scale(${1 + Math.min(level, 1) * 0.9})` }}
       />
-      <svg
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-        className={`relative ${small ? "h-9 w-9" : "h-16 w-16 sm:h-20 sm:w-20"}`}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.8}
-        strokeLinecap="round"
-      >
-        <rect
-          x="9"
-          y="3"
-          width="6"
-          height="11"
-          rx="3"
-          fill="currentColor"
-          stroke="none"
-        />
-        <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" />
-      </svg>
+      <MicMark className="relative h-full w-full drop-shadow-[0_0_40px_rgba(0,0,0,0.8)]" />
     </button>
   );
 }

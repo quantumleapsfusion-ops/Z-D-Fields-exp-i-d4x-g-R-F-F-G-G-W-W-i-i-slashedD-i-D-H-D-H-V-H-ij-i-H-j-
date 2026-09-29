@@ -3,7 +3,6 @@ import { Fraunces, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
-import { getLanguageModel } from "@/lib/llm";
 import { site } from "@/lib/site";
 
 const fraunces = Fraunces({
@@ -57,12 +56,10 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const llmReady = getLanguageModel() !== null;
-
   return (
     <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
       <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
-        <AppShell llmReady={llmReady}>{children}</AppShell>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
