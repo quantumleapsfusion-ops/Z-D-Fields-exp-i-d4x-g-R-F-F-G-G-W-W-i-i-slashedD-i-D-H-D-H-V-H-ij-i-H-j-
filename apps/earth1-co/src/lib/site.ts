@@ -24,6 +24,33 @@ export const site = {
     author: "Cicero",
     source: "De Officiis",
   },
+  pillars: [
+    {
+      slug: "mathematics",
+      title: "Mathematics",
+      line: "The one language every nation already shares.",
+    },
+    {
+      slug: "physics",
+      title: "Physics",
+      line: "The same laws hold on every shore.",
+    },
+    {
+      slug: "research",
+      title: "Research",
+      line: "Open questions, answered in the open, for everyone.",
+    },
+    {
+      slug: "philanthropy",
+      title: "Philanthropy",
+      line: "What we build, we give to the world.",
+    },
+    {
+      slug: "global-citizenship",
+      title: "Global Citizenship",
+      line: "Every person on Earth is a citizen of it.",
+    },
+  ],
   founder: {
     name: "Zachariah Robertson",
     role: "Founder & Chief Executive",

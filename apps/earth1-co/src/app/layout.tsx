@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Michroma, Space_Grotesk } from "next/font/google";
+import Link from "next/link";
 
 import "./globals.css";
+import { Nav } from "@/components/Nav";
+import { SolarSystem } from "@/components/SolarSystem";
 import { Starfield } from "@/components/Starfield";
 import { site } from "@/lib/site";
 
@@ -51,9 +54,18 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${michroma.variable} ${spaceGrotesk.variable}`}>
-      <body className="min-h-screen bg-black font-sans text-white antialiased">
+      <body className="flex min-h-svh flex-col bg-black font-sans text-white antialiased">
         <Starfield />
-        {children}
+        <SolarSystem />
+        <header className="px-6 pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-10 sm:pt-8">
+          <Link href="/" className="label transition-colors hover:text-white">
+            {site.org}
+          </Link>
+        </header>
+        <main className="flex flex-1 flex-col items-center justify-end px-6 pt-[52svh] pb-12 text-center sm:pt-[60svh]">
+          {children}
+        </main>
+        <Nav />
       </body>
     </html>
   );
