@@ -12,7 +12,7 @@ Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (feature-flagged).
 | Layer     | Choice                                                               |
 | --------- | -------------------------------------------------------------------- |
 | Framework | Next.js 16 (App Router, Server Actions, TypeScript), Tailwind CSS v4 |
-| Auth      | Supabase Auth — Google, Facebook (Meta), Microsoft (Azure) OAuth     |
+| Auth      | Voice identity (spoken name + voice print); Supabase Auth as session |
 | Database  | Supabase Postgres, schema + migrations via Prisma 7 (`pg` adapter)   |
 | Storage   | Supabase Storage — `avatars` (public) and `voice` (private) buckets  |
 | Tooling   | ESLint, Prettier, GitHub Actions (lint + typecheck + build)          |
@@ -23,7 +23,7 @@ Fraunces (display) + Space Grotesk (body) via `next/font`, rainbow Ψπ `Logo` (
 ## Project layout
 
 ```
-prisma/schema.prisma             User, VoiceStream, VoiceSegment, Share
+prisma/schema.prisma             User, VoicePrint, VoiceStream, VoiceSegment, Share
 prisma/migrations/               Prisma-managed table migrations
 prisma.config.ts                 Prisma CLI config (uses DIRECT_URL)
 supabase/migrations/*.sql        RLS policies, auth->profile trigger, storage buckets + policies
@@ -34,10 +34,14 @@ src/lib/supabase/server.ts       Cookie-backed server client (RSC, Server Action
 src/lib/supabase/admin.ts        Service-role client (server only, bypasses RLS)
 src/lib/db.ts                    Prisma client over the pooled DATABASE_URL
 src/lib/storage/                 StorageProvider interface + Supabase implementation
-src/lib/auth/                    OAuth provider list + sign-in/sign-out Server Actions
+src/lib/auth/voice.ts            Voice enrol/verify: phrase hash + voice-print match -> Supabase session
+src/lib/voice/voiceprint.ts      Spectral voice-print features + cosine matcher (unit-tested)
+src/lib/voice/capture.ts         Browser Web Audio capture -> voice print
+src/lib/voice/commands.ts        Spoken navigation grammar ("open chalkboard", "go back", ...)
+src/features/voice-gate/         The /login voice gate UI (enrol + verify)
+src/components/VoiceNav.tsx      Global "Speak" button: voice is the site navigation
 src/lib/account/                 Profile actions (avatar upload) + hard-delete routine
-src/app/auth/callback/route.ts   OAuth code -> session exchange
-src/app/{page,login,profile}     Home, sign-in, profile
+src/app/{page,login,profile}     Home, voice gate, profile
 src/components/                  Logo, SiteHeader, AvatarForm
 ```
 
@@ -53,20 +57,28 @@ Requires Node 22+ (`.nvmrc`).
    - the **Transaction** pooler URI (port `6543`) → `DATABASE_URL` (append `?pgbouncer=true`)
    - the **Session** pooler or **Direct** URI (port `5432`) → `DIRECT_URL`
 
-### 2. Configure OAuth providers (in the Supabase dashboard, not in code)
+### 2. Identity is voice — nothing to configure in the dashboard
 
-**Authentication → Providers**, enable and paste the client ID/secret for each:
+There are no OAuth providers, emails or passwords. At `/login` (the _voice gate_) a person says a
+voice name of two or more words. The browser recognises the words (Web Speech / Deepgram) and,
+in parallel, builds a small spectral voice print from the microphone (`src/lib/voice/capture.ts`).
+The server (`src/lib/auth/voice.ts`) hashes the phrase, finds prints with that hash, and compares
+voice prints; a match opens a Supabase session via an admin-generated magic link consumed
+server-side. Unknown names are offered enrolment (three takes of the same name).
 
-| Provider  | Where to create the app                                                 | Redirect URI to register                             |
-| --------- | ----------------------------------------------------------------------- | ---------------------------------------------------- |
-| Google    | Google Cloud Console → APIs & Services → Credentials → OAuth client ID  | `https://<project-ref>.supabase.co/auth/v1/callback` |
-| Facebook  | Meta for Developers → Create app → Facebook Login                       | same                                                 |
-| Microsoft | Azure Portal → App registrations → New (Web platform); Supabase "Azure" | same                                                 |
+Supabase Auth is kept purely as the session cookie layer: each voice identity owns an auth user
+with an opaque placeholder address under `voice.e1-4.com` that is never shown or mailed. Leave
+**Authentication → Providers → Email** enabled (it is the default) so `generateLink` works, and
+turn off "Confirm email" — nothing is ever sent. `voice_prints` is service-role only (RLS, no
+client grants).
 
-Then under **Authentication → URL Configuration** set the Site URL (e.g. `http://localhost:3000`)
-and add `http://localhost:3000/auth/callback` (and your production URL) to **Redirect URLs**.
+The voice print is a lightweight spectral signature, deliberately small and replaceable: swap
+`matchVoicePrint` for a real speaker-verification provider when one is chosen. It is not a
+high-assurance biometric and has no replay protection yet.
 
-Provider secrets never live in this repo — the app only calls `supabase.auth.signInWithOAuth`.
+Voice is also the navigation: the pinned **Speak** button (or the `V` key) on every page listens
+for "stream", "open Da Vinci", "take me to the chalkboard", "gravity", "profile", "home", "back",
+"sign out" or "help" (`src/lib/voice/commands.ts`).
 
 ### 3. Environment
 

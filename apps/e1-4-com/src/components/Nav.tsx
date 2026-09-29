@@ -56,7 +56,7 @@ export async function Nav() {
               href="/login"
               className="border-chalk/20 text-chalk/90 hover:border-ochre hover:text-ochre rounded-full border px-3 py-1 font-sans text-sm transition-colors"
             >
-              Sign in
+              Speak to enter
             </Link>
           )}
         </div>

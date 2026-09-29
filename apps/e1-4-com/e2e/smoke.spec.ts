@@ -11,7 +11,7 @@ test.describe("smoke: login → record → share", () => {
 
   test("anonymous visitors are bounced from /stream to /login", async ({ page }) => {
     await expectLoggedOut(page);
-    await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /who goes there/i })).toBeVisible();
     await expect(
       page.getByRole("button", { name: /continue with/i }).first(),
     ).toBeVisible();

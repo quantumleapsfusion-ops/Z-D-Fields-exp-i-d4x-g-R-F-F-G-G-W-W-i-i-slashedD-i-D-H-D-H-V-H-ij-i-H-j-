@@ -14,9 +14,9 @@ datasource db {
 }
 
 /// Profile row for a Supabase Auth user. `id` equals `auth.users.id`.
+/// There is no email or password: identity is the user's voice (see VoicePrint).
 model User {
   id          String   @id @db.Uuid
-  email       String?  @unique
   displayName String?  @map("display_name")
   /// Object path inside the `avatars` bucket (e.g. "<uid>/avatar.png").
   avatarPath  String?  @map("avatar_path")
@@ -27,8 +27,34 @@ model User {
   shares      Share[]
   boards      Board[]
   usageEvents AiUsageEvent[]
+  voicePrint  VoicePrint?
 
   @@map("users")
+}
+
+// ---------- Voice identity ----------
+
+/// Enrolled voice of a user: the spoken voice name plus a speaker feature vector.
+/// Verification finds candidates by `phraseHash`, then compares `embedding`
+/// (see lib/voice/voiceprint.ts). Read and written only with the service role.
+model VoicePrint {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @unique @map("user_id") @db.Uuid
+  /// Normalised spoken voice name, e.g. "zachariah of earth".
+  phrase      String
+  /// sha256(phrase) — indexed lookup key for verification.
+  phraseHash  String   @map("phrase_hash")
+  /// Speaker feature vector (unit-normalised), averaged over enrolment samples.
+  embedding   Float[]
+  /// Number of samples folded into `embedding`.
+  sampleCount Int      @default(1) @map("sample_count")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phraseHash])
+  @@map("voice_prints")
 }
 
 // ---------- Voice Stream ----------

@@ -7,7 +7,6 @@ import { signOut } from "@/lib/auth/actions";
 import { requireUser } from "@/lib/auth/user";
 import { prisma } from "@/lib/db";
 import { AVATARS_BUCKET, storage } from "@/lib/storage";
-import { getCurrentUser } from "@/lib/supabase/server";
 
 import {
   AvatarForm,
@@ -20,11 +19,10 @@ export const metadata = { title: "Profile" };
 
 export default async function ProfilePage() {
   const sessionUser = await requireUser("/profile");
-  const authUser = await getCurrentUser();
-  const providers = authUser?.identities?.map((i) => i.provider) ?? [];
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: sessionUser.id },
     include: {
+      voicePrint: { select: { phrase: true, sampleCount: true } },
       shares: { where: { revokedAt: null }, orderBy: { createdAt: "desc" } },
       stream: { select: { _count: { select: { segments: true } } } },
       _count: { select: { boards: true } },
@@ -41,15 +39,23 @@ export default async function ProfilePage() {
                 ? storage.getPublicUrl(AVATARS_BUCKET, user.avatarPath)
                 : sessionUser.image
             }
-            name={user.displayName ?? user.email}
+            name={user.displayName}
             size={88}
           />
           <div>
             <h1 className="font-display text-4xl tracking-tight">
               {user.displayName ?? "Earthling"}
             </h1>
-            <p className="text-dust mt-1 font-sans text-sm">{user.email}</p>
-            <p className="label mt-2">{providers.join(" · ") || "Supabase Auth"}</p>
+            <p className="text-dust mt-1 font-sans text-sm">
+              {user.voicePrint
+                ? `Voice name: “${user.voicePrint.phrase}”`
+                : "No voice enrolled"}
+            </p>
+            <p className="label mt-2">
+              {user.voicePrint
+                ? `Voice identity · ${user.voicePrint.sampleCount} samples heard`
+                : "Voice identity"}
+            </p>
           </div>
         </div>
 
@@ -134,9 +140,9 @@ export default async function ProfilePage() {
 
         <h2 className="label text-ochre mb-3">Delete account</h2>
         <p className="text-chalk/70 mb-4 max-w-xl text-sm leading-relaxed">
-          Permanently destroys your account, every Voice Stream segment and its audio, all
-          transcriptions, share links, chalkboards and your avatar — database rows and
-          stored files. This cannot be undone.
+          Permanently destroys your account, your voice print, every Voice Stream segment
+          and its audio, all transcriptions, share links, chalkboards and your avatar —
+          database rows and stored files. This cannot be undone.
         </p>
         <DeleteAccountForm />
       </section>

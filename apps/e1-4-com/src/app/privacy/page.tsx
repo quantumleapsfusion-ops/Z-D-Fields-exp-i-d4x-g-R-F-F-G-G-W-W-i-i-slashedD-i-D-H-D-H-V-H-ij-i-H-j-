@@ -22,8 +22,11 @@ export default function PrivacyPage() {
         <h2 className="label mt-10">What we store</h2>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           <li>
-            Your account profile from the sign-in provider you chose (name, email, image).
+            Your voice identity: the voice name you chose (as recognised text) and a small
+            numeric voice print describing how you say it. We do not store the audio of
+            your name, and we hold no email address or password.
           </li>
+          <li>Your profile (display name, avatar) if you set one.</li>
           <li>Voice Stream audio segments, their timestamps and their transcriptions.</li>
           <li>Infinity Chalkboard boards you save while signed in.</li>
           <li>Share links you create, and whether they have been revoked.</li>

@@ -11,11 +11,12 @@ function requireEnv(name: string): string {
 }
 
 /**
- * Signs in with email+password through Supabase and returns the exact cookies
- * `@supabase/ssr` would set in the browser, so the Next.js proxy/server
- * components see a real session. The login page only offers OAuth buttons
- * (Google/Facebook/Microsoft), which cannot be driven headlessly, so the
- * smoke suite authenticates via this password grant instead.
+ * Signs in with a password-grant test user through Supabase and returns the
+ * exact cookies `@supabase/ssr` would set in the browser, so the Next.js
+ * proxy/server components see a real session. The product itself signs people
+ * in by voice (see features/voice-gate), which cannot be driven headlessly, so
+ * the smoke suite uses this back door: a dedicated Supabase user created with
+ * the placeholder email + password in E2E_TEST_EMAIL / E2E_TEST_PASSWORD.
  */
 export async function supabaseSessionCookies(): Promise<CookieToSet[]> {
   const jar: CookieToSet[] = [];

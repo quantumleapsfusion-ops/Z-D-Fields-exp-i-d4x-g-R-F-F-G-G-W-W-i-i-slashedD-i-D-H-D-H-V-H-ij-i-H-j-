@@ -7,7 +7,6 @@ import { getCurrentUser } from "@/lib/supabase/server";
 
 export interface SessionUser {
   id: string;
-  email: string | null;
   name: string | null;
   /** Public avatar URL (Supabase Storage) or null. */
   image: string | null;
@@ -26,26 +25,16 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     update: {},
     create: {
       id: authUser.id,
-      email: authUser.email ?? null,
-      displayName:
-        (authUser.user_metadata.full_name as string | undefined) ??
-        (authUser.user_metadata.name as string | undefined) ??
-        null,
+      displayName: (authUser.user_metadata.name as string | undefined) ?? null,
     },
   });
 
-  const oauthPicture =
-    (authUser.user_metadata.avatar_url as string | undefined) ??
-    (authUser.user_metadata.picture as string | undefined) ??
-    null;
-
   return {
     id: profile.id,
-    email: profile.email,
     name: profile.displayName,
     image: profile.avatarPath
       ? storage.getPublicUrl(AVATARS_BUCKET, profile.avatarPath)
-      : oauthPicture,
+      : null,
   };
 }
 

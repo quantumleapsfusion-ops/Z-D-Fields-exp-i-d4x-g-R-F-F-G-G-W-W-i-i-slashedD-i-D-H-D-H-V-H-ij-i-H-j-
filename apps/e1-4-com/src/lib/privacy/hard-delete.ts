@@ -15,7 +15,7 @@ export interface HardDeleteResult {
  * Hard-delete routine (GDPR Art. 17 / CCPA §1798.105).
  *
  *   1. Storage objects under `<uid>/` in the `voice` and `avatars` buckets
- *   2. Postgres rows (User; streams/segments/shares/boards/usage cascade via FKs)
+ *   2. Postgres rows (User; voice print/streams/segments/shares/boards/usage cascade via FKs)
  *   3. The Supabase Auth user itself
  *
  * Storage goes first so a failure there leaves the DB rows (and thus the paths
@@ -82,9 +82,9 @@ export async function exportUserData(userId: string) {
     select: {
       id: true,
       displayName: true,
-      email: true,
       avatarPath: true,
       createdAt: true,
+      voicePrint: { select: { phrase: true, sampleCount: true, createdAt: true } },
       stream: {
         select: {
           id: true,
