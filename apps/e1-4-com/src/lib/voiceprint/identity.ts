@@ -2,8 +2,8 @@ import "server-only";
 
 import type { User } from "@supabase/supabase-js";
 
+import { startSessionFor } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 
 import {
   MATCH_DISTANCE,
@@ -60,22 +60,6 @@ async function enroll(admin: Admin, sample: Voiceprint): Promise<User> {
   return data.user;
 }
 
-/** Opens a session for `user` in this request's cookies. */
-async function signIn(admin: Admin, user: User) {
-  if (!user.email) throw new Error("Voice identity has no auth address");
-  const { data, error } = await admin.auth.admin.generateLink({
-    type: "magiclink",
-    email: user.email,
-  });
-  if (error) throw error;
-  const supabase = await createClient();
-  const { error: verifyError } = await supabase.auth.verifyOtp({
-    type: "magiclink",
-    token_hash: data.properties.hashed_token,
-  });
-  if (verifyError) throw verifyError;
-}
-
 /**
  * The voice is the key: signed in, it refines the speaker's print; signed out, the closest
  * matching speaker is signed in, and an unheard voice is given a stream of its own.
@@ -89,10 +73,10 @@ export async function identifyVoice(sample: Voiceprint, current: User | null) {
   const match = await closestSpeaker(admin, sample);
   if (match) {
     await remember(admin, match, sample);
-    await signIn(admin, match);
+    await startSessionFor(match.id);
     return { userId: match.id, enrolled: false };
   }
   const user = await enroll(admin, sample);
-  await signIn(admin, user);
+  await startSessionFor(user.id);
   return { userId: user.id, enrolled: true };
 }

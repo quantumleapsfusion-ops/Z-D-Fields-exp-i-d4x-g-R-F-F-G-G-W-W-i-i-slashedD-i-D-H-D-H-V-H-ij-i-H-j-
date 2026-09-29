@@ -8,11 +8,14 @@ import { watchTilt } from "@/lib/device/tilt";
 import type { Form } from "@/lib/gravity/superposition";
 import { BANDS, FRAMES, type SoundPrint, WAVE_POINTS } from "@/lib/sound/analyse";
 
-const COLS = 168;
-const ROWS = 102;
+/** Bead grid for a landscape screen; portrait screens swap the two so the field is always tall enough. */
+const LONG = 168;
+const SHORT = 102;
 const PITCH = 0.043;
 const HISTORY = 160;
 const MAX_HEIGHT = 1.1;
+/** Margin past the screen edges so leaning with the phone never shows the end of the field. */
+const COVER = 1.12;
 /** How far the metal pools toward the low side of a tilted phone. */
 const POOL = 0.16;
 /** How far the whole field leans with the phone, in radians. */
@@ -49,9 +52,8 @@ function formHeight(form: Form, u: number, v: number): number {
   }
 }
 
-function lineHeight(print: SoundPrint, col: number, y: number): number {
-  const w =
-    print.waveform[Math.min(WAVE_POINTS - 1, Math.floor((col / COLS) * WAVE_POINTS))];
+function lineHeight(print: SoundPrint, u: number, y: number): number {
+  const w = print.waveform[Math.min(WAVE_POINTS - 1, Math.floor(u * WAVE_POINTS))];
   return w * 0.9 * Math.exp(-(y * y) / (0.01 + w * 0.5));
 }
 
@@ -84,9 +86,9 @@ function saturnHeight(r: number, a: number, now: number): number {
   return planet + ring;
 }
 
-function reliefHeight(print: SoundPrint, col: number, row: number): number {
-  const frame = Math.min(FRAMES - 1, Math.floor((col / COLS) * FRAMES));
-  const band = Math.min(BANDS - 1, Math.floor((row / ROWS) * BANDS));
+function reliefHeight(print: SoundPrint, u: number, v: number): number {
+  const frame = Math.min(FRAMES - 1, Math.floor(u * FRAMES));
+  const band = Math.min(BANDS - 1, Math.floor(v * BANDS));
   return print.spectrogram[frame][band] ** 2 * (0.35 + print.loudness[frame] * 0.65);
 }
 
@@ -125,6 +127,9 @@ export default function PinField({
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     el.appendChild(renderer.domElement);
 
+    const portrait = el.clientHeight > el.clientWidth;
+    const COLS = portrait ? SHORT : LONG;
+    const ROWS = portrait ? LONG : SHORT;
     const scene = new THREE.Scene();
     const pmrem = new THREE.PMREMGenerator(renderer);
     const environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -145,8 +150,27 @@ export default function PinField({
       camera.position.set(0, -distance * 0.42, distance * 0.93);
       camera.lookAt(0, 0, 0.2);
       camera.updateProjectionMatrix();
+      camera.updateMatrixWorld();
+      let reachX = 0;
+      let reachY = 0;
+      for (const [sx, sy] of [
+        [-1, -1],
+        [1, -1],
+        [-1, 1],
+        [1, 1],
+      ]) {
+        corner.set(sx, sy, 0.5).unproject(camera).sub(camera.position);
+        if (corner.z >= 0) continue;
+        const t = -camera.position.z / corner.z;
+        reachX = Math.max(reachX, Math.abs(camera.position.x + corner.x * t));
+        reachY = Math.max(reachY, Math.abs(camera.position.y + corner.y * t));
+      }
+      pins.scale.set(
+        Math.max(1, (reachX * COVER) / halfW),
+        Math.max(1, (reachY * COVER) / halfH),
+        1,
+      );
     };
-    fit();
 
     const light = new THREE.DirectionalLight(0xffffff, 1.4);
     light.position.set(-3, -2, 6);
@@ -160,6 +184,8 @@ export default function PinField({
     });
     const pins = new THREE.InstancedMesh(geometry, material, COLS * ROWS);
     scene.add(pins);
+    const corner = new THREE.Vector3();
+    fit();
 
     const heights = new Float32Array(COLS * ROWS);
     const history = new Float32Array(HISTORY);
@@ -210,12 +236,13 @@ export default function PinField({
           if (p === "rest")
             target = breath * 0.5 + saturnHeight(r, Math.atan2(y, x), now);
           else if (p === "listen") target = breath + ripple;
-          else if (p === "line" && sound) target = breath + lineHeight(sound, col, y);
+          else if (p === "line" && sound)
+            target = breath + lineHeight(sound, col / COLS, y);
           else if (p === "board" && sound)
-            target = breath + reliefHeight(sound, col, row) * 0.3;
+            target = breath + reliefHeight(sound, col / COLS, row / ROWS) * 0.3;
           else if (p === "well") target = wellHeight(r, Math.atan2(y, x), now);
           else if (p === "relief" && sound)
-            target = breath + reliefHeight(sound, col, row);
+            target = breath + reliefHeight(sound, col / COLS, row / ROWS);
           else if (p === "form")
             target = breath + formHeight(shape, x / 2.2, y / 2.2) * 0.9;
           const pool = (x * lean.x + y * lean.y) * POOL;

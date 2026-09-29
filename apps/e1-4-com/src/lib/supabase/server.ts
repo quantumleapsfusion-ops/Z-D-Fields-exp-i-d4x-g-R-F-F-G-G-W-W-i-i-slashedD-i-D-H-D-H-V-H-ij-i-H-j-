@@ -2,6 +2,7 @@ import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { sessionUser } from "@/lib/auth/session";
 import { publicEnv } from "@/lib/env";
 
 /**
@@ -30,11 +31,16 @@ export async function createClient() {
   });
 }
 
-/** Convenience: the currently signed-in Supabase Auth user, or null. */
+/**
+ * The signed-in user, or null: from the e1-4 session cookie (voice and passkey sign-in), else from
+ * a Supabase Auth session (OAuth, password).
+ */
 export async function getCurrentUser() {
+  const user = await sessionUser();
+  if (user) return user;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user: authUser },
   } = await supabase.auth.getUser();
-  return user;
+  return authUser;
 }

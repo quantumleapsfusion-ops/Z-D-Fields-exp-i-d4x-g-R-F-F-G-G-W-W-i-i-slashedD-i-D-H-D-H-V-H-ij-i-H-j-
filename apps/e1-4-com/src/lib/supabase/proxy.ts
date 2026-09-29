@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { SESSION_COOKIE, readSessionToken, sessionSecret } from "@/lib/auth/token";
 import { publicEnv } from "@/lib/env";
 
 export const PROTECTED_PREFIXES = [
@@ -18,6 +19,12 @@ export const PROTECTED_PREFIXES = [
  * visitors away from protected routes. Called from src/proxy.ts.
  */
 export async function updateSession(request: NextRequest) {
+  const secret = sessionSecret();
+  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  if (secret && (await readSessionToken(token, secret))) {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(publicEnv.supabaseUrl, publicEnv.supabaseAnonKey, {

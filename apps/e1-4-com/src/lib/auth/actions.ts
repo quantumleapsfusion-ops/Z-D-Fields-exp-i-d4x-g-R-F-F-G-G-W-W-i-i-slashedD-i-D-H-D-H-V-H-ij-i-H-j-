@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { publicEnv } from "@/lib/env";
+import { endSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { OAUTH_PROVIDERS, type OAuthProvider } from "./providers";
 
@@ -37,7 +38,8 @@ export async function signInWithOAuth(formData: FormData) {
 }
 
 export async function signOut() {
+  await endSession();
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  await supabase.auth.signOut().catch(() => {});
   redirect("/");
 }

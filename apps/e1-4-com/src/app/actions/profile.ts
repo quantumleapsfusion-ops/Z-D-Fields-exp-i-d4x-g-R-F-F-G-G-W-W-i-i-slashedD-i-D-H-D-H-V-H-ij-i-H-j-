@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { endSession } from "@/lib/auth/session";
 import { getUserId } from "@/lib/auth/user";
 import { prisma } from "@/lib/db";
 import { hardDeleteUser } from "@/lib/privacy/hard-delete";
@@ -103,7 +104,8 @@ export async function deleteAccount(
     return { ok: false, message: "Type DELETE to confirm." };
   }
   await hardDeleteUser(userId);
+  await endSession();
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  await supabase.auth.signOut().catch(() => {});
   redirect("/?deleted=1");
 }
