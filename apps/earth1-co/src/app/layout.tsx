@@ -1,25 +1,35 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Space_Grotesk } from "next/font/google";
+import { EB_Garamond, IBM_Plex_Mono, Michroma } from "next/font/google";
 
 import "./globals.css";
 import { site } from "@/lib/site";
 
-const fraunces = Fraunces({
+const garamond = EB_Garamond({
   subsets: ["latin"],
+  weight: ["400", "500"],
+  style: ["normal", "italic"],
   display: "swap",
-  variable: "--font-fraunces",
+  variable: "--font-garamond",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
+  weight: ["400", "500"],
   display: "swap",
-  variable: "--font-space-grotesk",
+  variable: "--font-plex-mono",
+});
+
+const michroma = Michroma({
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+  variable: "--font-michroma",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.org}`,
+    default: site.org,
     template: `%s — ${site.name}`,
   },
   description: site.description,
@@ -35,13 +45,16 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0e1a13",
+  themeColor: "#0f0d0b",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
-      <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
+    <html
+      lang="en"
+      className={`${garamond.variable} ${plexMono.variable} ${michroma.variable}`}
+    >
+      <body className="paper text-ink min-h-screen font-serif antialiased">
         {children}
       </body>
     </html>

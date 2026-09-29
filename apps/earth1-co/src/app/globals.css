@@ -1,61 +1,110 @@
 @import "tailwindcss";
-@import "@earth-one/ui/tokens.css";
-@source "../../../../packages/ui/src";
+
+/*
+ * earth1.co — a physicist's working notebook shelved in a rare-book library.
+ *   paper #0f0d0b · ink #ece6da · faded blueprint cyan #6f95a3
+ * Grain is a photographed parchment leaf (see docs/ASSETS.md), not CSS noise.
+ */
+@theme {
+  --color-paper: #0f0d0b;
+  --color-paper-2: #15120f;
+  --color-ink: #ece6da;
+  --color-ink-2: #b8b1a4;
+  --color-ink-3: #8a8377;
+  --color-blueprint: #6f95a3;
+  --color-blueprint-2: #4d6b76;
+  --color-rule: rgb(236 230 218 / 0.14);
+
+  --font-serif: var(--font-garamond), "EB Garamond", Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --font-wordmark: var(--font-michroma), "Michroma", sans-serif;
+
+  --tracking-label: 0.18em;
+}
 
 @layer base {
   html {
     color-scheme: dark;
     -webkit-font-smoothing: antialiased;
+    scroll-behavior: auto;
   }
 
   body {
-    background-color: var(--color-blackboard);
-    color: var(--color-chalk);
+    background-color: var(--color-paper);
+    background-image: url("/textures/vellum-grain.jpg");
+    background-size: 450px auto;
+    color: var(--color-ink);
+    font-size: 1.125rem;
+    line-height: 1.5;
   }
 
   ::selection {
-    background: var(--color-ochre);
-    color: var(--color-blackboard);
+    background: var(--color-blueprint);
+    color: var(--color-paper);
   }
+
+  a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+}
+
+/* Grain lives in the body background: the parchment leaf's own texture, baked into the
+   paper colour (docs/ASSETS.md). `paper` only opens a stacking context for the canvas. */
+@utility paper {
+  position: relative;
+  isolation: isolate;
+}
+
+/* EB Garamond substitutes v for u under lang="la"; the manuscript itself writes u. */
+[lang="la"] {
+  font-feature-settings: "locl" 0;
 }
 
 @utility label {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
-  color: var(--color-dust);
+  color: var(--color-ink-3);
 }
 
-@utility chalk-surface {
-  background-color: var(--color-blackboard);
-  background-image:
-    radial-gradient(
-      ellipse at 20% 10%,
-      --alpha(var(--color-chalk) / 5%),
-      transparent 55%
-    ),
-    radial-gradient(ellipse at 80% 90%, --alpha(var(--color-dust) / 6%), transparent 60%);
+@utility mono {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--color-ink-2);
 }
 
-@utility chalk-rule {
+@utility wordmark {
+  font-family: var(--font-wordmark);
+  font-size: 0.8rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+/* Hairline ruled like the manuscript: brown-ink ruling, faint. */
+@utility rule {
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--color-dust) 20%,
-    var(--color-dust) 80%,
-    transparent
-  );
-  opacity: 0.5;
+  background: var(--color-rule);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+/* Blueprint underline used for the one accent per page. */
+@utility bp-underline {
+  text-decoration: underline;
+  text-decoration-color: var(--color-blueprint);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.placeholder-frame {
+  border: 1px dashed var(--color-ink-3);
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 14px,
+      rgb(236 230 218 / 0.035) 14px 15px
+    ),
+    var(--color-paper-2);
 }

@@ -2,44 +2,96 @@ export const site = {
   name: "earth1",
   domain: "earth1.co",
   url: "https://earth1.co",
-  org: "Earth One Global Coalescent",
-  tagline: "A coalescent, not a corporation.",
+  org: "Earth 1 Coalescent",
+  motto: "Global citizenship for all.",
   description:
-    "Earth One Global Coalescent — the holding shell and governance portal behind e1-4.com. Absolute data sovereignty, user-controlled privacy, free speech.",
+    "Earth 1 Coalescent — the working notes behind e1-4.com. Consciousness, citizenship, synthesis.",
+  contactEmail: "[CONTACT EMAIL]",
   flagship: {
     name: "e1-4",
     domain: "e1-4.com",
     url: "https://e1-4.com",
     tagline: "earth life-forms",
-    pitch: "A social network with no typing. You speak; everything else follows.",
   },
 } as const;
 
-export type Principle = {
-  index: string;
+export const cicero = {
+  latin:
+    "Neque porro quisquam est, qui dolorem ipsum, quia dolor sit, amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.",
+  english:
+    "Nor is there anyone who loves pain itself, who seeks it out and wants to have it, simply because it is pain — but because, now and then, hard circumstance brings, through toil and pain, some great pleasure.",
+  citation: "Cicero · De finibus bonorum et malorum · I.32 · 45 BC",
+} as const;
+
+export const manuscript = {
+  src: "/manuscript/osu-frag-415-f75r.jpg",
+  srcSmall: "/manuscript/osu-frag-415-f75r-640.jpg",
+  width: 1177,
+  height: 1707,
+  alt: "A parchment leaf of Cicero's De finibus, copied in Italy around 1466: twenty-eight ruled lines of brown humanist script, a pencilled folio number 75 at the top right, and a later hand's note in the lower margin reading 1466 Cicero De Finibus.",
+  caption: "De finibus bonorum et malorum, fol. 75r. Parchment, Veneto, c. 1450–1475.",
+  credit:
+    "Ohio State University, Rare Books & Manuscripts Library, SPEC.RARE.MS.MR.FRAG.415. Public domain (No Copyright – United States).",
+  creditUrl: "https://hdl.handle.net/1811/d9d78a54-7116-4362-b5d6-383a1ac0b42e",
+} as const;
+
+export type Tenet = {
+  glyph: string;
+  glyphName: string;
   title: string;
   body: string;
+  margin: string;
 };
 
-export const principles: Principle[] = [
+export const tenets: Tenet[] = [
   {
-    index: "I",
-    title: "Absolute data sovereignty",
-    body: "What you say is yours. Every recording, transcript and drawing on an Earth One platform belongs to the person who made it, is stored under their identifier, and leaves with them in one export or one deletion — audio, rows, and account, in that order, with nothing retained.",
+    glyph: "Ψ",
+    glyphName: "psi",
+    title: "Consciousness",
+    body: "Extend how a person thinks and digests information. Not faster scrolling — a wider aperture. The instruments we build listen, transcribe, translate and draw, and then get out of the way of the mind that used them.",
+    margin: "cf. the wavefunction: everything the system can be, before anyone looks.",
   },
   {
-    index: "II",
-    title: "User-controlled privacy",
-    body: "Private by default. Nothing is public until its owner says so, per segment, per link, per person — and every grant can be revoked. Access rules are enforced at the database and storage layer, not in a settings page.",
+    glyph: "⊕",
+    glyphName: "circled plus",
+    title: "Citizenship",
+    body: "Dissolve borders as a unit of moral accounting. An Earth-centred utilitarian framework: the good is counted for the planet's population, not a passport's. Citizenship that extends beyond Earth when we do.",
+    margin: "⊕ is also the astronomical symbol for Earth.",
   },
   {
-    index: "III",
-    title: "Free speech",
-    body: "Voice is the medium because voice is the person. We do not edit, rank, or suppress what people say. We build the tools that make it legible — transcription, translation, drawing — and leave the judgement to the listener.",
+    glyph: "∑",
+    glyphName: "sigma",
+    title: "Synthesis",
+    body: "Knowledge and entertainment at all costs — and the two are not enemies. Synthesis is the prerogative: the right to take everything said and make of it one thing worth keeping.",
+    margin: "a sum, not an average.",
+  },
+];
+
+export type Equation = {
+  id: string;
+  /** Plain-text rendering for copy/paste and the placeholder label. */
+  text: string;
+  /** Presentation MathML for the accessible fallback. */
+  mathml: string;
+  caption: string;
+  name: string;
+};
+
+export const equations: Equation[] = [
+  {
+    id: "eq-schrodinger",
+    name: "Schrödinger equation",
+    text: "iħ ∂Ψ/∂t = ĤΨ",
+    mathml:
+      "<mrow><mi>i</mi><mi>ℏ</mi><mfrac><mrow><mo>∂</mo><mi mathvariant='normal'>Ψ</mi></mrow><mrow><mo>∂</mo><mi>t</mi></mrow></mfrac><mo>=</mo><mover><mi>H</mi><mo>^</mo></mover><mi mathvariant='normal'>Ψ</mi></mrow>",
+    caption: "A wavefunction doesn't carry a passport.",
   },
   {
-    index: "IV",
-    title: "Legible machines",
-    body: "Where a model listens, draws, or summarises, we say which one, what it cost, and where it was wrong. Intelligence on our platforms is a labelled instrument, never an unmarked author.",
+    id: "eq-einstein",
+    name: "Einstein field equations",
+    text: "Gμν + Λgμν = (8πG/c⁴) Tμν",
+    mathml:
+      "<mrow><msub><mi>G</mi><mrow><mi>μ</mi><mi>ν</mi></mrow></msub><mo>+</mo><mi mathvariant='normal'>Λ</mi><msub><mi>g</mi><mrow><mi>μ</mi><mi>ν</mi></mrow></msub><mo>=</mo><mfrac><mrow><mn>8</mn><mi>π</mi><mi>G</mi></mrow><msup><mi>c</mi><mn>4</mn></msup></mfrac><msub><mi>T</mi><mrow><mi>μ</mi><mi>ν</mi></mrow></msub></mrow>",
+    caption: "Spacetime curves the same way on every side of every border.",
   },
 ];
