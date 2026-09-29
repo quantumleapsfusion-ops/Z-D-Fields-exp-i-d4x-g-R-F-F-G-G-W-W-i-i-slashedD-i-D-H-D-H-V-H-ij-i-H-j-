@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 
 import { EquationEntry } from "@/components/EquationEntry";
@@ -11,9 +12,45 @@ import { cicero, equations, manuscript, site, tenets } from "@/lib/site";
 const grid =
   "grid gap-y-6 lg:grid-cols-[8.5rem_minmax(0,36rem)_minmax(0,1fr)] lg:gap-x-10";
 
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${site.url}/#org`,
+      name: site.org,
+      alternateName: site.name,
+      url: site.url,
+      logo: `${site.url}/icon.png`,
+      description: site.description,
+      knowsAbout: ["Global citizenship", "Data sovereignty", "Free speech", "Privacy"],
+      sameAs: [site.flagship.url],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${site.url}/#website`,
+      name: site.org,
+      url: site.url,
+      description: site.description,
+      inLanguage: "en",
+      publisher: { "@id": `${site.url}/#org` },
+    },
+  ],
+};
+
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <Spacetime className="pointer-events-none fixed inset-0 -z-10 h-full w-full" />
 
       <div className="mx-auto max-w-[76rem] px-6 pb-24 sm:px-10 lg:px-14">

@@ -7,6 +7,18 @@ export const site = {
   description:
     "Earth 1 Coalescent — the working notes behind e1-4.com. Consciousness, citizenship, synthesis.",
   contactEmail: "[CONTACT EMAIL]",
+  keywords: [
+    "global citizenship",
+    "global citizen",
+    "world citizen",
+    "citizen of the world",
+    "Earth 1 Coalescent",
+    "earth1",
+    "data sovereignty",
+    "digital rights",
+    "free speech",
+    "privacy",
+  ],
   flagship: {
     name: "e1-4",
     domain: "e1-4.com",
