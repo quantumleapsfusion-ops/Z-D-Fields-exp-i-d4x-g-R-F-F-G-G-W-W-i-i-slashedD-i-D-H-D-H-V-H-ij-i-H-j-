@@ -52,18 +52,9 @@ export default function Home() {
           </div>
           <div className="divide-chalk/10 mt-10 divide-y">
             {features.map((feature) => (
-              <article
-                key={feature.title}
-                className={
-                  feature.emphasis
-                    ? "border-ochre/40 bg-chalk/[0.03] my-8 rounded-lg border px-6 py-10 sm:px-9"
-                    : "py-10"
-                }
-              >
+              <article key={feature.title} className="py-10">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-8">
-                  <h3
-                    className={`font-display tracking-tight ${feature.emphasis ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}
-                  >
+                  <h3 className="font-display text-3xl tracking-tight sm:text-4xl">
                     {feature.title}
                   </h3>
                   {feature.codenames && (
@@ -92,8 +83,7 @@ export default function Home() {
         </section>
         <section className="mx-auto max-w-5xl px-5 py-24 sm:px-8 sm:py-32">
           <p className="font-display max-w-3xl text-2xl leading-snug sm:text-4xl">
-            Built by Earth One Global Coalescent — global citizenship for all, one voice
-            at a time
+            Built by Earth 1 Coalescent — global citizenship for all, one voice at a time
           </p>
           <a
             href="https://earth1.co"
@@ -105,7 +95,7 @@ export default function Home() {
       </main>
       <footer className="border-chalk/10 border-t">
         <div className="text-dust mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-10 text-sm sm:px-8">
-          <span>Earth One Global Coalescent / e1-4.com</span>
+          <span>Earth 1 Coalescent / e1-4.com</span>
           <a href="https://earth1.co" className="hover:text-ochre transition-colors">
             earth1.co →
           </a>

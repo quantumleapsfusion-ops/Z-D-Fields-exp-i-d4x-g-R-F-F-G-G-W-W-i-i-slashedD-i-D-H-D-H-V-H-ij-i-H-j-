@@ -1,6 +1,6 @@
 # e1-4: earth life-forms
 
-App by **Earth One Global Coalescent**.
+App by **Earth 1 Coalescent**.
 
 The app has five dimensions: Voice Stream, Infinity Chalkboard, Gravity Chalkboard, Event
 Horizon and Superposition. Voice Stream supplies text to the other surfaces. Da Vinci
