@@ -3,7 +3,10 @@ import Link from "next/link";
 import { removeAvatar } from "@/app/actions/profile";
 import { Avatar } from "@/components/Nav";
 import { PageShell } from "@/components/PageShell";
+import { AddPasskeyButton, RemovePasskeyButton } from "@/features/people/Passkeys";
+import { HandleForm } from "@/features/people/PeopleForms";
 import { signOut } from "@/lib/auth/actions";
+import { listPasskeys } from "@/lib/auth/passkeys";
 import { requireUser } from "@/lib/auth/user";
 import { prisma } from "@/lib/db";
 import { AVATARS_BUCKET, storage } from "@/lib/storage";
@@ -27,9 +30,12 @@ export default async function ProfilePage() {
     include: {
       shares: { where: { revokedAt: null }, orderBy: { createdAt: "desc" } },
       stream: { select: { _count: { select: { segments: true } } } },
-      _count: { select: { boards: true, memberships: true, voiceNotes: true } },
+      _count: {
+        select: { boards: true, memberships: true, voiceNotes: true, contacts: true },
+      },
     },
   });
+  const passkeys = await listPasskeys(user.id);
 
   return (
     <PageShell>
@@ -71,6 +77,46 @@ export default async function ProfilePage() {
             <h2 className="label mb-3">Name</h2>
             <NameForm defaultName={user.displayName ?? ""} />
           </div>
+          <div>
+            <h2 className="label mb-3">Handle</h2>
+            <HandleForm current={user.handle} />
+            <p className="text-dust mt-2 text-xs">
+              {user.handle ? (
+                <>
+                  Your link:{" "}
+                  <Link href={`/@${user.handle}`} className="text-ochre">
+                    e1-4.com/@{user.handle}
+                  </Link>
+                </>
+              ) : (
+                "People add you by your handle instead of a phone number."
+              )}
+            </p>
+          </div>
+          <div>
+            <h2 className="label mb-3">Passkeys</h2>
+            {passkeys.length > 0 ? (
+              <ul className="mb-3 space-y-1">
+                {passkeys.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex items-center justify-between gap-3 text-sm"
+                  >
+                    <span className="text-chalk/80 truncate">
+                      {p.name ?? "Passkey"} · added {p.createdAt.toLocaleDateString()}
+                    </span>
+                    <RemovePasskeyButton id={p.id} />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-dust mb-3 text-xs">
+                Sign in with Face ID, fingerprint or your device PIN. Verified by e1-4
+                itself; only a public key is stored.
+              </p>
+            )}
+            <AddPasskeyButton />
+          </div>
         </div>
 
         <div className="hairline my-10" />
@@ -86,6 +132,11 @@ export default async function ProfilePage() {
             <Link href="/talk" className="hover:text-ochre">
               Conversations: {user._count.memberships} · voice notes sent:{" "}
               {user._count.voiceNotes}
+            </Link>
+          </li>
+          <li>
+            <Link href="/talk/contacts" className="hover:text-ochre">
+              Contacts: {user._count.contacts}
             </Link>
           </li>
           <li>Chalkboards: {user._count.boards}</li>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Logo } from "@earth-one/ui";
 import { PageShell } from "@/components/PageShell";
+import { PasskeySignInButton } from "@/features/people/Passkeys";
 import { signInWithOAuth } from "@/lib/auth/actions";
 import { OAUTH_PROVIDERS, type OAuthProvider } from "@/lib/auth/providers";
 import { getCurrentUser } from "@/lib/supabase/server";
@@ -33,6 +34,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         )}
 
         <div className="flex flex-col gap-3">
+          <PasskeySignInButton next={typeof next === "string" ? next : undefined} />
           {(Object.keys(OAUTH_PROVIDERS) as OAuthProvider[]).map((provider) => (
             <form key={provider} action={signInWithOAuth}>
               <input type="hidden" name="provider" value={provider} />

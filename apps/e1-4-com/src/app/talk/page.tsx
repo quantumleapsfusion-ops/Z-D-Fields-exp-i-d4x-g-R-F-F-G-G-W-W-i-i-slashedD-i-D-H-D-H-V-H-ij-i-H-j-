@@ -23,6 +23,12 @@ export default async function TalkInbox() {
         />
 
         <form action={startConversationAction} className="flex flex-wrap gap-3">
+          <Link
+            href="/talk/contacts"
+            className="border-chalk/20 hover:border-ochre hover:text-ochre rounded-full border px-5 py-2 text-sm"
+          >
+            Contacts
+          </Link>
           <input
             name="title"
             maxLength={120}
@@ -41,7 +47,8 @@ export default async function TalkInbox() {
         <div className="mt-10">
           {conversations.length === 0 ? (
             <p className="font-display text-dust text-center text-xl">
-              No conversations yet. Start one and send the invite link to anyone.
+              No conversations yet. Talk to someone from your contacts, or start one and
+              send the invite link.
             </p>
           ) : (
             <ul className="divide-chalk/10 border-chalk/10 divide-y rounded-sm border">

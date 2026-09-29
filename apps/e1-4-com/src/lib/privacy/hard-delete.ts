@@ -40,6 +40,7 @@ export async function hardDeleteUser(userId: string): Promise<HardDeleteResult> 
     storage.removePrefix(AVATARS_BUCKET, userId),
   ]);
 
+  await prisma.authChallenge.deleteMany({ where: { userId } });
   const deleted = await prisma.user.deleteMany({ where: { id: userId } });
 
   const admin = createAdminClient();
@@ -101,8 +102,21 @@ export async function exportUserData(userId: string) {
       id: true,
       displayName: true,
       email: true,
+      handle: true,
       avatarPath: true,
       createdAt: true,
+      contacts: {
+        select: { contact: { select: { handle: true } }, createdAt: true },
+      },
+      passkeys: {
+        select: {
+          id: true,
+          name: true,
+          deviceType: true,
+          createdAt: true,
+          lastUsedAt: true,
+        },
+      },
       stream: {
         select: {
           id: true,
