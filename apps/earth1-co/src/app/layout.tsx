@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     description: site.description,
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: `${site.org} — Global citizenship for all`,
     description: site.description,
   },

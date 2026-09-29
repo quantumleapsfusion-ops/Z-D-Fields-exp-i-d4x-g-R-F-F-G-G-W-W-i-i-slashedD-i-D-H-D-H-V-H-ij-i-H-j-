@@ -32,6 +32,9 @@ export function DomainBridge() {
             <p className="mt-6 max-w-xl font-sans text-xl leading-snug sm:text-3xl">
               {flagship.pitch}
             </p>
+            <p className="text-blackboard/75 mt-4 max-w-xl font-sans text-base leading-relaxed sm:text-lg">
+              {flagship.talk}
+            </p>
           </div>
           <motion.span
             aria-hidden
@@ -42,9 +45,10 @@ export function DomainBridge() {
             →
           </motion.span>
         </div>
-        <p className="text-blackboard/60 mt-8 font-mono text-xs tracking-[0.18em] uppercase">
-          Enter {flagship.domain}
-        </p>
+        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-xs tracking-[0.18em] uppercase">
+          <span className="text-blackboard/60">Enter {flagship.domain}</span>
+          <span className="text-blackboard/60">Your link: {flagship.domain}/@you</span>
+        </div>
         <span
           aria-hidden
           className="bg-ochre/0 group-hover:bg-ochre/10 pointer-events-none absolute inset-0 transition-colors"
