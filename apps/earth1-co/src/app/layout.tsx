@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Space_Grotesk } from "next/font/google";
-import { SpacetimeBackground } from "@earth-one/spacetime";
 
 import "./globals.css";
 import { site } from "@/lib/site";
@@ -32,7 +31,7 @@ export const metadata: Metadata = {
     siteName: site.org,
     title: `${site.org} — Global citizenship for all`,
     description: site.description,
-    images: [{ url: "/icon.svg", alt: "Earth One Ψ over π" }],
+    images: [{ url: "/icon.svg", alt: site.org }],
   },
   twitter: {
     card: "summary_large_image",
@@ -51,7 +50,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
       <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
-        <SpacetimeBackground theme="earth1" />
         {children}
       </body>
     </html>

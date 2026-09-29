@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Logo } from "@earth-one/ui";
 
-import { DomainBridge } from "@/components/DomainBridge";
-import { GovernanceManifesto } from "@/components/GovernanceManifesto";
-import { HeroSection } from "@/components/HeroSection";
+import { Cosmos } from "@/components/Cosmos";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -23,13 +21,18 @@ export default function HomePage() {
         logo: `${site.url}/icon.png`,
         description: site.description,
         knowsAbout: ["Global citizenship", "Data sovereignty", "Free speech", "Privacy"],
-        sameAs: [site.flagship.url],
-        contactPoint: {
+        employee: site.people.map((p) => ({
+          "@type": "Person",
+          name: p.name,
+          jobTitle: p.role,
+          email: p.email,
+        })),
+        contactPoint: site.people.map((p) => ({
           "@type": "ContactPoint",
-          contactType: "human resources",
-          email: site.contact.email,
+          contactType: p.role,
+          email: p.email,
           availableLanguage: "en",
-        },
+        })),
       },
       {
         "@type": "WebSite",
@@ -44,56 +47,55 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-clip">
+    <div className="relative h-svh min-h-[560px] overflow-hidden">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
         }}
       />
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6 sm:px-8">
-        <div className="flex items-center gap-3">
-          <Logo size={26} brand="earth1" title={site.org} />
-          <span className="font-display text-lg tracking-tight">{site.name}</span>
-        </div>
-        <a
-          href={site.flagship.url}
-          className="label hover:text-ochre transition-colors"
-          rel="noreferrer"
-        >
-          {site.flagship.domain}
-        </a>
+      <Cosmos className="absolute inset-0 h-full w-full touch-manipulation" />
+
+      <header className="pointer-events-none absolute inset-x-0 top-0 flex items-center gap-3 px-5 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-8 sm:pt-7">
+        <Logo size={30} brand="earth1" title={site.org} />
+        <span className="wordmark text-[0.72rem] sm:text-xs">{site.org}</span>
       </header>
-      <main>
-        <HeroSection />
-        <GovernanceManifesto />
-        <DomainBridge />
-        <section id="contact" className="mx-auto max-w-5xl px-5 pb-28 sm:px-8">
-          <p className="label mb-4">Reach us</p>
-          <a
-            href={`mailto:${site.contact.email}`}
-            className="font-display hover:text-ochre text-3xl tracking-tight transition-colors sm:text-5xl"
+
+      <main className="pointer-events-none absolute inset-x-0 bottom-[22%] flex flex-col items-center px-6 text-center sm:bottom-[18%]">
+        <h1 className="sr-only">
+          {site.org}: {site.focus}
+        </h1>
+        <figure>
+          <blockquote
+            lang="la"
+            className="font-display silver-text text-[2.1rem] leading-[1.05] tracking-tight italic drop-shadow-[0_0_30px_rgba(160,180,255,0.25)] sm:text-6xl lg:text-7xl"
           >
-            {site.contact.email}
-          </a>
-          <p className="text-dust mt-4 max-w-xl font-sans text-lg">
-            {site.contact.purpose}
-          </p>
-        </section>
+            {site.quote.latin}
+          </blockquote>
+          <div aria-hidden="true" className="rainbow-rule mx-auto mt-6 w-40 opacity-70" />
+          <figcaption className="text-chalk/70 mt-5 font-sans text-sm tracking-wide sm:text-base">
+            {site.quote.english}
+            <span className="label mt-3 block">
+              {site.quote.author} · {site.quote.source}
+            </span>
+          </figcaption>
+        </figure>
       </main>
-      <footer className="border-chalk/10 border-t">
-        <div className="text-dust mx-auto flex max-w-5xl flex-col gap-2 px-5 py-10 font-sans text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>
-            {site.org} / {site.domain}
-          </p>
+
+      <footer className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-1.5 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] font-sans text-xs sm:flex-row sm:justify-center sm:gap-8 sm:pb-7 sm:text-sm">
+        {site.people.map((p) => (
           <a
-            href={`mailto:${site.contact.email}`}
-            className="hover:text-ochre transition-colors"
+            key={p.email}
+            href={`mailto:${p.email}`}
+            className="text-dust hover:text-chalk transition-colors"
           >
-            {site.contact.email}
+            <span className="text-chalk/90">{p.name}</span>
+            <span className="mx-2 opacity-50">·</span>
+            {p.role}
+            <span className="mx-2 opacity-50">·</span>
+            {p.email}
           </a>
-          <p className="label">est. earth</p>
-        </div>
+        ))}
       </footer>
     </div>
   );
