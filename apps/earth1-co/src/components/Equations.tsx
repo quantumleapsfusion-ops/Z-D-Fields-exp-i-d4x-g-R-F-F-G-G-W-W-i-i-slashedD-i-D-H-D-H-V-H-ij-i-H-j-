@@ -67,7 +67,7 @@ export function Equations() {
         rel="noreferrer"
         className="border-ochre/60 text-ochre hover:border-ochre hover:text-chalk mt-10 inline-flex items-center gap-2 border-b pb-1 font-sans text-base transition-colors sm:text-lg"
       >
-        Fuller write-ups on {site.flagship.domain}
+        Work through ideas like these out loud on {site.flagship.domain}
         <span aria-hidden="true">→</span>
       </a>
     </section>
