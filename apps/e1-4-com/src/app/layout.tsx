@@ -20,25 +20,26 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} — ${site.tagline}`,
+    default: `${site.name} — ${site.seoTitle}`,
     template: `%s — ${site.name}`,
   },
   description: site.description,
   applicationName: site.name,
   authors: [{ name: site.org, url: site.philosophyUrl }],
-  keywords: ["e1-4", "earth life-forms", "Earth 1 Coalescent", "voice", "chalkboard"],
+  keywords: [...site.keywords],
   openGraph: {
     type: "website",
     url: site.url,
     siteName: site.name,
-    title: `${site.name} — ${site.tagline}`,
+    title: `${site.name} — ${site.seoTitle}`,
     description: site.description,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${site.name} — ${site.tagline}`,
+    title: `${site.name} — ${site.seoTitle}`,
     description: site.description,
   },
+  robots: { index: true, follow: true },
   icons: {
     icon: "/icon.png",
     apple: "/apple-icon.png",
