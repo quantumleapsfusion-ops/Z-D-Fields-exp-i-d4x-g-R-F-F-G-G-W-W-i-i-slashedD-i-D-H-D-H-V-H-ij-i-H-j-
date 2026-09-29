@@ -1,13 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Space_Grotesk } from "next/font/google";
+import { Michroma, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
+import { Starfield } from "@/components/Starfield";
 import { site } from "@/lib/site";
 
-const fraunces = Fraunces({
+const michroma = Michroma({
+  weight: "400",
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-fraunces",
+  variable: "--font-michroma",
 });
 
 const spaceGrotesk = Space_Grotesk({
@@ -48,8 +50,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
-      <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
+    <html lang="en" className={`${michroma.variable} ${spaceGrotesk.variable}`}>
+      <body className="min-h-screen bg-black font-sans text-white antialiased">
+        <Starfield />
         {children}
       </body>
     </html>

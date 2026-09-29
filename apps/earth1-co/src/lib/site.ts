@@ -30,12 +30,7 @@ export const site = {
     email: "chiefexec@earth1.co",
     inspiration: {
       text: "What I cannot create, I do not understand.",
-      author: "Richard Feynman, 1988",
+      author: "Richard Feynman",
     },
-    story: [
-      "Earth 1 Coalescent began with two ideas Zachariah could not put down.",
-      "From Cicero: we are not born for ourselves alone. From Newton: one law of gravity holds every planet, and every person, in the same sky.",
-      "Earth 1 is built on both. One sky, one citizenship, for everyone under it.",
-    ],
   },
 } as const;

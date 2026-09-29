@@ -2,6 +2,10 @@
 @import "@earth-one/ui/tokens.css";
 @source "../../../../packages/ui/src";
 
+@theme {
+  --font-display: var(--font-michroma), system-ui, sans-serif;
+}
+
 @layer base {
   html {
     color-scheme: dark;
@@ -9,96 +13,25 @@
   }
 
   body {
-    background-color: var(--color-blackboard);
+    background-color: #000;
     isolation: isolate;
-    color: var(--color-chalk);
+    color: #fff;
   }
 
   ::selection {
-    background: var(--color-ochre);
-    color: var(--color-blackboard);
+    background: #fff;
+    color: #000;
   }
 }
 
+/* Small, wide-tracked uppercase lettering. */
 @utility label {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  color: var(--color-dust);
-}
-
-/* Deep-space panel with a faint nebula haze. */
-@utility chalk-surface {
-  background-color: --alpha(var(--color-blackboard) / 80%);
-  background-image:
-    radial-gradient(ellipse at 20% 10%, --alpha(var(--color-glow) / 7%), transparent 55%),
-    radial-gradient(
-      ellipse at 80% 90%,
-      --alpha(var(--color-nebula) / 30%),
-      transparent 60%
-    );
-}
-
-/* Spectrum hairline, as under the EARTH ONE wordmark. */
-@utility rainbow-rule {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    #e8574a,
-    #ef9a3c,
-    #e9d25a,
-    #6cc07a,
-    #4aa6d8,
-    #7a6fd6,
-    #b06cc6
-  );
-}
-
-/* Wide, thin, uppercase display lettering. */
-@utility wordmark {
   font-family: var(--font-sans);
   font-weight: 300;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--color-chalk);
-  text-shadow: 0 0 24px --alpha(var(--color-glow) / 25%);
-}
-
-/* Brushed-silver serif, as on "Think." */
-@utility silver-text {
-  background-image: linear-gradient(
-    180deg,
-    #ffffff 0%,
-    #d9deea 42%,
-    #8c95aa 58%,
-    #eef1f7 100%
-  );
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-@utility chalk-rule {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--color-dust) 20%,
-    var(--color-dust) 80%,
-    transparent
-  );
-  opacity: 0.5;
-}
-
-@keyframes saturn-drift {
-  0%,
-  100% {
-    transform: rotate(0deg) translateY(0);
-  }
-  50% {
-    transform: rotate(3deg) translateY(-8px);
-  }
+  letter-spacing: 0.32em;
+  color: rgb(255 255 255 / 60%);
 }
 
 @media (prefers-reduced-motion: reduce) {
