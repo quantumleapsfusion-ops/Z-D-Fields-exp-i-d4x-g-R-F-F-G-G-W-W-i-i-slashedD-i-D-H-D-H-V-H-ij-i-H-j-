@@ -12,7 +12,7 @@ export function GovernanceManifesto() {
         id="governance-heading"
         className="font-display mt-3 text-3xl tracking-tight sm:text-5xl"
       >
-        Four principles, in the order we would break them last.
+        Four principles of global citizenship, in the order we would break them last.
       </h2>
       <ol className="mt-14 grid gap-12 sm:grid-cols-2 sm:gap-x-14">
         {principles.map((p) => (
