@@ -8,7 +8,7 @@ import { OAUTH_PROVIDERS, type OAuthProvider } from "./providers";
 function safeNextPath(next: FormDataEntryValue | null): string {
   return typeof next === "string" && next.startsWith("/") && !next.startsWith("//")
     ? next
-    : "/profile";
+    : "/";
 }
 
 /** Starts the OAuth flow. Provider credentials live in the Supabase dashboard. */
