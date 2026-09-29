@@ -27,11 +27,13 @@ export function Timeline({
   activeId,
   onPlay,
   renderActions,
+  renderDetail,
 }: {
   items: TimelineItem[];
   activeId: string | null;
   onPlay?: (segmentId: string) => void;
   renderActions?: (segment: SegmentDTO) => React.ReactNode;
+  renderDetail?: (segment: SegmentDTO) => React.ReactNode;
 }) {
   const ordered = [...items].sort((a, b) => itemStart(b).localeCompare(itemStart(a)));
   const groups: { day: string; items: TimelineItem[] }[] = [];
@@ -70,6 +72,7 @@ export function Timeline({
                   active={activeId === item.segment.id}
                   onPlay={onPlay}
                   actions={renderActions?.(item.segment)}
+                  detail={renderDetail?.(item.segment)}
                 />
               ),
             )}
@@ -100,11 +103,13 @@ function SegmentCard({
   active,
   onPlay,
   actions,
+  detail,
 }: {
   segment: SegmentDTO;
   active: boolean;
   onPlay?: (segmentId: string) => void;
   actions?: React.ReactNode;
+  detail?: React.ReactNode;
 }) {
   return (
     <li className="relative pl-8">
@@ -138,6 +143,7 @@ function SegmentCard({
           {actions ? <div className="flex items-center gap-4">{actions}</div> : null}
         </header>
         <Transcript segment={segment} />
+        {detail}
       </article>
     </li>
   );
@@ -158,6 +164,8 @@ function Transcript({ segment }: { segment: SegmentDTO }) {
     case "FAILED":
       return <p className="text-ochre/80 mt-3 text-sm">Transcription failed.</p>;
     case "SKIPPED":
-      return <p className="text-dust mt-3 text-sm">Transcription is off. Audio only.</p>;
+      return (
+        <p className="text-dust mt-3 text-sm">Original recording, kept as spoken.</p>
+      );
   }
 }

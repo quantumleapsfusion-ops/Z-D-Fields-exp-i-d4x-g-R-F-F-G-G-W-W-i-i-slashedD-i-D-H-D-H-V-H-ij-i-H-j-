@@ -9,6 +9,7 @@ const PROTECTED_PREFIXES = [
   "/gravity",
   "/horizon",
   "/superposition",
+  "/journey",
 ];
 
 /**

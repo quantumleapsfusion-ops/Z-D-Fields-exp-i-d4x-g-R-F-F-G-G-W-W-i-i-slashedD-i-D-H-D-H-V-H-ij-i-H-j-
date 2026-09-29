@@ -1,11 +1,8 @@
 import { notFound } from "next/navigation";
 
-import { PageShell } from "@/components/PageShell";
+import { StreamField } from "@/features/codex/StreamField";
 import { prisma } from "@/lib/db";
 import { resolveShare } from "@/lib/voice/share";
-import { toSegmentDTO } from "@/lib/voice/stream";
-
-import { SharedStream } from "./SharedStream";
 
 export const metadata = { title: "Shared voice", robots: { index: false } };
 
@@ -18,42 +15,24 @@ export default async function SharePage({
   const share = await resolveShare(token);
   if (!share) notFound();
 
-  const [owner, segments] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: share.userId },
-      select: { displayName: true },
-    }),
-    prisma.voiceSegment.findMany({
-      where: share.segmentId
-        ? { id: share.segmentId, stream: { userId: share.userId } }
-        : { stream: { userId: share.userId } },
-      orderBy: { index: "asc" },
-    }),
-  ]);
-
-  const dtos = segments
-    .map(toSegmentDTO)
-    .map((s) =>
-      share.includeTranscript
-        ? s
-        : { ...s, transcription: null, transcriptionStatus: "SKIPPED" as const },
-    );
+  const segments = await prisma.voiceSegment.findMany({
+    where: share.segmentId
+      ? { id: share.segmentId, stream: { userId: share.userId } }
+      : { stream: { userId: share.userId } },
+    orderBy: { index: "asc" },
+  });
 
   return (
-    <PageShell>
-      <section className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
-        <p className="label">Voice Stream</p>
-        <h1 className="font-display mt-2 text-4xl tracking-tight">
-          {owner?.displayName ?? "An earthling"} shared{" "}
-          {share.segmentId ? "a moment of their stream" : "their stream"}
-        </h1>
-        <SharedStream
-          token={token}
-          segments={dtos}
-          includeAudio={share.includeAudio}
-          includeTranscript={share.includeTranscript}
-        />
-      </section>
-    </PageShell>
+    <StreamField
+      entries={
+        share.includeAudio
+          ? segments.map((s) => ({
+              id: s.id,
+              durationMs: s.durationMs,
+              audioUrl: `/api/share/${token}/audio/${s.id}`,
+            }))
+          : []
+      }
+    />
   );
 }

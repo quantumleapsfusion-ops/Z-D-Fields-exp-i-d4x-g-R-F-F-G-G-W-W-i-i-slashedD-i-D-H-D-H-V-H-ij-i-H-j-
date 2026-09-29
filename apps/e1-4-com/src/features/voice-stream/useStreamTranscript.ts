@@ -33,7 +33,7 @@ export function useStreamTranscript(): StreamTranscript {
       const nextText = transcriptText(next);
       setSegments(next);
       setServerText(nextText);
-      setCarryText(nextText);
+      if (nextText) setCarryText(nextText);
     },
     [setCarryText],
   );
@@ -68,5 +68,5 @@ export function useStreamTranscript(): StreamTranscript {
     };
   }, [commitSegments, requestSegments]);
 
-  return { segments, text: serverText ?? carriedText, loading, error, refresh };
+  return { segments, text: serverText || carriedText, loading, error, refresh };
 }
