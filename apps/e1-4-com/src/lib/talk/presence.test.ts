@@ -7,6 +7,7 @@ import {
   mergeNotes,
   nextLivePart,
   pollCursor,
+  reconcileNotes,
 } from "./presence";
 
 type N = {
@@ -46,6 +47,14 @@ describe("mergeNotes", () => {
     );
     expect(merged.map((n) => n.id)).toEqual(["a", "c", "b"]);
     expect(merged[0].transcriptionStatus).toBe("DONE");
+  });
+});
+
+describe("reconcileNotes", () => {
+  it("drops unsent notes but keeps ones created after the poll's snapshot", () => {
+    const current = [note("gone", 1), note("kept", 2), note("justSent", 20)];
+    const merged = reconcileNotes(current, [note("new", 5)], ["kept", "new"], at(15));
+    expect(merged.map((n) => n.id)).toEqual(["kept", "new", "justSent"]);
   });
 });
 

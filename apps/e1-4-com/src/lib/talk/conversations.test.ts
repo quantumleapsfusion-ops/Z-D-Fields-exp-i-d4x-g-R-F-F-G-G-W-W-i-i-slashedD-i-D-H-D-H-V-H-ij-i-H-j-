@@ -2,26 +2,42 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   appendNote,
-  deleteConversationIfEmpty,
   deleteOwnNotes,
   findByInvite,
   getThread,
   joinByInvite,
+  leaveConversation,
   setLive,
+  TALK_LIMITS,
+  TalkRateLimitError,
 } from "./conversations";
 
 const { db, storage } = vi.hoisted(() => ({
   db: {
-    conversation: { findUnique: vi.fn(), update: vi.fn(), deleteMany: vi.fn() },
+    conversation: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
+      delete: vi.fn(),
+    },
     conversationMember: {
       findUnique: vi.fn(),
       upsert: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
+      delete: vi.fn(),
       count: vi.fn(),
     },
-    voiceNote: { create: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn() },
+    voiceNote: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      deleteMany: vi.fn(),
+      count: vi.fn(),
+      aggregate: vi.fn(),
+    },
     $transaction: vi.fn(),
+    $queryRaw: vi.fn(),
   },
   storage: { upload: vi.fn(), remove: vi.fn(), getPublicUrl: vi.fn() },
 }));
@@ -49,7 +65,11 @@ const input = () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  db.$transaction.mockImplementation(async (ops: unknown[]) => Promise.all(ops));
+  db.$transaction.mockImplementation(async (ops: unknown) =>
+    typeof ops === "function" ? ops(db) : Promise.all(ops as unknown[]),
+  );
+  db.voiceNote.count.mockResolvedValue(0);
+  db.voiceNote.aggregate.mockResolvedValue({ _sum: { sizeBytes: 0 } });
 });
 
 describe("membership gates", () => {
@@ -90,14 +110,31 @@ describe("appendNote", () => {
     );
   });
 
-  it("refreshes the live heartbeat for live parts", async () => {
+  it("refreshes the heartbeat only for the still-active live stream", async () => {
     db.conversationMember.findUnique.mockResolvedValue({ userId: ME });
     db.voiceNote.create.mockImplementation(async ({ data }) => data);
     const liveId = "33333333-3333-4333-8333-333333333333";
     await appendNote({ ...input(), liveId });
-    expect(db.conversationMember.update).toHaveBeenCalledWith(
+    expect(db.conversationMember.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { conversationId: CONV, userId: ME, liveId },
+        data: { liveAt: expect.any(Date) },
+      }),
+    );
+    expect(db.conversationMember.updateMany).not.toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ liveId }) }),
     );
+  });
+
+  it("rate-limits bursts and daily volume before uploading", async () => {
+    db.conversationMember.findUnique.mockResolvedValue({ userId: ME });
+    db.voiceNote.count.mockResolvedValueOnce(TALK_LIMITS.clipsPerMinute);
+    await expect(appendNote(input())).rejects.toBeInstanceOf(TalkRateLimitError);
+    db.voiceNote.aggregate.mockResolvedValueOnce({
+      _sum: { sizeBytes: TALK_LIMITS.bytesPerDay },
+    });
+    await expect(appendNote(input())).rejects.toBeInstanceOf(TalkRateLimitError);
+    expect(storage.upload).not.toHaveBeenCalled();
   });
 
   it("removes the uploaded blob if the row can't be written", async () => {
@@ -128,14 +165,19 @@ describe("invites", () => {
 });
 
 describe("deletion", () => {
-  it("unsend only deletes the caller's own notes", async () => {
+  it("unsend only deletes the caller's own notes in conversations they're still in", async () => {
     db.voiceNote.findMany.mockResolvedValue([
-      { id: "n1", audioPath: `${ME}/talk/x.webm` },
+      { id: "n1", audioPath: `${ME}/talk/x.webm`, conversationId: CONV },
     ]);
+    db.voiceNote.findFirst.mockResolvedValue(null);
     await expect(deleteOwnNotes(ME, ["n1", "someone-elses"])).resolves.toBe(1);
     expect(db.voiceNote.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: { in: ["n1", "someone-elses"] }, senderId: ME },
+        where: {
+          id: { in: ["n1", "someone-elses"] },
+          senderId: ME,
+          conversation: { members: { some: { userId: ME } } },
+        },
       }),
     );
     expect(db.voiceNote.deleteMany).toHaveBeenCalledWith({
@@ -143,24 +185,61 @@ describe("deletion", () => {
     });
   });
 
-  it("keeps a conversation while anyone is still in it", async () => {
-    db.conversationMember.count.mockResolvedValue(1);
-    await expect(deleteConversationIfEmpty(CONV)).resolves.toBe(false);
-    expect(storage.remove).not.toHaveBeenCalled();
-    expect(db.conversation.deleteMany).not.toHaveBeenCalled();
+  it("recomputes lastNoteAt after unsending", async () => {
+    const monday = new Date("2026-09-28T10:00:00Z");
+    db.voiceNote.findMany.mockResolvedValue([
+      { id: "n1", audioPath: "p", conversationId: CONV },
+    ]);
+    db.voiceNote.findFirst.mockResolvedValue({ createdAt: monday });
+    await deleteOwnNotes(ME, ["n1"]);
+    expect(db.conversation.updateMany).toHaveBeenCalledWith({
+      where: { id: CONV },
+      data: { lastNoteAt: monday },
+    });
   });
 
-  it("destroys every remaining note's audio when the last member leaves", async () => {
+  it("leaving keeps the conversation while others are still in it", async () => {
+    db.$queryRaw.mockResolvedValue([{ id: CONV }]);
+    db.conversationMember.findUnique.mockResolvedValue({ userId: ME });
+    db.conversationMember.count.mockResolvedValue(1);
+    await leaveConversation(ME, CONV);
+    expect(db.conversationMember.delete).toHaveBeenCalled();
+    expect(storage.remove).not.toHaveBeenCalled();
+    expect(db.conversation.delete).not.toHaveBeenCalled();
+  });
+
+  it("the last member out destroys every note's audio, then the conversation", async () => {
+    db.$queryRaw.mockResolvedValue([{ id: CONV }]);
+    db.conversationMember.findUnique.mockResolvedValue({ userId: ME });
     db.conversationMember.count.mockResolvedValue(0);
     db.voiceNote.findMany.mockResolvedValue([
       { audioPath: "a/talk/1.webm" },
       { audioPath: "b/talk/2.m4a" },
     ]);
-    await expect(deleteConversationIfEmpty(CONV)).resolves.toBe(true);
+    await leaveConversation(ME, CONV);
     expect(storage.remove).toHaveBeenCalledWith("voice", [
       "a/talk/1.webm",
       "b/talk/2.m4a",
     ]);
-    expect(db.conversation.deleteMany).toHaveBeenCalledWith({ where: { id: CONV } });
+    expect(db.conversation.delete).toHaveBeenCalledWith({ where: { id: CONV } });
+  });
+
+  it("keeps the last membership when storage cleanup fails, so leaving can be retried", async () => {
+    db.$queryRaw.mockResolvedValue([{ id: CONV }]);
+    db.conversationMember.findUnique.mockResolvedValue({ userId: ME });
+    db.conversationMember.count.mockResolvedValue(0);
+    db.voiceNote.findMany.mockResolvedValue([{ audioPath: "a/talk/1.webm" }]);
+    storage.remove.mockRejectedValueOnce(new Error("storage down"));
+    await expect(leaveConversation(ME, CONV)).rejects.toThrow("storage down");
+    expect(db.conversationMember.delete).not.toHaveBeenCalled();
+    expect(db.conversation.delete).not.toHaveBeenCalled();
+  });
+
+  it("does nothing for non-members", async () => {
+    db.$queryRaw.mockResolvedValue([{ id: CONV }]);
+    db.conversationMember.findUnique.mockResolvedValue(null);
+    await leaveConversation(ME, CONV);
+    expect(db.conversation.delete).not.toHaveBeenCalled();
+    expect(db.conversationMember.delete).not.toHaveBeenCalled();
   });
 });

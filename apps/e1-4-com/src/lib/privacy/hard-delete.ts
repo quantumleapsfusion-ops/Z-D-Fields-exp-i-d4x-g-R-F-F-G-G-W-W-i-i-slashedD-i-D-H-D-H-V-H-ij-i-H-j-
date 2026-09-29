@@ -3,7 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/db";
 import { AVATARS_BUCKET, VOICE_BUCKET, storage } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { deleteConversationIfEmpty } from "@/lib/talk/conversations";
+import { leaveConversation } from "@/lib/talk/conversations";
 
 export interface HardDeleteResult {
   userId: string;
@@ -15,20 +15,25 @@ export interface HardDeleteResult {
 /**
  * Hard-delete routine (GDPR Art. 17 / CCPA §1798.105).
  *
- *   1. Storage objects under `<uid>/` in the `voice` and `avatars` buckets
+ *   1. Talk conversations the user was the last member of (with the other senders' audio)
+ *   2. Storage objects under `<uid>/` in the `voice` and `avatars` buckets
  *      (Voice Stream segments and every Talk voice note the user sent)
- *   2. Postgres rows (User; streams/segments/shares/boards/usage/notes/memberships cascade)
- *   3. Conversations nobody is left in (with the other senders' audio)
+ *   3. Postgres rows (User; streams/segments/shares/boards/usage/notes/memberships cascade)
  *   4. The Supabase Auth user itself
  *
  * Storage goes first so a failure there leaves the DB rows (and thus the paths
  * needed to retry) intact — no row is ever deleted while its blob survives.
  */
 export async function hardDeleteUser(userId: string): Promise<HardDeleteResult> {
+  // Leave every Talk conversation first: ones the user was last in are destroyed (with the other
+  // senders' audio) while the user row still exists, so a failure here is retryable.
   const memberships = await prisma.conversationMember.findMany({
     where: { userId },
     select: { conversationId: true },
   });
+  for (const { conversationId } of memberships) {
+    await leaveConversation(userId, conversationId);
+  }
 
   const [voiceRemoved, avatarsRemoved] = await Promise.all([
     storage.removePrefix(VOICE_BUCKET, userId),
@@ -36,9 +41,6 @@ export async function hardDeleteUser(userId: string): Promise<HardDeleteResult> 
   ]);
 
   const deleted = await prisma.user.deleteMany({ where: { id: userId } });
-  for (const { conversationId } of memberships) {
-    await deleteConversationIfEmpty(conversationId);
-  }
 
   const admin = createAdminClient();
   const { error } = await admin.auth.admin.deleteUser(userId);

@@ -5,7 +5,10 @@ import { getThread } from "@/lib/talk/conversations";
 
 export const runtime = "nodejs";
 
-/** Poll: members (with live presence) and notes created at or after `?since=`. */
+/**
+ * Poll: members (with live presence), notes created at or after `?since=`, and every current note
+ * id so clients can drop notes that were unsent.
+ */
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -21,7 +24,12 @@ export async function GET(
   const thread = await getThread(userId, id, since);
   if (!thread) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(
-    { members: thread.members, notes: thread.notes },
+    {
+      members: thread.members,
+      notes: thread.notes,
+      noteIds: thread.noteIds,
+      asOf: thread.asOf,
+    },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

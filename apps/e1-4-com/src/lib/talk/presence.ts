@@ -27,6 +27,21 @@ export function mergeNotes<T extends Orderable>(current: T[], incoming: T[]): T[
 }
 
 /**
+ * Applies a poll: merges `incoming`, and drops notes the server no longer has (unsent) — but only
+ * ones created before the poll's snapshot `asOf`, so a note we just uploaded isn't flickered away.
+ */
+export function reconcileNotes<T extends Orderable & { createdAt: string }>(
+  current: T[],
+  incoming: T[],
+  ids: string[],
+  asOf: string,
+): T[] {
+  const alive = new Set(ids);
+  const kept = current.filter((n) => alive.has(n.id) || n.createdAt >= asOf);
+  return mergeNotes(kept, incoming);
+}
+
+/**
  * The `since` cursor for the next poll: the newest note we have, or earlier if an older note is
  * still waiting on its transcript (so the poll brings back its finished text).
  */

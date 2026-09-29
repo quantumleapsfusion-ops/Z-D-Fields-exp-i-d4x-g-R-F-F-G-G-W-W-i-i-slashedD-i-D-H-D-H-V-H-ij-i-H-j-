@@ -20,6 +20,7 @@ import {
   mergeNotes,
   nextLivePart,
   pollCursor,
+  reconcileNotes,
   type ThreadItem,
 } from "@/lib/talk/presence";
 
@@ -181,10 +182,15 @@ export function TalkThread({
         { cache: "no-store" },
       ).catch(() => null);
       if (!res?.ok || cancelled) return;
-      const data = (await res.json()) as { members: MemberDTO[]; notes: NoteDTO[] };
+      const data = (await res.json()) as {
+        members: MemberDTO[];
+        notes: NoteDTO[];
+        noteIds: string[];
+        asOf: string;
+      };
       const known = new Set(notesRef.current.map((n) => n.id));
       setMembers(data.members);
-      setNotes((prev) => mergeNotes(prev, data.notes));
+      setNotes((prev) => reconcileNotes(prev, data.notes, data.noteIds, data.asOf));
       if (data.notes.some((n) => n.senderId !== viewerId && !known.has(n.id))) {
         void markReadAction(conversationId);
       }
@@ -197,13 +203,21 @@ export function TalkThread({
   }, [conversationId, interval, viewerId]);
 
   // Following someone live: whenever playback goes idle, play their next clip as it lands.
+  // Only clips of the followed stream count as "heard"; the dock may auto-advance into other
+  // replies, which must not reset the stream back to its first clip.
   useEffect(() => {
-    if (activeId) lastHeard.current = activeId;
-  }, [activeId]);
+    if (!activeId || !following) return;
+    if (notesRef.current.find((n) => n.id === activeId)?.liveId === following) {
+      lastHeard.current = activeId;
+    }
+  }, [activeId, following]);
   useEffect(() => {
     if (!following || playing) return;
     const next = nextLivePart(notes, following, lastHeard.current);
-    if (next && next.id !== lastHeard.current) playFrom(next.id);
+    if (next && next.id !== lastHeard.current) {
+      lastHeard.current = next.id;
+      playFrom(next.id);
+    }
   }, [following, playing, notes, playFrom]);
 
   const listenLive = (liveId: string) => {

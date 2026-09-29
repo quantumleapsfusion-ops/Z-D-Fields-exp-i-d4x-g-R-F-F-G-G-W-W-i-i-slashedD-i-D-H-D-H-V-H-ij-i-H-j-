@@ -1,7 +1,12 @@
 import { after, NextResponse } from "next/server";
 
 import { getUserId } from "@/lib/auth/user";
-import { appendNote, toNoteDTO, transcribeNote } from "@/lib/talk/conversations";
+import {
+  appendNote,
+  TalkRateLimitError,
+  toNoteDTO,
+  transcribeNote,
+} from "@/lib/talk/conversations";
 import { MAX_SEGMENT_BYTES } from "@/lib/voice/stream";
 
 export const runtime = "nodejs";
@@ -44,16 +49,24 @@ export async function POST(
     return NextResponse.json({ error: "Invalid liveId" }, { status: 400 });
   }
 
-  const note = await appendNote({
-    userId,
-    conversationId,
-    liveId,
-    audio: new Uint8Array(await audio.arrayBuffer()),
-    mimeType: (audio.type || "audio/webm").split(";")[0],
-    durationMs,
-    startedAt,
-    endedAt,
-  });
+  let note;
+  try {
+    note = await appendNote({
+      userId,
+      conversationId,
+      liveId,
+      audio: new Uint8Array(await audio.arrayBuffer()),
+      mimeType: (audio.type || "audio/webm").split(";")[0],
+      durationMs,
+      startedAt,
+      endedAt,
+    });
+  } catch (error) {
+    if (error instanceof TalkRateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
+    throw error;
+  }
   if (!note) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   if (note.transcriptionStatus === "PENDING") after(() => transcribeNote(note.id));

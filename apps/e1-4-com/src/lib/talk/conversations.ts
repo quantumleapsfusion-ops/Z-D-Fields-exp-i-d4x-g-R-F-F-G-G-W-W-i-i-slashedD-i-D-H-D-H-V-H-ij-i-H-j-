@@ -44,6 +44,10 @@ export type ThreadDTO = {
   inviteToken: string;
   members: MemberDTO[];
   notes: NoteDTO[];
+  /** Every note id currently in the thread (so pollers can drop unsent notes). */
+  noteIds: string[];
+  /** Server time just before the read; notes created after it may be missing from `noteIds`. */
+  asOf: string;
 };
 
 export function toNoteDTO(n: VoiceNote): NoteDTO {
@@ -177,6 +181,7 @@ export async function getThread(
   since?: Date,
 ): Promise<ThreadDTO | null> {
   if (!(await getMembership(userId, conversationId))) return null;
+  const asOf = new Date().toISOString();
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
     include: {
@@ -188,6 +193,14 @@ export async function getThread(
     },
   });
   if (!conversation) return null;
+  const noteIds = since
+    ? (
+        await prisma.voiceNote.findMany({
+          where: { conversationId },
+          select: { id: true },
+        })
+      ).map((n) => n.id)
+    : conversation.notes.map((n) => n.id);
   const members = conversation.members.map((m) => toMemberDTO(m, userId));
   return {
     id: conversation.id,
@@ -195,6 +208,8 @@ export async function getThread(
     inviteToken: conversation.inviteToken,
     members,
     notes: conversation.notes.map(toNoteDTO),
+    noteIds,
+    asOf,
   };
 }
 
@@ -229,9 +244,41 @@ type AppendNoteInput = {
   endedAt: Date;
 };
 
+/** Per-sender caps on what Talk will store (and send to STT). Live streams send ~15 clips/min. */
+export const TALK_LIMITS = {
+  clipsPerMinute: 30,
+  bytesPerDay: 500 * 1024 * 1024,
+} as const;
+
+export class TalkRateLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "TalkRateLimitError";
+  }
+}
+
+async function assertSendAllowance(userId: string, bytes: number, now = Date.now()) {
+  const [recent, today] = await Promise.all([
+    prisma.voiceNote.count({
+      where: { senderId: userId, createdAt: { gte: new Date(now - 60_000) } },
+    }),
+    prisma.voiceNote.aggregate({
+      where: { senderId: userId, createdAt: { gte: new Date(now - 86_400_000) } },
+      _sum: { sizeBytes: true },
+    }),
+  ]);
+  if (recent >= TALK_LIMITS.clipsPerMinute) {
+    throw new TalkRateLimitError("Too many voice notes at once. Try again in a minute.");
+  }
+  if ((today._sum.sizeBytes ?? 0) + bytes > TALK_LIMITS.bytesPerDay) {
+    throw new TalkRateLimitError("Daily voice limit reached. Try again tomorrow.");
+  }
+}
+
 /** Stores one clip (a whole voice note, or one part of a live stream). Blob first, then the row. */
 export async function appendNote(input: AppendNoteInput): Promise<VoiceNote | null> {
   if (!(await getMembership(input.userId, input.conversationId))) return null;
+  await assertSendAllowance(input.userId, input.audio.byteLength);
   const transcriber = getTranscriber();
   const id = crypto.randomUUID();
   // First path segment must be the sender's uid (Storage RLS + hardDeleteUser prefix purge).
@@ -265,20 +312,26 @@ export async function appendNote(input: AppendNoteInput): Promise<VoiceNote | nu
         where: { id: input.conversationId },
         data: { lastNoteAt: now },
       }),
-      // Sending counts as reading; a live part also refreshes the live heartbeat.
-      prisma.conversationMember.update({
-        where: {
-          conversationId_userId: {
-            conversationId: input.conversationId,
-            userId: input.userId,
-          },
-        },
-        data: input.liveId
-          ? { lastReadAt: now, liveId: input.liveId, liveAt: now }
-          : { lastReadAt: now },
+      // Sending counts as reading. A live part refreshes the heartbeat only while that stream is
+      // still the active one, so a clip that lands after "End live" can't revive presence.
+      prisma.conversationMember.updateMany({
+        where: { conversationId: input.conversationId, userId: input.userId },
+        data: { lastReadAt: now },
       }),
+      ...(input.liveId
+        ? [
+            prisma.conversationMember.updateMany({
+              where: {
+                conversationId: input.conversationId,
+                userId: input.userId,
+                liveId: input.liveId,
+              },
+              data: { liveAt: now },
+            }),
+          ]
+        : []),
     ]);
-    return note;
+    return note as VoiceNote;
   } catch (error) {
     await storage.remove(VOICE_BUCKET, [audioPath]);
     throw error;
@@ -331,11 +384,18 @@ export async function findAudibleNote(userId: string, noteId: string) {
   });
 }
 
-/** Unsends the sender's own notes: blobs, then rows. Returns how many were removed. */
+/**
+ * Unsends the caller's own notes in conversations they still belong to: blobs, then rows, then
+ * each affected conversation's `lastNoteAt` is recomputed. Returns how many were removed.
+ */
 export async function deleteOwnNotes(userId: string, noteIds: string[]): Promise<number> {
   const notes = await prisma.voiceNote.findMany({
-    where: { id: { in: noteIds }, senderId: userId },
-    select: { id: true, audioPath: true },
+    where: {
+      id: { in: noteIds },
+      senderId: userId,
+      conversation: { members: { some: { userId } } },
+    },
+    select: { id: true, audioPath: true, conversationId: true },
   });
   if (notes.length === 0) return 0;
   await storage.remove(
@@ -343,31 +403,63 @@ export async function deleteOwnNotes(userId: string, noteIds: string[]): Promise
     notes.map((n) => n.audioPath),
   );
   await prisma.voiceNote.deleteMany({ where: { id: { in: notes.map((n) => n.id) } } });
+  for (const conversationId of new Set(notes.map((n) => n.conversationId))) {
+    const latest = await prisma.voiceNote.findFirst({
+      where: { conversationId },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+    await prisma.conversation.updateMany({
+      where: { id: conversationId },
+      data: { lastNoteAt: latest?.createdAt ?? null },
+    });
+  }
   return notes.length;
 }
 
-/** Destroys a conversation (every note's audio, then the rows) once nobody is left in it. */
-export async function deleteConversationIfEmpty(
+/**
+ * Leaves a conversation. Your notes stay for the others; the last one out destroys it (every
+ * note's audio, then the rows).
+ *
+ * Runs under a row lock on the conversation: a concurrent invite join (whose FK check takes a
+ * KEY SHARE lock on the same row) waits, so it can't slip in between the member count and the
+ * delete. The last member's row is only removed together with the conversation, so if storage
+ * cleanup fails they are still a member and can simply leave again to retry.
+ */
+export async function leaveConversation(
+  userId: string,
   conversationId: string,
-): Promise<boolean> {
-  const remaining = await prisma.conversationMember.count({ where: { conversationId } });
-  if (remaining > 0) return false;
-  const notes = await prisma.voiceNote.findMany({
-    where: { conversationId },
-    select: { audioPath: true },
-  });
-  if (notes.length > 0) {
-    await storage.remove(
-      VOICE_BUCKET,
-      notes.map((n) => n.audioPath),
-    );
-  }
-  await prisma.conversation.deleteMany({ where: { id: conversationId } });
-  return true;
-}
-
-/** Leaves a conversation. Your notes stay for the others; the last one out deletes everything. */
-export async function leaveConversation(userId: string, conversationId: string) {
-  await prisma.conversationMember.deleteMany({ where: { conversationId, userId } });
-  await deleteConversationIfEmpty(conversationId);
+): Promise<void> {
+  await prisma.$transaction(
+    async (tx) => {
+      const locked = await tx.$queryRaw<{ id: string }[]>`
+        SELECT id FROM conversations WHERE id = ${conversationId}::uuid FOR UPDATE`;
+      if (locked.length === 0) return;
+      const member = await tx.conversationMember.findUnique({
+        where: { conversationId_userId: { conversationId, userId } },
+      });
+      if (!member) return;
+      const others = await tx.conversationMember.count({
+        where: { conversationId, userId: { not: userId } },
+      });
+      if (others > 0) {
+        await tx.conversationMember.delete({
+          where: { conversationId_userId: { conversationId, userId } },
+        });
+        return;
+      }
+      const notes = await tx.voiceNote.findMany({
+        where: { conversationId },
+        select: { audioPath: true },
+      });
+      if (notes.length > 0) {
+        await storage.remove(
+          VOICE_BUCKET,
+          notes.map((n) => n.audioPath),
+        );
+      }
+      await tx.conversation.delete({ where: { id: conversationId } });
+    },
+    { timeout: 60_000 },
+  );
 }
