@@ -212,7 +212,18 @@ export function Cosmos({ className }: { className?: string }) {
       look.tx = Math.max(-1, Math.min(1, event.gamma / 30));
       look.ty = Math.max(-1, Math.min(1, (event.beta - 45) / 30));
     };
+    let press: { id: number; x: number; y: number } | null = null;
+    const onDown = (event: PointerEvent) => {
+      press = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    };
+    const onCancel = () => {
+      press = null;
+    };
     const onTap = (event: PointerEvent) => {
+      const start = press;
+      press = null;
+      if (!start || start.id !== event.pointerId) return;
+      if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) return;
       const x = (event.clientX - cx - look.x * 10) / scale;
       const y = (event.clientY - cy - look.y * 8) / (scale * tilt);
       const r = Math.hypot(x, y);
@@ -225,10 +236,13 @@ export function Cosmos({ className }: { className?: string }) {
       comets.push(comet);
       if (comets.length > MAX_COMETS) comets.shift();
       navigator.vibrate?.(12);
+      if (reduce) requestAnimationFrame(draw);
     };
     window.addEventListener("pointermove", onPointer, { passive: true });
     window.addEventListener("deviceorientation", onOrientation);
-    el.addEventListener("pointerdown", onTap);
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointerup", onTap);
+    el.addEventListener("pointercancel", onCancel);
 
     const drawStars = () => {
       const ox = -look.x * 14 - w * 0.05;
@@ -518,7 +532,9 @@ export function Cosmos({ className }: { className?: string }) {
       observer.disconnect();
       window.removeEventListener("pointermove", onPointer);
       window.removeEventListener("deviceorientation", onOrientation);
-      el.removeEventListener("pointerdown", onTap);
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("pointerup", onTap);
+      el.removeEventListener("pointercancel", onCancel);
     };
   }, []);
 

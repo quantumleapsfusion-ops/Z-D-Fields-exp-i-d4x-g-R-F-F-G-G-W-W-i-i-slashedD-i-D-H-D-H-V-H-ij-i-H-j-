@@ -24,8 +24,18 @@ export const site = {
     author: "Cicero",
     source: "De Officiis",
   },
-  people: [
-    { name: "Alex", role: "Vice President", email: "alex@earth1.co" },
-    { name: "Candace", role: "HR & Partnerships", email: "candace@earth1.co" },
-  ],
+  founder: {
+    name: "Zachariah Robertson",
+    role: "Founder & Chief Executive",
+    email: "chiefexec@earth1.co",
+    inspiration: {
+      text: "The people who are crazy enough to think they can change the world are the ones who do.",
+      author: "Apple · Think Different, 1997",
+    },
+    story: [
+      "Earth 1 Coalescent began with two ideas Zachariah could not put down.",
+      "From Cicero: we are not born for ourselves alone. From Newton: one law of gravity holds every planet, and every person, in the same sky.",
+      "Earth 1 is built on both. One sky, one citizenship, for everyone under it.",
+    ],
+  },
 } as const;
