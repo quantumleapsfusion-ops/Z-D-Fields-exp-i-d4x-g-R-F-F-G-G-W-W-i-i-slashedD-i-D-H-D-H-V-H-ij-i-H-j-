@@ -1,20 +1,29 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Space_Grotesk } from "next/font/google";
+import { IBM_Plex_Mono, Manrope, Unbounded } from "next/font/google";
 
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
 import { site } from "@/lib/site";
 
-const fraunces = Fraunces({
+const unbounded = Unbounded({
   subsets: ["latin"],
+  weight: ["300", "500", "700"],
   display: "swap",
-  variable: "--font-fraunces",
+  variable: "--font-unbounded",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const manrope = Manrope({
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
   display: "swap",
-  variable: "--font-space-grotesk",
+  variable: "--font-manrope",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
+  variable: "--font-plex-mono",
 });
 
 export const metadata: Metadata = {
@@ -26,13 +35,8 @@ export const metadata: Metadata = {
   description: site.description,
   applicationName: site.name,
   authors: [{ name: site.org, url: site.philosophyUrl }],
-  keywords: [
-    "e1-4",
-    "earth life-forms",
-    "Earth One Global Coalescent",
-    "voice",
-    "chalkboard",
-  ],
+  keywords: ["e1-4", "earth life-forms", "Earth 1 Coalescent", "voice", "chalkboard"],
+  robots: { index: false, follow: false },
   openGraph: {
     type: "website",
     url: site.url,
@@ -45,20 +49,19 @@ export const metadata: Metadata = {
     title: `${site.name} — ${site.tagline}`,
     description: site.description,
   },
-  icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
-  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0e1a13",
+  themeColor: "#050507",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
-      <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
+    <html
+      lang="en"
+      className={`${unbounded.variable} ${manrope.variable} ${plexMono.variable}`}
+    >
+      <body className="bg-bg text-text min-h-screen font-sans antialiased">
         <AppShell>{children}</AppShell>
       </body>
     </html>

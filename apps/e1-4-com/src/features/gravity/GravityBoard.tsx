@@ -102,7 +102,7 @@ export function GravityBoard({ llmReady }: { llmReady: boolean }) {
         <span className="label w-28 shrink-0">Density</span>
         <div className="bg-chalk/10 relative h-2 flex-1 rounded-full">
           <div
-            className="from-dust to-ochre absolute inset-y-0 left-0 rounded-full bg-gradient-to-r transition-all duration-500"
+            className="bg-accent absolute inset-y-0 left-0 rounded-full transition-all duration-500"
             style={{ width: `${Math.round(d * 100)}%` }}
           />
           <div

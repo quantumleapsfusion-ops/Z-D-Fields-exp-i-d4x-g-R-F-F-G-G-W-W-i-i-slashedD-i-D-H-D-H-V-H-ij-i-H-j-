@@ -1,20 +1,23 @@
+import Link from "next/link";
+
 import { site } from "@/lib/site";
 
 export function CTA() {
   return (
-    <section className="mx-auto max-w-5xl px-5 py-24 sm:px-8 sm:py-32">
-      <p className="font-display max-w-3xl text-2xl leading-snug tracking-tight sm:text-4xl">
-        Built by Earth One Global Coalescent — global citizenship for all, one voice at a
-        time.
-      </p>
-      <a
-        href={site.philosophyUrl}
-        rel="noreferrer"
-        className="border-ochre/60 text-ochre hover:border-ochre hover:text-chalk mt-8 inline-flex items-center gap-2 border-b pb-1 font-sans text-base transition-colors sm:text-lg"
-      >
-        Read the philosophy at earth1.co
-        <span aria-hidden="true">→</span>
-      </a>
+    <section className="border-border border-y">
+      <div className="page flex flex-col gap-10 py-24 sm:py-32 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="font-display text-[2.75rem] leading-[0.95] font-light tracking-tight sm:text-[4.5rem] lg:text-[5.5rem]">
+            {site.band.statement}
+          </p>
+          <p className="text-text-2 font-display mt-6 text-xl font-light sm:text-2xl">
+            {site.band.support}
+          </p>
+        </div>
+        <Link href="/stream" className="pill bg-accent text-bg hover:bg-text shrink-0">
+          {site.cta}
+        </Link>
+      </div>
     </section>
   );
 }

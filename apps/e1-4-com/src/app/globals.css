@@ -1,47 +1,28 @@
 @import "tailwindcss";
+@import "@earth-one/ui/tokens.css";
 @source "../../../../packages/ui/src";
 
-/* Chalkboard theme — superseded by the shared neo-futurist tokens; removed in the e1-4.com redesign. */
 @theme {
-  --color-blackboard: #0e1a13;
-  --color-board: #0e1a13;
-  --color-board-2: #142419;
-  --color-chalk: #f1ede1;
-  --color-dust: #93a294;
-  --color-ochre: #d3a34c;
-  --color-glow: #38bdf8;
-  --color-line: rgb(147 162 148 / 0.25);
+  /* e1-4.com accent: electric cyan. */
+  --color-accent: #7fe7f0;
 
-  --font-display: var(--font-fraunces), Georgia, serif;
-  --font-sans: var(--font-space-grotesk), system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Semantic aliases used across the app surfaces (stream, Da Vinci, chalkboard, gravity, auth). */
+  --color-blackboard: var(--color-bg);
+  --color-board: var(--color-bg);
+  --color-board-2: var(--color-surface);
+  --color-chalk: var(--color-text);
+  --color-dust: var(--color-text-2);
+  --color-ochre: var(--color-accent);
+  --color-glow: var(--color-accent);
+  --color-line: var(--color-border);
 
-  --tracking-label: 0.18em;
-  --radius-board: 0.75rem;
+  --radius-board: var(--radius-card);
 
-  --animate-wave: wave 1.4s ease-in-out infinite;
-  --animate-drift: drift 6s ease-in-out infinite;
   --animate-ink-in: ink-in 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --animate-transcript: transcript 9s steps(60, end) infinite;
+  --animate-word: word var(--loop, 9s) ease-out infinite both;
 
-  @keyframes wave {
-    0%,
-    100% {
-      transform: scaleY(0.25);
-    }
-    50% {
-      transform: scaleY(1);
-    }
-  }
-  @keyframes drift {
-    0%,
-    100% {
-      opacity: 0.35;
-    }
-    50% {
-      opacity: 0.85;
-    }
-  }
   @keyframes ink-in {
     0% {
       opacity: 0;
@@ -63,6 +44,35 @@
       opacity: 0.8;
     }
   }
+  @keyframes transcript {
+    0% {
+      width: 0;
+    }
+    70%,
+    100% {
+      width: 100%;
+    }
+  }
+  /* One word of the demo transcript: fades up, holds, then clears so the line can replay. */
+  @keyframes word {
+    0% {
+      opacity: 0;
+      transform: translateY(0.3em);
+      filter: blur(4px);
+    }
+    5%,
+    82% {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+    90%,
+    100% {
+      opacity: 0;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
 }
 
 @layer base {
@@ -72,20 +82,36 @@
   }
 
   body {
-    background-color: var(--color-blackboard);
-    color: var(--color-chalk);
+    background-color: var(--color-bg);
+    color: var(--color-text);
   }
 
   ::selection {
-    background: var(--color-ochre);
-    color: var(--color-blackboard);
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+}
+
+/* Page gutter: 24px on mobile, 80px from lg. */
+@utility page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1440px;
+  padding-inline: 24px;
+  @media (width >= 64rem) {
+    padding-inline: 80px;
   }
 }
 
 @utility hairline {
   height: 1px;
   width: 100%;
-  background-color: --alpha(var(--color-chalk) / 15%);
+  background-color: var(--color-border);
 }
 
 @utility label {
@@ -93,32 +119,40 @@
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
-  color: var(--color-dust);
+  color: var(--color-text-3);
 }
 
-/* Blackboard surface with a faint chalk-dust haze. */
+@utility card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+@utility pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding-inline: 1.375rem;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition:
+    background-color 200ms,
+    border-color 200ms,
+    color 200ms;
+}
+
+/* Raised app surface (boards, canvases). Kept name for the app screens. */
 @utility chalk-surface {
-  background-color: var(--color-blackboard);
-  background-image:
-    radial-gradient(
-      ellipse at 20% 10%,
-      --alpha(var(--color-chalk) / 5%),
-      transparent 55%
-    ),
-    radial-gradient(ellipse at 80% 90%, --alpha(var(--color-dust) / 6%), transparent 60%);
+  background-color: var(--color-surface);
 }
 
-/* Chalk-line: a faint hand-drawn rule under headings */
 @utility chalk-rule {
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--color-dust) 20%,
-    var(--color-dust) 80%,
-    transparent
-  );
-  opacity: 0.5;
+  background: var(--color-border-strong);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -129,9 +163,13 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  /* Looping keyframes that end hidden must not run: show the resting state instead. */
+  .animate-word {
+    animation: none !important;
+  }
 }
 
-/* Voice Stream scrubber: transparent track over the segment bar, chalk thumb. */
+/* Voice Stream scrubber: transparent track over the segment bar. */
 .stream-scrubber {
   -webkit-appearance: none;
   appearance: none;
@@ -143,7 +181,7 @@
   height: 0.85rem;
   width: 0.85rem;
   border-radius: 9999px;
-  background: var(--color-chalk);
+  background: var(--color-text);
   cursor: pointer;
 }
 .stream-scrubber::-moz-range-thumb {
@@ -151,6 +189,6 @@
   width: 0.85rem;
   border: 0;
   border-radius: 9999px;
-  background: var(--color-chalk);
+  background: var(--color-text);
   cursor: pointer;
 }

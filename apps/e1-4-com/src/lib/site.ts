@@ -2,21 +2,33 @@ export const site = {
   name: "e1-4",
   domain: "e1-4.com",
   url: "https://e1-4.com",
-  org: "Earth One Global Coalescent",
+  org: "Earth 1 Coalescent",
   /** Large standalone hero statement. */
-  hero: "Greetings Earthling.",
-  /** Brand motto, shown as a quiet line beneath the hero statement. */
+  hero: "Think.",
+  /** Brand motto. */
   motto: "Think.",
-  /** Hero subhead. */
+  /** Features section title. */
   subhead: "four ways to speak",
-  /** Approved tagline (DEVIN_BRIEF); used in metadata. */
+  /** Approved tagline; used in metadata and as the hero label. */
   tagline: "earth life-forms",
   /** The one sentence on the homepage. */
-  pitch: "A social network with no typing. You speak; everything else follows.",
+  pitch: "The social network you speak, not type.",
+  band: {
+    statement: "No typing. Ever.",
+    support: "Audiophiles in audiofiles.",
+  },
+  cta: "Start a Voice Stream",
+  earlyAccess: "Get early access",
+  credit:
+    "Built by Earth 1 Coalescent — global citizenship for all, one voice at a time.",
   philosophyUrl: "https://earth1.co",
   philosophyLabel: "earth1.co",
+  philosophyLine: "Read the philosophy at earth1.co",
   description:
-    "e1-4 — earth life-forms. A voice-only social network: speak, and transcription, translation and visuals follow. Built by Earth One Global Coalescent.",
+    "e1-4 — earth life-forms. The social network you speak, not type: transcription, translation and visuals follow your voice. Built by Earth 1 Coalescent.",
+  /** Mono keyword line under the feature grid. */
+  keywordLine:
+    "EVENT HORIZON · SINGULARITY · SPACETIME · SUPERPOSITION · ARI: ARTIFICIAL STOCHASTIC INTELLIGENCE",
 } as const;
 
 export type FeatureStatus = "ready" | "early" | "experimental";
@@ -44,27 +56,28 @@ export const features: Feature[] = [
     title: "Da Vinci",
     href: "/davinci",
     status: "early",
-    codenames: "Inteligence // ARI // Stochastic I // Schroodinger",
+    codenames: "INTELLIGENCE // ARI // STOCHASTIC I // SCHRÖDINGER",
     body: "An assistant that listens as you speak, transcribes it as it's meant to be read, and draws what you're describing while you're still describing it.",
   },
   {
     title: "Infinity Chalkboard",
     href: "/chalkboard",
     status: "ready",
-    codenames: "Speech to Text // Binary // Sparks // Big-Bang",
+    codenames: "SPEECH TO TEXT // BINARY // SPARKS // BIG-BANG",
     body: "An unbounded board for working through the hard ideas out loud — physics, mechanics, anything too spatial for a sentence — in two dimensions, then three, then four.",
   },
   {
     title: "Gravity Board",
     href: "/gravity",
     status: "experimental",
-    codenames: "Topologoical Black Hole // Event Horizon // Superposition // Quantum",
+    codenames: "TOPOLOGICAL BLACK HOLE // EVENT HORIZON // SUPERPOSITION // QUANTUM",
     body: "The chalkboard's edge case. Say something dense enough and it collapses past its own event horizon — a stochastic intelligence holds every version of the idea in superposition on the other side, until the board is ready to show you which one you meant. Transcription becomes topology: mock-ups, animation, a four-dimensional spacetime you can turn around and walk into.",
     keywords: [
       "event horizon",
       "singularity",
-      "spacetime superposition",
-      "artificial random intelligence / artificial stochastic intelligence",
+      "spacetime",
+      "superposition",
+      "ARI: artificial stochastic intelligence",
     ],
     emphasis: true,
   },

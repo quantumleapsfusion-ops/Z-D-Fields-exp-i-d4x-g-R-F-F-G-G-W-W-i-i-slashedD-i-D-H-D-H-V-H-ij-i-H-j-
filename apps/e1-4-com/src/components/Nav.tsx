@@ -1,63 +1,72 @@
 import Link from "next/link";
 
-import { Logo } from "@earth-one/ui";
+import { E14Mark } from "@earth-one/ui";
 import { getSessionUser } from "@/lib/auth/user";
 import { enabledFeatures } from "@/lib/features";
 import { site } from "@/lib/site";
 
 const SHORT_TITLES: Record<string, string> = {
-  "/stream": "Stream",
+  "/stream": "Voice Stream",
   "/davinci": "Da Vinci",
   "/chalkboard": "Chalkboard",
-  "/gravity": "Gravity",
+  "/gravity": "Gravity Board",
 };
 
 export async function Nav() {
   const user = await getSessionUser().catch(() => null);
 
   return (
-    <header className="border-chalk/10 bg-blackboard/85 sticky top-0 z-30 border-b backdrop-blur">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
+    <header className="border-border bg-bg/85 sticky top-0 z-30 border-b backdrop-blur">
+      <nav
+        aria-label="Primary"
+        className="page flex min-h-16 items-center justify-between gap-4 py-2 sm:min-h-20"
+      >
         <Link
           href="/"
-          className="flex items-center gap-3"
+          className="flex min-h-11 items-center gap-3"
           aria-label={`${site.name} home`}
         >
-          <Logo size={28} />
-          <span className="font-display text-lg tracking-tight">{site.name}</span>
+          <E14Mark size={28} title={site.name} />
+          <span className="font-display text-base font-medium tracking-tight">
+            {site.name}
+          </span>
         </Link>
-        <div className="flex items-center gap-4 sm:gap-6">
-          <ul className="hidden items-center gap-5 md:flex">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <ul className="hidden items-center lg:flex">
             {enabledFeatures().map((f) => (
               <li key={f.href}>
-                <Link href={f.href} className="label hover:text-chalk transition-colors">
+                <Link
+                  href={f.href}
+                  className="text-text-2 hover:text-text flex min-h-11 items-center px-3 font-sans text-sm transition-colors"
+                >
                   {SHORT_TITLES[f.href] ?? f.title}
                 </Link>
               </li>
             ))}
           </ul>
-          <a
-            href={site.philosophyUrl}
-            className="label hover:text-ochre transition-colors"
-            rel="noreferrer"
-          >
-            {site.philosophyLabel}
-          </a>
           {user ? (
             <Link
               href="/profile"
-              className="flex items-center gap-2"
+              className="flex min-h-11 min-w-11 items-center justify-center"
               aria-label="Your profile"
             >
-              <Avatar image={user.image} name={user.name} size={28} />
+              <Avatar image={user.image} name={user.name} size={32} />
             </Link>
           ) : (
-            <Link
-              href="/login"
-              className="border-chalk/20 text-chalk/90 hover:border-ochre hover:text-ochre rounded-full border px-3 py-1 font-sans text-sm transition-colors"
-            >
-              Sign in
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className="text-text-2 hover:text-text flex min-h-11 items-center px-3 font-sans text-sm transition-colors"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/login"
+                className="pill bg-accent text-bg hover:bg-text ml-1 px-4 text-sm sm:px-5"
+              >
+                {site.earlyAccess}
+              </Link>
+            </>
           )}
         </div>
       </nav>
@@ -83,12 +92,12 @@ export function Avatar({
       alt=""
       width={size}
       height={size}
-      className="border-chalk/20 rounded-full border object-cover"
+      className="border-border-strong rounded-full border object-cover"
       style={{ width: size, height: size }}
     />
   ) : (
     <span
-      className="border-chalk/25 bg-chalk/5 font-display text-chalk flex items-center justify-center rounded-full border"
+      className="border-border-strong bg-surface font-display text-text flex items-center justify-center rounded-full border"
       style={{ width: size, height: size, fontSize: size * 0.45 }}
     >
       {initial}

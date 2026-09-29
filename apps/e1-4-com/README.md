@@ -1,6 +1,6 @@
 # e1-4 — earth life-forms
 
-Flagship of **Earth One Global Coalescent** (sibling: [earth1.co](https://earth1.co)).
+Flagship of **Earth 1 Coalescent** (sibling: [earth1.co](https://earth1.co)).
 
 > A social network with no typing. You speak; everything else follows.
 
