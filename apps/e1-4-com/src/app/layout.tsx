@@ -3,6 +3,7 @@ import { Fraunces, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
+import { InstallApp } from "@/components/InstallApp";
 import { site } from "@/lib/site";
 
 const fraunces = Fraunces({
@@ -47,12 +48,24 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/icon.svg",
-    apple: "/icon.svg",
+    apple: "/icons/apple-touch-icon.png",
   },
+  appleWebApp: {
+    capable: true,
+    title: site.name,
+    statusBarStyle: "black-translucent",
+  },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
   themeColor: "#000000",
+  colorScheme: "dark",
+  viewportFit: "cover",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -60,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
       <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
         <AppShell>{children}</AppShell>
+        <InstallApp />
       </body>
     </html>
   );

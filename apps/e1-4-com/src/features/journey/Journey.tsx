@@ -110,7 +110,7 @@ function SpeakAgain() {
     <Link
       href="/"
       aria-label="Speak again"
-      className="animate-ink-in absolute bottom-10 left-1/2 h-20 w-20 -translate-x-1/2"
+      className="animate-ink-in absolute bottom-[max(2.5rem,env(safe-area-inset-bottom))] left-1/2 h-20 w-20 -translate-x-1/2"
     >
       <MicMark className="h-full w-full drop-shadow-[0_0_40px_rgba(0,0,0,0.8)]" />
     </Link>

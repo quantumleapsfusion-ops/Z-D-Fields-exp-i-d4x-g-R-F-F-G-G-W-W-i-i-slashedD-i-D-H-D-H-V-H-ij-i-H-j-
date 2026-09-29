@@ -106,7 +106,9 @@ function Frame({
       <div className="absolute inset-0">
         <PinField {...pins} />
       </div>
-      <div className="absolute top-5 right-6 z-10">{corner}</div>
+      <div className="absolute top-[max(1.25rem,env(safe-area-inset-top))] right-6 z-10">
+        {corner}
+      </div>
       {children}
     </main>
   );
@@ -138,7 +140,7 @@ function Centre({ docked, children }: { docked?: boolean; children: ReactNode })
   return (
     <div
       className={`z-10 flex flex-col items-center gap-6 transition-all duration-700 ${
-        docked ? "absolute bottom-10" : ""
+        docked ? "absolute bottom-[max(2.5rem,env(safe-area-inset-bottom))]" : ""
       }`}
     >
       {children}

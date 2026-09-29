@@ -81,13 +81,17 @@ export function StreamField({ entries }: { entries: StreamEntry[] }) {
       <div className="absolute inset-0">
         <PinField phase={phase} print={print} form={form} pulse={pulse} />
       </div>
-      <Link href="/" aria-label="Speak" className="absolute top-5 right-6 z-10 h-12 w-12">
+      <Link
+        href="/"
+        aria-label="Speak"
+        className="absolute top-[max(1.25rem,env(safe-area-inset-top))] right-6 z-10 h-12 w-12"
+      >
         <MicMark className="h-full w-full" />
       </Link>
       {entries.length === 0 ? <p className="sr-only">Your stream is silent.</p> : null}
       <ol
         aria-label="Your stream"
-        className="absolute inset-x-0 bottom-0 z-10 flex items-center gap-3 overflow-x-auto px-6 pt-4 pb-10"
+        className="absolute inset-x-0 bottom-0 z-10 flex items-center gap-3 overflow-x-auto px-6 pt-4 pb-[max(2.5rem,env(safe-area-inset-bottom))]"
       >
         {entries.map((entry, i) => {
           const size = 28 + Math.round(36 * Math.sqrt(entry.durationMs / longest));
