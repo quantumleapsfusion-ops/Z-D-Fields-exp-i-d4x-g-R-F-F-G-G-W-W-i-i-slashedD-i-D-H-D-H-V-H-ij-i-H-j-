@@ -1,15 +1,5 @@
 import type { NextConfig } from "next";
 
-const WORDED_PAGES = [
-  "/chalkboard",
-  "/gravity",
-  "/horizon",
-  "/superposition",
-  "/davinci",
-  "/profile",
-  "/privacy",
-];
-
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@earth-one/ui", "@earth-one/spacetime"],
@@ -23,9 +13,6 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
-  },
-  async redirects() {
-    return WORDED_PAGES.map((source) => ({ source, destination: "/", permanent: false }));
   },
   // Short personal links: e1-4.com/@handle.
   async rewrites() {
