@@ -1,5 +1,6 @@
 "use client";
 
+import { setSpacetimeAmplitude } from "@earth-one/spacetime";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import {
@@ -82,6 +83,7 @@ export function useRecorder(onSpan: (span: CapturedSpan) => void) {
     });
     media.current = null;
     setLevel(0);
+    setSpacetimeAmplitude(0);
   }, []);
 
   const fail = useCallback(
@@ -119,6 +121,7 @@ export function useRecorder(onSpan: (span: CapturedSpan) => void) {
         let peak = 0;
         for (const v of data) peak = Math.max(peak, Math.abs(v - 128) / 128);
         setLevel(peak);
+        setSpacetimeAmplitude(recorder.current?.state === "recording" ? peak : 0);
         if (spanStart.current) setElapsedMs(performance.now() - spanStart.current.perf);
         raf.current = requestAnimationFrame(tick);
       };

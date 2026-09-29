@@ -12,7 +12,7 @@ const WORDED_PAGES = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: ["@earth-one/ui"],
+  transpilePackages: ["@earth-one/ui", "@earth-one/spacetime"],
   async headers() {
     return [
       {

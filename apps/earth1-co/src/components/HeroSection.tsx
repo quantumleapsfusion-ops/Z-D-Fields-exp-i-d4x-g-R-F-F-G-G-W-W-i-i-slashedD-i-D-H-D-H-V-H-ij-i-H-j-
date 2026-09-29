@@ -1,5 +1,6 @@
 "use client";
 
+import { Logo } from "@earth-one/ui";
 import { motion } from "framer-motion";
 
 import { site } from "@/lib/site";
@@ -18,6 +19,16 @@ export function HeroSection() {
         transition={{ duration: 1.6, ease }}
       >
         <SaturnRings className="w-full animate-[saturn-drift_24s_ease-in-out_infinite]" />
+      </motion.div>
+      <motion.div
+        className="mb-14 flex justify-center sm:mb-20"
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.9, ease }}
+      >
+        <span data-spacetime-singularity>
+          <Logo size={112} brand="earth1" title={site.org} />
+        </span>
       </motion.div>
       <motion.p
         className="label"

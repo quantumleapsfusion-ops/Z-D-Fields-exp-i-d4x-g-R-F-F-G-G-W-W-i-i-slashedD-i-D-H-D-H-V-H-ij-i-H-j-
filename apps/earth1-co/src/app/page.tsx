@@ -38,7 +38,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="chalk-surface min-h-screen overflow-x-clip">
+    <div className="min-h-screen overflow-x-clip">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
