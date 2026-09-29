@@ -1,39 +1,37 @@
 import { Logo } from "@earth-one/ui";
 
-import { DomainBridge } from "@/components/DomainBridge";
-import { GovernanceManifesto } from "@/components/GovernanceManifesto";
-import { HeroSection } from "@/components/HeroSection";
+import { CiceroPassage } from "@/components/CiceroPassage";
 import { site } from "@/lib/site";
 
 export default function HomePage() {
   return (
-    <div className="chalk-surface min-h-screen">
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6 sm:px-8">
-        <div className="flex items-center gap-3">
-          <Logo size={26} brand="earth1" title={site.org} />
-          <span className="font-display text-lg tracking-tight">{site.name}</span>
-        </div>
-        <a
-          href={site.flagship.url}
-          className="label hover:text-ochre transition-colors"
-          rel="noreferrer"
-        >
-          {site.flagship.domain}
-        </a>
+    <main className="min-h-screen bg-black text-white">
+      <header className="flex min-h-[88svh] flex-col items-center justify-center px-6 text-center">
+        <Logo
+          brand="earth1"
+          size={168}
+          title={site.org}
+          className="h-32 w-32 sm:h-44 sm:w-44"
+        />
+        <h1 className="mt-10 text-4xl tracking-[0.32em] sm:text-6xl">EARTH ONE</h1>
+        <p className="mt-5 text-lg text-white/80 italic sm:text-2xl">{site.motto}</p>
       </header>
-      <main>
-        <HeroSection />
-        <GovernanceManifesto />
-        <DomainBridge />
-      </main>
-      <footer className="border-chalk/10 border-t">
-        <div className="text-dust mx-auto flex max-w-5xl flex-col gap-2 px-5 py-10 font-sans text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>
-            {site.org} / {site.domain}
-          </p>
-          <p className="label">est. earth</p>
-        </div>
+
+      <CiceroPassage />
+
+      <section
+        aria-labelledby="equations-heading"
+        className="mx-auto mt-32 max-w-[92rem] px-5 pb-32 sm:px-10"
+      >
+        <h2 id="equations-heading" className="text-center text-2xl sm:text-3xl">
+          Equations
+        </h2>
+        <div className="mx-auto mt-10 min-h-48 max-w-[70ch] rounded-sm border border-dashed border-white/25" />
+      </section>
+
+      <footer className="border-t border-white/10 px-6 py-10 text-center text-sm text-white/60">
+        {site.org} · {site.domain}
       </footer>
-    </div>
+    </main>
   );
 }
