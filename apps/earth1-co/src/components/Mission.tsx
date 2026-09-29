@@ -3,7 +3,7 @@ import { mission } from "@/lib/site";
 export function Mission() {
   return (
     <section id="mission" className="page scroll-mt-24 py-24 sm:py-32">
-      <p className="label">Mission</p>
+      <h2 className="label">Mission</h2>
       <div className="font-display mt-8 max-w-3xl text-[1.5rem] leading-[1.25] font-light tracking-tight sm:text-[2.25rem]">
         {mission.lines.map((line, i) => (
           <p key={line} className={i === 0 ? "text-text-2" : "text-text"}>

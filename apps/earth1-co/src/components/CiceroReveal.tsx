@@ -141,7 +141,11 @@ export function CiceroReveal() {
       <p className="label mb-8">The one bold gesture</p>
       {/* Both strings share one grid cell so the block keeps the taller height while decoding. */}
       <div className="grid">
-        <p lang="la" aria-label={latin} className={`${typeClass} [grid-area:1/1]`}>
+        <blockquote
+          lang="la"
+          aria-label={latin}
+          className={`${typeClass} [grid-area:1/1]`}
+        >
           <span aria-hidden className="text-text-3">
             {done ? (
               <span className="text-text">{latin}</span>
@@ -152,7 +156,7 @@ export function CiceroReveal() {
               </>
             )}
           </span>
-        </p>
+        </blockquote>
         <p aria-hidden className={`${typeClass} invisible [grid-area:1/1]`}>
           {latin.length >= placeholder.length ? latin : placeholder}
         </p>

@@ -15,7 +15,7 @@ function Formula({ tex }: { tex: Equation["tex"] }) {
 export function Equations() {
   return (
     <section className="page py-8 sm:py-12">
-      <p className="label">Equations</p>
+      <h2 className="label">Equations</h2>
       <ul className="mt-8 grid gap-4 lg:grid-cols-2 lg:gap-6">
         {equations.map((eq) => (
           <li key={eq.id} className="card p-7 sm:p-10">
