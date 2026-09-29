@@ -7,6 +7,7 @@ const WORDED_PAGES = [
   "/superposition",
   "/davinci",
   "/profile",
+  "/privacy",
 ];
 
 const nextConfig: NextConfig = {

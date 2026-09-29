@@ -4,7 +4,7 @@ import { StreamField } from "@/features/codex/StreamField";
 import { prisma } from "@/lib/db";
 import { resolveShare } from "@/lib/voice/share";
 
-export const metadata = { title: "Shared voice", robots: { index: false } };
+export const metadata = { robots: { index: false } };
 
 export default async function SharePage({
   params,

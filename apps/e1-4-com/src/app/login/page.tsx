@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { MicMark } from "@/components/MicMark";
@@ -6,8 +5,6 @@ import { PinBackdrop } from "@/features/codex/PinBackdrop";
 import { signInWithOAuth } from "@/lib/auth/actions";
 import { OAUTH_PROVIDERS, type OAuthProvider } from "@/lib/auth/providers";
 import { getCurrentUser } from "@/lib/supabase/server";
-
-export const metadata: Metadata = { title: "Sign in" };
 
 const ICONS: Record<OAuthProvider, React.ReactNode> = {
   google: (
