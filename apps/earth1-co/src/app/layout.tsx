@@ -33,7 +33,8 @@ export const metadata: Metadata = {
   },
   description: site.description,
   applicationName: site.name,
-  robots: { index: false, follow: false },
+  keywords: [...site.keywords],
+  robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     url: site.url,
