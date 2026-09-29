@@ -74,7 +74,14 @@ supabase link --project-ref <ref> && supabase db push   # supabase/migrations (R
 
 ```bash
 E2E_BASE_URL=https://e1-4.com npm run test:e2e   # public surfaces; add E2E_STORAGE_STATE for the signed-in flow
+npm run test:live                                # real Supabase: auth trigger, RLS, buckets, share, hardDeleteUser
 ```
+
+`test:live` needs the Supabase env vars (service role included) and creates/destroys throwaway
+`devin-e2e-*@example.com` users. Set `LIVE_BASE_URL=http://localhost:3000` with a dev server running
+to also cover the logged-out share page. Note: deleting an auth user any other way (dashboard,
+`auth.admin.deleteUser`) leaves its `public.users` row behind — there is no FK to `auth.users`; only
+`hardDeleteUser` removes everything.
 
 Then by hand: sign in with each provider, upload an avatar, record a Voice Stream segment, create a
 share link and open it in a private window.
