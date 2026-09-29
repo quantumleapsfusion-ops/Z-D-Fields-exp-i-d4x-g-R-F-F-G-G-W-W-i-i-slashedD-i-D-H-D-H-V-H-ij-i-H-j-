@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Space_Grotesk } from "next/font/google";
 
+import { CosmicBackdrop } from "@earth-one/ui";
+
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
 import { site } from "@/lib/site";
@@ -52,13 +54,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0e1a13",
+  themeColor: "#070a1f",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
       <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
+        <CosmicBackdrop />
         <AppShell>{children}</AppShell>
       </body>
     </html>

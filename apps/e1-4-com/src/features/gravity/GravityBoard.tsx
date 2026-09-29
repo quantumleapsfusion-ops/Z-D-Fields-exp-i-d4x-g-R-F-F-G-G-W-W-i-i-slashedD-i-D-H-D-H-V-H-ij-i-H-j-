@@ -117,7 +117,7 @@ export function GravityBoard({ llmReady }: { llmReady: boolean }) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="border-chalk/10 relative h-[26rem] overflow-hidden rounded-2xl border bg-[radial-gradient(circle_at_center,#000_0,#0e1a13_60%)]">
+        <div className="border-chalk/10 relative h-[26rem] overflow-hidden rounded-2xl border bg-[radial-gradient(circle_at_center,#000_0,#070a1f_60%)]">
           <TopologyCollapse form={form} seed={text.slice(0, 200) || "e1-4"} />
           <span className="label absolute bottom-3 left-3">
             {phase === "gathering"

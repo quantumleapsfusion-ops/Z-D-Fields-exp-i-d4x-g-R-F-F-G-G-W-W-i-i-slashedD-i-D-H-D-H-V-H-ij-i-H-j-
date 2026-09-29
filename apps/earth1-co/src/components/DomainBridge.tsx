@@ -13,7 +13,7 @@ export function DomainBridge() {
       <motion.a
         href={flagship.url}
         rel="noreferrer"
-        className="bg-chalk text-blackboard group relative block overflow-hidden rounded-[var(--radius-board)] p-8 sm:p-12"
+        className="border-line bg-board-2/60 text-chalk group relative block overflow-hidden rounded-[var(--radius-board)] border p-8 backdrop-blur sm:p-12"
         whileHover={{ y: -3 }}
         whileTap={{ scale: 0.995 }}
         transition={{ type: "spring", stiffness: 320, damping: 26 }}
@@ -25,7 +25,7 @@ export function DomainBridge() {
               <span className="font-display text-2xl tracking-tight">
                 {flagship.name}
               </span>
-              <span className="text-blackboard/60 font-mono text-xs tracking-[0.18em] uppercase">
+              <span className="text-dust font-mono text-xs tracking-[0.18em] uppercase">
                 {flagship.tagline}
               </span>
             </div>
@@ -42,7 +42,7 @@ export function DomainBridge() {
             →
           </motion.span>
         </div>
-        <p className="text-blackboard/60 mt-8 font-mono text-xs tracking-[0.18em] uppercase">
+        <p className="text-dust mt-8 font-mono text-xs tracking-[0.18em] uppercase">
           Enter {flagship.domain}
         </p>
         <span

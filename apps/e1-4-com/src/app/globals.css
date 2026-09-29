@@ -10,6 +10,7 @@
 
   body {
     background-color: var(--color-blackboard);
+    isolation: isolate;
     color: var(--color-chalk);
   }
 
@@ -33,16 +34,55 @@
   color: var(--color-dust);
 }
 
-/* Blackboard surface with a faint chalk-dust haze. */
+/* Deep-space panel with a faint nebula haze. */
 @utility chalk-surface {
-  background-color: var(--color-blackboard);
+  background-color: --alpha(var(--color-blackboard) / 80%);
   background-image:
+    radial-gradient(ellipse at 20% 10%, --alpha(var(--color-glow) / 7%), transparent 55%),
     radial-gradient(
-      ellipse at 20% 10%,
-      --alpha(var(--color-chalk) / 5%),
-      transparent 55%
-    ),
-    radial-gradient(ellipse at 80% 90%, --alpha(var(--color-dust) / 6%), transparent 60%);
+      ellipse at 80% 90%,
+      --alpha(var(--color-nebula) / 30%),
+      transparent 60%
+    );
+}
+
+/* Spectrum hairline, as under the EARTH ONE wordmark. */
+@utility rainbow-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    #e8574a,
+    #ef9a3c,
+    #e9d25a,
+    #6cc07a,
+    #4aa6d8,
+    #7a6fd6,
+    #b06cc6
+  );
+}
+
+/* Wide, thin, uppercase display lettering. */
+@utility wordmark {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-chalk);
+  text-shadow: 0 0 24px --alpha(var(--color-glow) / 25%);
+}
+
+/* Brushed-silver serif, as on "Think." */
+@utility silver-text {
+  background-image: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #d9deea 42%,
+    #8c95aa 58%,
+    #eef1f7 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 /* Chalk-line: a faint hand-drawn rule under headings */

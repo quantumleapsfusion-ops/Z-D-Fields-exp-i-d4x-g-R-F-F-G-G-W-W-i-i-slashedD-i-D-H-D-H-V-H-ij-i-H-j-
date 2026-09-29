@@ -1,17 +1,19 @@
 /*
- * Earth One chalkboard brand system (Tailwind v4 theme), shared by earth1.co and e1-4.com.
- *   blackboard #0e1a13 · chalk #f1ede1 · dust #93a294 · ochre #d3a34c
+ * Earth One cosmic brand system (Tailwind v4 theme), shared by earth1.co and e1-4.com.
+ *   blackboard (deep space) #070a1f · chalk (starlight) #eef1fb · dust (steel blue) #9db2d6
+ *   ochre (accent glow) #7fd4ff · nebula #2a1f66
  * `board` is an alias of `blackboard`; `board-2` is a raised panel.
  */
 @theme {
-  --color-blackboard: #0e1a13;
-  --color-board: #0e1a13;
-  --color-board-2: #142419;
-  --color-chalk: #f1ede1;
-  --color-dust: #93a294;
-  --color-ochre: #d3a34c;
+  --color-blackboard: #070a1f;
+  --color-board: #070a1f;
+  --color-board-2: #0f1433;
+  --color-chalk: #eef1fb;
+  --color-dust: #9db2d6;
+  --color-ochre: #7fd4ff;
   --color-glow: #38bdf8;
-  --color-line: rgb(147 162 148 / 0.25);
+  --color-line: rgb(157 178 214 / 0.22);
+  --color-nebula: #2a1f66;
 
   --font-display: var(--font-fraunces), Georgia, serif;
   --font-sans: var(--font-space-grotesk), system-ui, sans-serif;
