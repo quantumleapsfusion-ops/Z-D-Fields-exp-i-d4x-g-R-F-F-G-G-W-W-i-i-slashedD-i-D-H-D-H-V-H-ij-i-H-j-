@@ -28,9 +28,7 @@ export function Features() {
           </article>
         ))}
         <article>
-          <p className="font-sans text-base">
-            Da Vinci. Floats between every dimension. Ctrl+K on any surface.
-          </p>
+          <p className="font-sans text-base">{daVinci.title}</p>
           <p className="text-dust mt-1 font-sans text-sm">{daVinci.body}</p>
         </article>
       </div>

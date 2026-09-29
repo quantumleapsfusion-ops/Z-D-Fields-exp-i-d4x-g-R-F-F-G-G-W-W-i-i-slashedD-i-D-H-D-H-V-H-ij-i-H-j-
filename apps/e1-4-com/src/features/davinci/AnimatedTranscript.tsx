@@ -50,7 +50,7 @@ export function AnimatedTranscript({
     >
       {recent.length === 0 && !interim ? (
         <p className="font-display text-dust/70 text-2xl">
-          Start speaking — or type below.
+          Start speaking, or type below.
         </p>
       ) : null}
       {recent.map((phrase, i) => {

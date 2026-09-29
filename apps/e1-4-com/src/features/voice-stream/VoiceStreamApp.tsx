@@ -145,7 +145,8 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
       <div className="mt-10">
         {items.length === 0 ? (
           <p className="font-display text-dust text-center text-xl">
-            Record to add a segment to your stream.
+            Your stream is silent. Press record and it keeps running for as long as you
+            do.
           </p>
         ) : (
           <Timeline

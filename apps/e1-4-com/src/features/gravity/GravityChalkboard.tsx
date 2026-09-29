@@ -65,20 +65,6 @@ export function GravityChalkboard({
     setError(null);
   }
 
-  if (boards.length === 0) {
-    return (
-      <div className="flex flex-col gap-4">
-        <StreamSource stream={stream} />
-        <p className="text-chalk/75 font-sans text-sm">
-          Draw something on the 2D board first.{" "}
-          <Link href="/chalkboard" className="text-ochre hover:text-chalk">
-            Open Infinity Chalkboard
-          </Link>
-        </p>
-      </div>
-    );
-  }
-
   const transcript = transcriptElements(stream.segments, STREAM_COLOR);
   const elements = [
     ...(board?.doc.elements ?? []),
@@ -92,27 +78,36 @@ export function GravityChalkboard({
   return (
     <div className="flex flex-col gap-4">
       <StreamSource stream={stream} />
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="label" htmlFor="gravity-board-picker">
-          Board
-        </label>
-        <select
-          id="gravity-board-picker"
-          value={boardId ?? ""}
-          onChange={(event) => selectBoard(event.target.value)}
-          className="border-chalk/15 bg-blackboard text-chalk h-9 max-w-full rounded-full border px-3 font-sans text-sm"
-        >
-          {boards.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.title}
-            </option>
-          ))}
-        </select>
-        <span className="label text-ochre">Read-only</span>
-      </div>
+      {boards.length === 0 ? (
+        <p className="text-chalk/75 font-sans text-sm">
+          No boards yet.{" "}
+          <Link href="/chalkboard" className="text-ochre hover:text-chalk">
+            Open Infinity Chalkboard
+          </Link>
+        </p>
+      ) : (
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="label" htmlFor="gravity-board-picker">
+            Board
+          </label>
+          <select
+            id="gravity-board-picker"
+            value={boardId ?? ""}
+            onChange={(event) => selectBoard(event.target.value)}
+            className="border-chalk/15 bg-blackboard text-chalk h-9 max-w-full rounded-full border px-3 font-sans text-sm"
+          >
+            {boards.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.title}
+              </option>
+            ))}
+          </select>
+          <span className="label text-ochre">Read-only</span>
+        </div>
+      )}
 
       <div className="chalk-surface border-chalk/10 relative h-[70vh] min-h-[28rem] overflow-hidden rounded-2xl border">
-        {board ? (
+        {board || boards.length === 0 || transcript.length > 0 ? (
           <Board3D elements={elements} timeDepth={timeDepth} until={untilClamped} />
         ) : (
           <p className="text-chalk/70 absolute inset-0 flex items-center justify-center font-sans text-sm">

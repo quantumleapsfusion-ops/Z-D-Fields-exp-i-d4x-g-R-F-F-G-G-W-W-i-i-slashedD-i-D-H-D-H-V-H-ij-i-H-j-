@@ -58,7 +58,7 @@ export function Timeline({
                   <Dot active={false} pending />
                   <div className="border-chalk/15 text-dust rounded-sm border border-dashed px-5 py-4 text-sm">
                     {item.failed
-                      ? "Upload failed — kept locally until you retry."
+                      ? "Upload failed. Kept locally until you retry."
                       : "Saving…"}{" "}
                     {formatDuration(item.durationMs)}
                   </div>
@@ -158,10 +158,6 @@ function Transcript({ segment }: { segment: SegmentDTO }) {
     case "FAILED":
       return <p className="text-ochre/80 mt-3 text-sm">Transcription failed.</p>;
     case "SKIPPED":
-      return (
-        <p className="text-dust mt-3 text-sm">
-          No speech-to-text provider configured — audio only.
-        </p>
-      );
+      return <p className="text-dust mt-3 text-sm">Transcription is off. Audio only.</p>;
   }
 }

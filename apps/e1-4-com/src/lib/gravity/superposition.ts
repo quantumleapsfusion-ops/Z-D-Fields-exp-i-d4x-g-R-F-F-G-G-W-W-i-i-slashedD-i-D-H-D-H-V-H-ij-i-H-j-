@@ -65,8 +65,10 @@ export function resolve(text: string, candidates: Candidate[]): number {
   return best;
 }
 
-export const SUPERPOSE_SYSTEM_PROMPT = `Read the user's spoken text and return four distinct interpretations.
-Use different ideas, not paraphrases. Choose a form that fits each interpretation: ${FORMS.join(", ")}.
+export const SUPERPOSE_SYSTEM_PROMPT = `You are the stochastic intelligence behind the Gravity Board.
+The user has spoken an idea too dense for one reading. Hold it in superposition: return 4 genuinely
+DIFFERENT interpretations of what they might mean (different framings, not paraphrases).
+For each, choose the topology that best fits its shape: ${FORMS.join(", ")}.
 Reply with ONLY JSON: {"candidates":[{"title":s,"interpretation":s,"form":s,"confidence":0..1}]}`;
 
 const FRAMES: {
