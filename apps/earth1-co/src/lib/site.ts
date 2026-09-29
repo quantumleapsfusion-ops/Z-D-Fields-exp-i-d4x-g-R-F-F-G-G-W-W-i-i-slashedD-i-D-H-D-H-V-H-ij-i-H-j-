@@ -29,8 +29,8 @@ export const site = {
     role: "Founder & Chief Executive",
     email: "chiefexec@earth1.co",
     inspiration: {
-      text: "The people who are crazy enough to think they can change the world are the ones who do.",
-      author: "Apple · Think Different, 1997",
+      text: "What I cannot create, I do not understand.",
+      author: "Richard Feynman, 1988",
     },
     story: [
       "Earth 1 Coalescent began with two ideas Zachariah could not put down.",
