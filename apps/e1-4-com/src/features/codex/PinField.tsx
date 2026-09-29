@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
 import type { Form } from "@/lib/gravity/superposition";
-import { BANDS, FRAMES, type SoundPrint } from "@/lib/sound/analyse";
+import { BANDS, FRAMES, type SoundPrint, WAVE_POINTS } from "@/lib/sound/analyse";
 
 const COLS = 72;
 const ROWS = 44;
@@ -13,8 +13,12 @@ const PITCH = 0.1;
 const HISTORY = 160;
 const MAX_HEIGHT = 1.1;
 
-/** `rest` breathes, `listen` ripples out from the live level, `relief` raises the recording, `form` its shape. */
-export type PinPhase = "rest" | "listen" | "relief" | "form";
+/**
+ * `rest` breathes, `listen` ripples out from the live level, `line` raises the waveform as one
+ * ridge, `board` inks the spectrogram low across the pins, `relief` lifts it into hills by
+ * loudness, `well` sinks it into a black hole behind a rim, `form` shows one of the shapes.
+ */
+export type PinPhase = "rest" | "listen" | "line" | "board" | "relief" | "well" | "form";
 
 function formHeight(form: Form, u: number, v: number): number {
   const r = Math.hypot(u, v);
@@ -38,6 +42,19 @@ function formHeight(form: Form, u: number, v: number): number {
           Math.cos(v * 5 + Math.sin(u * 5) * 2)
       );
   }
+}
+
+function lineHeight(print: SoundPrint, col: number, y: number): number {
+  const w =
+    print.waveform[Math.min(WAVE_POINTS - 1, Math.floor((col / COLS) * WAVE_POINTS))];
+  return w * 0.9 * Math.exp(-(y * y) / (0.01 + w * 0.5));
+}
+
+function wellHeight(r: number, a: number, now: number): number {
+  const plateau = 0.55 * (1 - Math.exp(-(r * r) / 0.8));
+  const rim = 0.4 * Math.exp(-((r - 1.05) ** 2) / 0.006);
+  const swirl = 0.06 * Math.sin(a * 3 + now * 2.2 - r * 5) * Math.min(1, r);
+  return plateau + rim + swirl;
 }
 
 function reliefHeight(print: SoundPrint, col: number, row: number): number {
@@ -156,6 +173,10 @@ export default function PinField({
           const speech = envelope * 0.25 * Math.max(0, Math.cos(r * 5 - now * 9));
           let target = breath;
           if (p === "listen") target = breath + ripple;
+          else if (p === "line" && sound) target = breath + lineHeight(sound, col, y);
+          else if (p === "board" && sound)
+            target = breath + reliefHeight(sound, col, row) * 0.3;
+          else if (p === "well") target = wellHeight(r, Math.atan2(y, x), now);
           else if (p === "relief" && sound)
             target = breath + reliefHeight(sound, col, row);
           else if (p === "form")

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { analyseSound } from "@/lib/sound/analyse";
-import { commentOn, summarise } from "@/lib/sound/commentary";
+import { commentOn, narrate, summarise } from "@/lib/sound/commentary";
+import { STAGES } from "@/lib/journey";
 
 const RATE = 16000;
 
@@ -25,5 +26,14 @@ describe("commentOn", () => {
     const lines = commentOn(analyseSound(tone(4, 400), RATE), before);
     expect(lines.join(" ")).toMatch(/12\.0 semitones higher than your last entry/);
     expect(lines).toContain("You spoke longer than last time.");
+  });
+});
+
+describe("narrate", () => {
+  it("has something to say at every stage", () => {
+    const print = analyseSound(tone(1, 200), RATE);
+    for (const stage of STAGES)
+      expect(narrate(stage.id, print).length).toBeGreaterThan(0);
+    expect(narrate("observed", print)).toEqual(commentOn(print));
   });
 });

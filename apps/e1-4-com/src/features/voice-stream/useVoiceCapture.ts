@@ -16,13 +16,10 @@ const SPAN_GRACE_MS = 4000;
 
 /**
  * Records into the user's stream and, once Stop has settled (every span uploaded), measures this
- * session's sound on the device and hands it to `onSound`, or by default carries it into
- * `/journey`. A session with no sound in it stays put and reports `silent`.
+ * session's sound on the device and carries it into `/journey`. A session with no sound in it
+ * stays put and reports `silent`.
  */
-export function useVoiceCapture(
-  initialSegments: SegmentDTO[] = [],
-  onSound?: (print: SoundPrint) => void,
-) {
+export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
   const router = useRouter();
   const setSound = useCarry((state) => state.setSound);
   const [segments, setSegments] = useState(initialSegments);
@@ -32,11 +29,6 @@ export function useVoiceCapture(
   const [blobs, setBlobs] = useState<Blob[]>([]);
   const [print, setPrint] = useState<SoundPrint | null | undefined>(undefined);
   const analysed = useRef(false);
-  const onSoundRef = useRef(onSound);
-
-  useEffect(() => {
-    onSoundRef.current = onSound;
-  }, [onSound]);
 
   const upload = useCallback(async (item: PendingSpan) => {
     const form = new FormData();
@@ -113,10 +105,6 @@ export function useVoiceCapture(
 
   useEffect(() => {
     if (!settled || !print || !heard) return;
-    if (onSoundRef.current) {
-      onSoundRef.current(print);
-      return;
-    }
     setSound(print);
     router.push("/journey");
   }, [settled, print, heard, setSound, router]);
@@ -130,7 +118,6 @@ export function useVoiceCapture(
     carrying: finished && !silent && !failedUploads,
     analysing,
     silent,
-    print,
     record,
     pause,
     finish,

@@ -1,3 +1,5 @@
+import type { StageId } from "@/lib/journey";
+
 import type { SoundPrint } from "./analyse";
 import { readSound } from "./reading";
 
@@ -58,4 +60,30 @@ export function commentOn(print: SoundPrint, previous?: EntrySummary | null): st
   }
   lines.push("The original is kept in your stream.");
   return lines;
+}
+
+/** What Da Vinci says as the sound enters each dimension. */
+export function narrate(
+  stage: StageId,
+  print: SoundPrint,
+  previous?: EntrySummary | null,
+): string[] {
+  switch (stage) {
+    case "voice":
+      return [
+        `This is your voice as one line of sound, ${(print.durationMs / 1000).toFixed(1)} seconds long.`,
+      ];
+    case "board":
+      return ["Now it spreads across the board. Time runs across. Pitch climbs upward."];
+    case "gravity":
+      return ["Loudness gives it weight, and the board lifts into hills."];
+    case "horizon":
+      return [
+        "The weight pulls everything into a well. Past the horizon, nothing comes back.",
+      ];
+    case "superposition":
+      return ["Until it is observed, it is every shape at once."];
+    case "observed":
+      return commentOn(print, previous);
+  }
 }
