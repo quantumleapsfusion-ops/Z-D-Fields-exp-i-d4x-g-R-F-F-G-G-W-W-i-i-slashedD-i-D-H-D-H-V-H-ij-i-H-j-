@@ -17,6 +17,11 @@ test.describe("smoke: login → record → share", () => {
     ).toBeVisible();
   });
 
+  test("anonymous visitors are bounced from /talk to /login", async ({ page }) => {
+    await page.goto("/talk");
+    await expect(page).toHaveURL(/\/login/);
+  });
+
   test("a signed-in user records a segment and generates a share link", async ({
     page,
     context,

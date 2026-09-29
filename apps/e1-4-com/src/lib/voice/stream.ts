@@ -41,7 +41,7 @@ export async function listSegments(userId: string): Promise<SegmentDTO[]> {
   return segments.map(toSegmentDTO);
 }
 
-function extensionFor(mimeType: string): string {
+export function extensionFor(mimeType: string): string {
   if (mimeType.includes("mp4") || mimeType.includes("aac")) return "m4a";
   if (mimeType.includes("ogg")) return "ogg";
   if (mimeType.includes("wav")) return "wav";

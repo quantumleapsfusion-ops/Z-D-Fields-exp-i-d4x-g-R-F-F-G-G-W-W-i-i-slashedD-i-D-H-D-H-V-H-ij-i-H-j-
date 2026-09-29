@@ -181,12 +181,13 @@ export function useRecorder(onSpan: (span: CapturedSpan) => void) {
     [fail],
   );
 
-  const record = useCallback(async () => {
+  /** Starts (or resumes) capture. Resolves `false` when the microphone could not be opened. */
+  const record = useCallback(async (): Promise<boolean> => {
     setError(null);
     const check = detectAudioSupport(window);
     if (!check.ok) {
       setError(check.message);
-      return;
+      return false;
     }
     try {
       if (!media.current) {
@@ -210,8 +211,10 @@ export function useRecorder(onSpan: (span: CapturedSpan) => void) {
       }
       beginSpan(media.current);
       setState("recording");
+      return true;
     } catch (err) {
       fail(err);
+      return false;
     }
   }, [beginSpan, fail, meter]);
 
@@ -219,6 +222,20 @@ export function useRecorder(onSpan: (span: CapturedSpan) => void) {
     if (recorder.current?.state === "recording") recorder.current.stop();
     setState("paused");
   }, []);
+
+  /**
+   * Ends the current span and immediately starts the next one on the same open microphone, so
+   * each span is an independently playable file. Used to stream live in short clips.
+   */
+  const cut = useCallback(() => {
+    if (recorder.current?.state !== "recording" || !media.current) return;
+    recorder.current.stop();
+    try {
+      beginSpan(media.current);
+    } catch (err) {
+      fail(err);
+    }
+  }, [beginSpan, fail]);
 
   const stop = useCallback(() => {
     if (recorder.current?.state === "recording") recorder.current.stop();
@@ -261,6 +278,7 @@ export function useRecorder(onSpan: (span: CapturedSpan) => void) {
     record,
     pause,
     resume: record,
+    cut,
     stop,
   };
 }

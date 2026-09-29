@@ -4,6 +4,7 @@ import { publicEnv } from "@/lib/env";
 
 export const PROTECTED_PREFIXES = [
   "/profile",
+  "/talk",
   "/stream",
   "/chalkboard",
   "/gravity",
