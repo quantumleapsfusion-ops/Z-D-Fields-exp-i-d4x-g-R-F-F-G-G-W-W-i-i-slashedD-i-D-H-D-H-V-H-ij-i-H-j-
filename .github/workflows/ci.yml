@@ -25,3 +25,47 @@ jobs:
       - run: npm ci
       - run: npm run format:check
       - run: npx turbo run lint typecheck test build
+
+  e2e:
+    name: Playwright smoke (e1-4.com against live Supabase test project)
+    runs-on: ubuntu-latest
+    needs: check
+    # Signs in as a real Supabase user and writes to the test project, so it
+    # needs the repo secrets below. Forks/Dependabot cannot see secrets; skip there.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    env:
+      CI: true
+      TURBO_TELEMETRY_DISABLED: 1
+      NEXT_TELEMETRY_DISABLED: 1
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Check e2e secrets are configured
+        run: |
+          for v in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY DATABASE_URL DIRECT_URL E2E_TEST_EMAIL E2E_TEST_PASSWORD; do
+            if [ -z "${!v}" ]; then echo "::error::Repository secret $v is not set; the Playwright job cannot run."; missing=1; fi
+          done
+          [ -z "$missing" ]
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/e1-4-com
+      - run: npx turbo run build --filter=e1-4-com
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            apps/e1-4-com/playwright-report/
+            apps/e1-4-com/test-results/
+          retention-days: 7

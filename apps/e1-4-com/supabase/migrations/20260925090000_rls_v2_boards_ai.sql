@@ -35,16 +35,19 @@ revoke all on function public.owns_stream(uuid) from public;
 grant execute on function public.owns_stream(uuid) to authenticated;
 
 -- voice_streams: owner only.
+drop policy if exists "voice_streams_owner" on public.voice_streams;
 create policy "voice_streams_owner" on public.voice_streams
   for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- voice_segments: inherit from the parent stream.
+drop policy if exists "voice_segments_owner" on public.voice_segments;
 create policy "voice_segments_owner" on public.voice_segments
   for all to authenticated
   using (public.owns_stream(stream_id)) with check (public.owns_stream(stream_id));
 
 -- shares: owner manages their own link tokens; token lookups happen server-side.
+drop policy if exists "shares_owner" on public.shares;
 create policy "shares_owner" on public.shares
   for all to authenticated
   using (user_id = auth.uid())
@@ -61,6 +64,7 @@ create policy "shares_owner" on public.shares
 
 -- voice objects: owner only (first path segment = uid). Shared audio is
 -- streamed by /api/share/[token]/audio via the service role.
+drop policy if exists "voice_owner_read" on storage.objects;
 create policy "voice_owner_read" on storage.objects
   for select to authenticated
   using (bucket_id = 'voice' and (storage.foldername(name))[1] = auth.uid()::text);
