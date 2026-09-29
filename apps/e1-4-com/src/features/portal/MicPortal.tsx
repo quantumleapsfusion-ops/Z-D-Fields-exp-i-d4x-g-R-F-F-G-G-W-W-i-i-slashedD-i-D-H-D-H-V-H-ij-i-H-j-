@@ -1,23 +1,33 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 
+import { readLastEntry, rememberEntry } from "@/features/codex/entries";
+import type { PinPhase } from "@/features/codex/PinField";
+import { speak } from "@/features/codex/voice";
 import { useVoiceCapture } from "@/features/voice-stream/useVoiceCapture";
+import { useCarry } from "@/lib/carry";
+import type { Form } from "@/lib/gravity/superposition";
+import type { SoundPrint } from "@/lib/sound/analyse";
+import { commentOn, summarise } from "@/lib/sound/commentary";
+import { readSound } from "@/lib/sound/reading";
 
-const ROW_PX = 96;
-const STEP_PX = 2;
+const PinField = dynamic(() => import("@/features/codex/PinField"), { ssr: false });
 
-/** The whole front door: one microphone. Everything else follows from the sound. */
+type Entry = { print: SoundPrint; lines: string[]; form: Form };
+
+/** The whole front door: one microphone over a field of liquid metal. Everything follows from the sound. */
 export function MicPortal({ signedIn }: { signedIn: boolean }) {
-  return signedIn ? <SignedInPortal /> : <GuestPortal />;
+  return signedIn ? <Codex /> : <GuestPortal />;
 }
 
 function GuestPortal() {
   const router = useRouter();
   return (
-    <Frame corner={<CornerLink href="/stream" label="Sign in" />}>
+    <Frame phase="rest" corner={<CornerLink href="/stream" label="Sign in" />}>
       <Centre>
         <MicButton
           onClick={() => router.push("/login?next=/")}
@@ -29,82 +39,128 @@ function GuestPortal() {
   );
 }
 
-function SignedInPortal() {
-  const capture = useVoiceCapture();
-  const { recorder, carrying, analysing, silent } = capture;
+/**
+ * Listens, keeps the original entry in the stream, then talks back about what it heard while the
+ * pins rise into the sound and its shape, and carries the entry on through the dimensions.
+ */
+function Codex() {
+  const router = useRouter();
+  const setSound = useCarry((state) => state.setSound);
+  const [entry, setEntry] = useState<Entry | null>(null);
+  const [line, setLine] = useState(-1);
+  const [pulse, setPulse] = useState(0);
+
+  const onSound = useCallback((print: SoundPrint) => {
+    const reading = readSound(print);
+    const lines = commentOn(print, readLastEntry());
+    rememberEntry(summarise(print));
+    setEntry({ print, lines, form: reading.candidates[reading.resolvedIndex].form });
+  }, []);
+  const capture = useVoiceCapture([], onSound);
+  const { recorder, analysing, silent, failedUploads } = capture;
   const recording = recorder.state !== "idle";
-  const flowing = recording || carrying;
+
+  useEffect(() => {
+    if (!entry) return;
+    return speak(entry.lines, {
+      onLine: setLine,
+      onWord: () => setPulse((p) => p + 1),
+      onEnd: () => {
+        setSound(entry.print);
+        router.push("/journey");
+      },
+    });
+  }, [entry, router, setSound]);
+
+  const phase: PinPhase = recording
+    ? "listen"
+    : entry
+      ? line < 1
+        ? "relief"
+        : "form"
+      : "rest";
 
   const status = recorder.error
     ? recorder.error
     : recording
-      ? "Tap when you are done"
-      : analysing
-        ? "Listening back"
-        : carrying
-          ? "Carrying it up"
-          : silent
-            ? "No sound came through. Tap and try again."
-            : "Tap and speak";
+      ? "Listening. Tap when you are done."
+      : failedUploads
+        ? "Your entry did not save."
+        : analysing
+          ? "Listening back"
+          : entry
+            ? "Tap to speak again"
+            : silent
+              ? "No sound came through. Tap and try again."
+              : "Tap and speak";
+
+  const start = () => {
+    setEntry(null);
+    setLine(-1);
+    void capture.record();
+  };
 
   return (
-    <Frame corner={<CornerLink href="/stream" label="Your stream" />}>
-      {flowing ? (
-        <LiveInk level={recorder.state === "recording" ? recorder.level : 0} />
+    <Frame
+      phase={phase}
+      level={recorder.state === "recording" ? recorder.level : 0}
+      print={entry?.print}
+      form={entry?.form}
+      pulse={pulse}
+      corner={<CornerLink href="/stream" label="Your stream" />}
+    >
+      {entry && line >= 0 ? (
+        <p
+          key={line}
+          aria-live="polite"
+          className="animate-ink-in font-display text-chalk absolute inset-x-0 top-16 z-10 px-8 text-center text-3xl leading-snug [text-shadow:0_2px_24px_#000] sm:px-20 sm:text-5xl"
+        >
+          {entry.lines[line]}
+        </p>
       ) : null}
-      <Centre docked={flowing}>
+      <Centre docked={recording || Boolean(entry) || analysing}>
         <MicButton
-          onClick={() => (recording ? capture.finish() : void capture.record())}
+          onClick={() => (recording ? capture.finish() : start())}
           label={recording ? "Stop" : "Speak"}
-          small={flowing}
+          small={recording || Boolean(entry) || analysing}
           level={recorder.state === "recording" ? recorder.level : 0}
-          disabled={!recorder.supported || (carrying && !recording)}
+          disabled={!recorder.supported || analysing}
         />
         <p role="status" className="label max-w-xs text-center">
           {status}
         </p>
+        {failedUploads ? (
+          <button
+            type="button"
+            onClick={capture.retryFailed}
+            className="text-ochre text-sm"
+          >
+            Retry
+          </button>
+        ) : null}
       </Centre>
     </Frame>
   );
 }
 
-/** The voice written across the whole screen as it happens, line after line, like handwriting. */
-function LiveInk({ level }: { level: number }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  const pen = useRef({ x: 0, row: 0 });
-
-  useEffect(() => {
-    const el = canvas.current;
-    if (!el) return;
-    const ratio = window.devicePixelRatio || 1;
-    el.width = el.clientWidth * ratio;
-    el.height = el.clientHeight * ratio;
-    el.getContext("2d")?.scale(ratio, ratio);
-  }, []);
-
-  useEffect(() => {
-    const el = canvas.current;
-    const ctx = el?.getContext("2d");
-    if (!el || !ctx) return;
-    const width = el.clientWidth - 64;
-    const rows = Math.max(1, Math.floor((el.clientHeight - 260) / ROW_PX));
-    const { x, row } = pen.current;
-    const baseline = 64 + (row % rows) * ROW_PX + ROW_PX / 2;
-    if (x === 0 && row % rows === 0 && row > 0) ctx.clearRect(0, 0, el.width, el.height);
-    const h = Math.max(1.5, Math.min(1, level * 1.6) * ROW_PX * 0.9);
-    ctx.fillStyle = `rgba(211, 163, 76, ${0.35 + Math.min(1, level * 2) * 0.65})`;
-    ctx.fillRect(32 + x, baseline - h / 2, STEP_PX - 0.5, h);
-    pen.current = x + STEP_PX > width ? { x: 0, row: row + 1 } : { x: x + STEP_PX, row };
-  }, [level]);
-
-  return (
-    <canvas ref={canvas} aria-hidden="true" className="absolute inset-0 h-full w-full" />
-  );
-}
-
-function Frame({ corner, children }: { corner: ReactNode; children: ReactNode }) {
+function Frame({
+  corner,
+  children,
+  ...pins
+}: {
+  corner: ReactNode;
+  children: ReactNode;
+  phase: PinPhase;
+  level?: number;
+  print?: SoundPrint | null;
+  form?: Form;
+  pulse?: number;
+}) {
   return (
     <main className="bg-blackboard relative flex h-dvh flex-col items-center justify-center overflow-hidden px-6">
+      <div className="absolute inset-0">
+        <PinField {...pins} />
+      </div>
       <div className="absolute top-5 right-6 z-10">{corner}</div>
       {children}
     </main>
@@ -150,7 +206,7 @@ function MicButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className={`bg-ochre text-blackboard relative flex items-center justify-center rounded-full transition-all duration-700 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`bg-ochre text-blackboard relative flex items-center justify-center rounded-full shadow-[0_0_60px_rgba(0,0,0,0.8)] transition-all duration-700 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
         small ? "h-24 w-24" : "h-44 w-44 sm:h-56 sm:w-56"
       }`}
     >

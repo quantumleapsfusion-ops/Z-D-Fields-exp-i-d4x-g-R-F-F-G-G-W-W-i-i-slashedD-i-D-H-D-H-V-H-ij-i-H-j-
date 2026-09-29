@@ -2,6 +2,7 @@
 
 import { useMemo, useTransition } from "react";
 
+import { CodexReplay } from "@/features/codex/CodexReplay";
 import { deleteSegmentAction, deleteStreamAction } from "@/app/actions/stream";
 import type { Playlist } from "@/lib/audio/store";
 import { usePlaylist } from "@/lib/audio/usePlaylist";
@@ -122,6 +123,9 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
             items={items}
             activeId={activeId}
             onPlay={playFrom}
+            renderDetail={(segment) => (
+              <CodexReplay audioUrl={segmentAudioUrl(segment.id)} />
+            )}
             renderActions={(segment) => (
               <>
                 <ShareButton segmentId={segment.id} label="Share" />
