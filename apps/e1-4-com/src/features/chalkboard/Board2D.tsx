@@ -89,6 +89,7 @@ export default function Board2D({
   const [textEdit, setTextEdit] = useState<TextEdit | null>(null);
   const origin = useRef<Point | null>(null);
   const erasing = useRef(false);
+  const pendingText = useRef<Pick<TextEdit, "world" | "kind"> | null>(null);
 
   useEffect(() => {
     const el = wrapper.current;
@@ -146,10 +147,11 @@ export default function Board2D({
         if (!onEmpty) eraseAt(e.target);
         return;
       case "text":
-        setTextEdit({ id: null, world: p, value: "", kind: "text" });
+        // Opened on pointer-up: the pointer-down's default focus change would blur the editor.
+        pendingText.current = { world: p, kind: "text" };
         return;
       case "math":
-        setTextEdit({ id: null, world: p, value: "", kind: "math" });
+        pendingText.current = { world: p, kind: "math" };
         return;
       case "pen":
         setDraft({ ...base, type: "stroke", points: [p.x, p.y], width: strokeWidth });
@@ -231,6 +233,11 @@ export default function Board2D({
   function handleUp() {
     erasing.current = false;
     origin.current = null;
+    if (pendingText.current) {
+      setTextEdit({ id: null, value: "", ...pendingText.current });
+      pendingText.current = null;
+      return;
+    }
     if (!draft) return;
     const d = draft;
     setDraft(null);

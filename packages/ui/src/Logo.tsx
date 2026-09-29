@@ -2,7 +2,7 @@ import { brand } from "./brand";
 
 type LogoVariant = "rainbow" | "mono";
 
-type LogoProps = {
+type E14MarkProps = {
   /** `rainbow` is the primary mark; `mono` takes `currentColor` (accent, text, …). */
   variant?: LogoVariant;
   size?: number;
@@ -10,13 +10,13 @@ type LogoProps = {
   title?: string;
 };
 
-/** The e1-4 mark: a Ψ set over a π, divided by a hairline rule. */
+/** The e1-4 mark: a Ψ set over a π, divided by a hairline rule. Inline SVG, stays crisp. */
 export function E14Mark({
   variant = "rainbow",
   size = 32,
   className,
   title = "e1-4",
-}: LogoProps) {
+}: E14MarkProps) {
   const gradientId = "e14-logo-rainbow";
   const stroke = variant === "rainbow" ? `url(#${gradientId})` : "currentColor";
 
@@ -67,9 +67,6 @@ export function E14Mark({
   );
 }
 
-/** Backwards-compatible alias. */
-export const Logo = E14Mark;
-
 type MonolithMarkProps = {
   size?: number;
   className?: string;
@@ -104,5 +101,39 @@ export function MonolithMark({
         <path d="M13 19h22" strokeWidth={2} />
       </g>
     </svg>
+  );
+}
+
+type LogoBrand = "e1-4" | "earth1";
+
+type LogoProps = {
+  /** `e1-4` is the rainbow Ψπ disc (e1-4.com); `earth1` is the cross-in-circle (earth1.co). */
+  brand?: LogoBrand;
+  size?: number;
+  className?: string;
+  title?: string;
+};
+
+const SRC: Record<LogoBrand, string> = {
+  "e1-4": "/brand/e1-4.png",
+  earth1: "/brand/earth1.png",
+};
+
+/**
+ * The raster brand assets. They live in each app's `public/brand/`, so both apps must ship
+ * both files. Prefer `E14Mark` / `MonolithMark` where the mark should take the accent colour.
+ */
+export function Logo({ brand = "e1-4", size = 32, className, title }: LogoProps) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- shared package, no next/image dependency
+    <img
+      src={SRC[brand]}
+      alt={title ?? (brand === "earth1" ? "earth1" : "e1-4")}
+      width={size}
+      height={size}
+      className={className}
+      style={{ width: size, height: size, objectFit: "contain" }}
+      draggable={false}
+    />
   );
 }
