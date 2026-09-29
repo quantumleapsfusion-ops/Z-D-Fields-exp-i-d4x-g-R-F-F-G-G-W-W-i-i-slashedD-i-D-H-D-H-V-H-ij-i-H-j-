@@ -6,7 +6,10 @@ import { signInWithOAuth } from "@/lib/auth/actions";
 import { OAUTH_PROVIDERS, type OAuthProvider } from "@/lib/auth/providers";
 import { getCurrentUser } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "Sign in" };
+export const metadata: Metadata = {
+  title: "Sign in",
+  robots: { index: false },
+};
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { next, error } = await searchParams;

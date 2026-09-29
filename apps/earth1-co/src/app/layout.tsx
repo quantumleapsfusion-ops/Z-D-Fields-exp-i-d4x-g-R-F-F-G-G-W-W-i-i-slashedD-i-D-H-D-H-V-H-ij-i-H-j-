@@ -20,18 +20,25 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.org}`,
+    default: `${site.org} — Global citizenship for all`,
     template: `%s — ${site.name}`,
   },
   description: site.description,
   applicationName: site.name,
+  keywords: [...site.keywords],
   openGraph: {
     type: "website",
     url: site.url,
     siteName: site.org,
-    title: site.org,
+    title: `${site.org} — Global citizenship for all`,
     description: site.description,
   },
+  twitter: {
+    card: "summary",
+    title: `${site.org} — Global citizenship for all`,
+    description: site.description,
+  },
+  robots: { index: true, follow: true },
   icons: { icon: "/icon.png", apple: "/apple-icon.png" },
 };
 
