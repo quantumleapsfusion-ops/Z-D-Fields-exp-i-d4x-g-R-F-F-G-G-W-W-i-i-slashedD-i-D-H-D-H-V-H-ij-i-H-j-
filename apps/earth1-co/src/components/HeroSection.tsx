@@ -4,11 +4,21 @@ import { motion } from "framer-motion";
 
 import { site } from "@/lib/site";
 
+import { SaturnRings } from "./SaturnRings";
+
 const ease = [0.2, 0.7, 0.2, 1] as const;
 
 export function HeroSection() {
   return (
-    <section className="mx-auto max-w-5xl px-5 pt-16 pb-20 sm:px-8 sm:pt-28 sm:pb-28">
+    <section className="relative isolate mx-auto max-w-5xl px-5 pt-16 pb-20 sm:px-8 sm:pt-28 sm:pb-28">
+      <motion.div
+        className="pointer-events-none absolute -top-6 -right-24 -z-10 w-[26rem] opacity-80 sm:-right-16 sm:w-[40rem]"
+        initial={{ opacity: 0, scale: 0.92, rotate: -4 }}
+        animate={{ opacity: 0.8, scale: 1, rotate: 0 }}
+        transition={{ duration: 1.6, ease }}
+      >
+        <SaturnRings className="w-full animate-[saturn-drift_24s_ease-in-out_infinite]" />
+      </motion.div>
       <motion.p
         className="label"
         initial={{ opacity: 0 }}

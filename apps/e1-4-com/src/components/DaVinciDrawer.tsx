@@ -1,36 +1,39 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { DaVinciApp } from "@/features/davinci/DaVinciApp";
 import { usePlayback } from "@/lib/audio/store";
 import { interpret, type AssistantAction } from "@/lib/davinci/assistant";
+import { dimensionOf, neighbour } from "@/lib/dimensions";
 import { enabledFeatures } from "@/lib/features";
 
 type Entry = { id: number; prompt: string; action: AssistantAction };
 
 const ease = [0.2, 0.7, 0.2, 1] as const;
 
-/**
- * Global Da Vinci slide-over. Opens with Cmd/Ctrl+K or the floating chalk button; runs the
- * mocked assistant against the current audio dock state and can route the app.
- */
-export function DaVinciDrawer() {
+export function DaVinciDrawer({ llmReady }: { llmReady: boolean }) {
+  const pathname = usePathname();
   const router = useRouter();
-  const playlist = usePlayback((s) => s.playlist);
+  const playlist = usePlayback((state) => state.playlist);
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<"ask" | "sketch">("ask");
   const [input, setInput] = useState("");
   const [log, setLog] = useState<Entry[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const idRef = useRef(0);
+  const current = dimensionOf(pathname);
+  const lower = neighbour(pathname, -1);
+  const higher = neighbour(pathname, 1);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setOpen((o) => !o);
-      } else if (e.key === "Escape") {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setOpen((value) => !value);
+      } else if (event.key === "Escape") {
         setOpen(false);
       }
     };
@@ -39,17 +42,21 @@ export function DaVinciDrawer() {
   }, []);
 
   useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
+    if (open && tab === "ask") inputRef.current?.focus();
+  }, [open, tab]);
+
+  function navigate(href: string) {
+    router.push(href);
+    setOpen(false);
+  }
 
   function submit(prompt: string) {
-    const action = interpret(prompt, playlist);
-    setLog((l) => [{ id: ++idRef.current, prompt, action }, ...l].slice(0, 12));
+    const action = interpret(prompt, playlist, pathname);
+    setLog((entries) =>
+      [{ id: ++idRef.current, prompt, action }, ...entries].slice(0, 12),
+    );
     setInput("");
-    if (action.kind === "navigate") {
-      router.push(action.href);
-      setOpen(false);
-    }
+    if (action.kind === "navigate") router.push(action.href);
   }
 
   return (
@@ -57,16 +64,11 @@ export function DaVinciDrawer() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Open Da Vinci (Ctrl+K)"
-        title="Da Vinci — Ctrl+K"
-        className="border-ochre/60 bg-blackboard/90 text-ochre hover:bg-ochre hover:text-blackboard fixed right-4 bottom-20 z-40 flex h-12 w-12 items-center justify-center rounded-full border shadow-lg backdrop-blur transition-colors md:bottom-6"
+        aria-label="Open Da Vinci. Press Ctrl+K."
+        title="Da Vinci. Ctrl+K."
+        className="border-ochre/60 bg-blackboard text-ochre hover:bg-ochre hover:text-blackboard fixed right-4 bottom-20 z-40 rounded-full border px-4 py-2 font-mono text-xs md:bottom-6"
       >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <g strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 20l4-1 10-10-3-3L5 16z" />
-            <path d="M13 8l3 3" />
-          </g>
-        </svg>
+        Da Vinci
       </button>
 
       <AnimatePresence>
@@ -84,8 +86,10 @@ export function DaVinciDrawer() {
               key="drawer"
               role="dialog"
               aria-modal="true"
-              aria-label="Da Vinci assistant"
-              className="border-chalk/10 bg-board-2 text-chalk fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l shadow-2xl"
+              aria-label="Da Vinci"
+              className={`border-chalk/10 bg-board-2 text-chalk fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l ${
+                tab === "sketch" ? "max-w-5xl" : "max-w-md"
+              }`}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -93,78 +97,126 @@ export function DaVinciDrawer() {
             >
               <header className="border-chalk/10 flex items-center justify-between border-b px-5 py-4">
                 <div>
-                  <p className="label">Da Vinci</p>
-                  <p className="text-dust font-sans text-xs">
-                    Mocked brain · navigation, synthesis, arithmetic
-                  </p>
+                  <p className="font-mono text-sm">Da Vinci</p>
+                  {current ? (
+                    <p className="text-dust font-mono text-xs">
+                      {current.dimension}D · {current.title}
+                    </p>
+                  ) : null}
                 </div>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
                   className="label hover:text-chalk"
                 >
-                  Esc
+                  Close
                 </button>
               </header>
 
-              <form
-                className="px-5 pt-4"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (input.trim()) submit(input);
-                }}
-              >
-                <input
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="open the board · summarise · 2^10 / 4"
-                  aria-label="Ask Da Vinci"
-                  className="border-chalk/15 bg-blackboard text-chalk placeholder:text-dust/60 focus-visible:ring-glow/60 w-full rounded-lg border px-3 py-2.5 font-sans text-sm focus:outline-none focus-visible:ring-2"
-                />
-              </form>
-
-              <div className="flex flex-wrap gap-2 px-5 pt-3">
-                {enabledFeatures().map((f) => (
+              <div className="border-chalk/10 flex gap-5 border-b px-5">
+                {(["ask", "sketch"] as const).map((name) => (
                   <button
-                    key={f.href}
+                    key={name}
                     type="button"
-                    onClick={() => submit(`open ${f.title}`)}
-                    className="border-chalk/15 text-dust hover:text-chalk rounded-full border px-3 py-1 font-mono text-[0.65rem] tracking-wide uppercase"
+                    aria-pressed={tab === name}
+                    onClick={() => setTab(name)}
+                    className={`border-b py-3 font-mono text-xs uppercase ${
+                      tab === name
+                        ? "border-ochre text-chalk"
+                        : "text-dust hover:text-chalk border-transparent"
+                    }`}
                   >
-                    {f.title}
+                    {name}
                   </button>
                 ))}
-                {playlist ? (
-                  <button
-                    type="button"
-                    onClick={() => submit("summarise the loaded stream")}
-                    className="border-ochre/50 text-ochre hover:bg-ochre hover:text-blackboard rounded-full border px-3 py-1 font-mono text-[0.65rem] tracking-wide uppercase"
-                  >
-                    Synthesise dock
-                  </button>
-                ) : null}
               </div>
 
-              <ol className="flex flex-1 flex-col gap-3 overflow-y-auto px-5 py-4">
-                <AnimatePresence initial={false}>
-                  {log.map((entry) => (
-                    <motion.li
-                      key={entry.id}
-                      layout
-                      initial={{ opacity: 0, y: -6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="border-chalk/10 rounded-lg border p-3"
-                    >
-                      <p className="text-dust font-mono text-[0.65rem] uppercase">
-                        {entry.prompt}
-                      </p>
-                      <ActionView action={entry.action} />
-                    </motion.li>
-                  ))}
-                </AnimatePresence>
-              </ol>
+              {tab === "ask" ? (
+                <>
+                  <form
+                    className="px-5 pt-4"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      if (input.trim()) submit(input);
+                    }}
+                  >
+                    <input
+                      ref={inputRef}
+                      value={input}
+                      onChange={(event) => setInput(event.target.value)}
+                      placeholder="Open 3D, summarize, or enter a calculation"
+                      aria-label="Ask Da Vinci"
+                      className="border-chalk/15 bg-blackboard text-chalk placeholder:text-dust/60 w-full rounded-lg border px-3 py-2.5 font-sans text-sm focus:outline-none"
+                    />
+                  </form>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 pt-4 font-mono text-xs">
+                    {lower ? (
+                      <button
+                        type="button"
+                        onClick={() => navigate(lower.href)}
+                        className="text-dust hover:text-chalk"
+                      >
+                        Collapse
+                      </button>
+                    ) : null}
+                    {higher ? (
+                      <button
+                        type="button"
+                        onClick={() => navigate(higher.href)}
+                        className="text-dust hover:text-chalk"
+                      >
+                        Lift
+                      </button>
+                    ) : null}
+                    {enabledFeatures().map((feature) => (
+                      <button
+                        key={feature.href}
+                        type="button"
+                        aria-label={`${feature.dimension}D ${feature.title}`}
+                        aria-current={
+                          pathname.startsWith(feature.href) ? "page" : undefined
+                        }
+                        onClick={() => navigate(feature.href)}
+                        className="text-dust hover:text-chalk"
+                      >
+                        {feature.dimension}D
+                      </button>
+                    ))}
+                    {playlist ? (
+                      <button
+                        type="button"
+                        onClick={() => submit("summarize the loaded stream")}
+                        className="text-ochre hover:text-chalk"
+                      >
+                        Summarize stream
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <ol className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-4">
+                    <AnimatePresence initial={false}>
+                      {log.map((entry) => (
+                        <motion.li
+                          key={entry.id}
+                          layout
+                          initial={{ opacity: 0, y: -6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="border-chalk/10 border-b pb-3"
+                        >
+                          <p className="text-dust font-mono text-xs">{entry.prompt}</p>
+                          <ActionView action={entry.action} />
+                        </motion.li>
+                      ))}
+                    </AnimatePresence>
+                  </ol>
+                </>
+              ) : (
+                <div className="min-h-0 flex-1 overflow-y-auto p-5">
+                  <DaVinciApp llmReady={llmReady} layout="drawer" />
+                </div>
+              )}
             </motion.aside>
           </>
         ) : null}
@@ -176,7 +228,7 @@ export function DaVinciDrawer() {
 function ActionView({ action }: { action: AssistantAction }) {
   switch (action.kind) {
     case "navigate":
-      return <p className="mt-1 font-sans text-sm">Taking you to {action.label}.</p>;
+      return <p className="mt-1 font-sans text-sm">Opening {action.label}.</p>;
     case "synthesis":
       return (
         <div className="mt-1 font-sans text-sm">
@@ -188,7 +240,7 @@ function ActionView({ action }: { action: AssistantAction }) {
       return (
         <p className="mt-1 font-mono text-sm">
           {action.expression} ={" "}
-          {action.result ?? <span className="text-ochre">couldn&apos;t parse that</span>}
+          {action.result ?? <span className="text-ochre">could not parse that</span>}
         </p>
       );
     case "answer":

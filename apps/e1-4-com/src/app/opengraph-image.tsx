@@ -5,7 +5,7 @@ import { ImageResponse } from "next/og";
 
 import { site } from "@/lib/site";
 
-export const alt = `${site.name} — ${site.tagline}`;
+export const alt = `${site.name}: ${site.tagline}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -21,7 +21,7 @@ export default async function OpengraphImage() {
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
-        backgroundColor: "#0e1a13",
+        backgroundColor: "#000000",
         color: "#f1ede1",
         padding: "80px",
       }}

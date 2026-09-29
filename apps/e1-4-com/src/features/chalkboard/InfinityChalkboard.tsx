@@ -10,21 +10,20 @@ import {
   type BoardSummary,
 } from "@/app/actions/boards";
 import { LiveControls } from "@/features/live/LiveControls";
+import { StreamSource } from "@/features/voice-stream/StreamSource";
+import { useStreamTranscript } from "@/features/voice-stream/useStreamTranscript";
 import {
   useLiveTranscription,
   type FinalPhrase,
 } from "@/features/live/useLiveTranscription";
 import { DRAFT_KEY, localBoards } from "@/lib/chalkboard/local";
 import type { BoardDocument, BoardElement } from "@/lib/chalkboard/types";
-import { flags } from "@/lib/flags";
+import { useCarry } from "@/lib/carry";
 
 import { zoomAround, type Point, type Tool, type Viewport } from "./Board2D";
 import { parseVoice, shapeAt } from "./voice";
 
 const Board2D = dynamic(() => import("./Board2D"), { ssr: false });
-const Board3D = dynamic(() => import("./Board3D"), { ssr: false });
-
-type Mode = "2d" | "3d" | "4d";
 
 const TOOLS: { id: Tool; label: string; key: string }[] = [
   { id: "select", label: "Select", key: "v" },
@@ -92,7 +91,6 @@ function historyReducer(state: History, action: HistoryAction): History {
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
-/** Infinity Chalkboard — the 2D board is production-ready; 3D/4D are flagged scaffolds. */
 export function InfinityChalkboard({
   initialBoards,
   initial,
@@ -111,16 +109,17 @@ export function InfinityChalkboard({
   const [viewport, setViewport] = useState<Viewport>(initial.doc.viewport);
   const [tool, setTool] = useState<Tool>("pen");
   const [color, setColor] = useState(COLORS[0]);
-  const [mode, setMode] = useState<Mode>("2d");
-  const [timeDepth, setTimeDepth] = useState(true);
-  const [until, setUntil] = useState(Number.MAX_SAFE_INTEGER);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [revision, setRevision] = useState(0);
   const [voiceCursor, setVoiceCursor] = useState<Point>({ x: 80, y: 80 });
+  const stream = useStreamTranscript();
   const [localRestore, setLocalRestore] = useState<{
     doc: BoardDocument;
     updatedAt: number;
   } | null>(null);
+  const setCarriedBoardId = useCarry((s) => s.setBoardId);
+
+  useEffect(() => setCarriedBoardId(boardId), [boardId, setCarriedBoardId]);
 
   const elements = history.present;
   const viewportRef = useRef(viewport);
@@ -178,8 +177,10 @@ export function InfinityChalkboard({
   );
 
   const live = useLiveTranscription(onPhrase);
+  const streamSegments = stream.segments.filter((segment) =>
+    segment.transcription?.trim(),
+  );
 
-  // Autosave (debounced). Serialised so a new board is only created once.
   const saving = useRef(false);
   const queued = useRef(false);
   const latest = useRef({ boardId, title, elements, viewport });
@@ -237,7 +238,6 @@ export function InfinityChalkboard({
     return () => clearTimeout(timer);
   }, [revision, save]);
 
-  // Local-first mirror: every change lands in IndexedDB immediately; the server save follows.
   useEffect(() => {
     if (revision === 0) return;
     void localBoards.put({
@@ -252,7 +252,6 @@ export function InfinityChalkboard({
     if (saveState === "saved" && boardId) void localBoards.markSynced(boardId);
   }, [saveState, boardId]);
 
-  // Offer to restore a local copy that never made it to the server (crash, offline, failed save).
   const initialKey = initial.id ?? DRAFT_KEY;
   const initialCount = initial.doc.elements.length;
   useEffect(() => {
@@ -331,13 +330,9 @@ export function InfinityChalkboard({
     newBoard();
   }
 
-  const times = elements.map((e) => e.createdAt);
-  const tMin = times.length ? Math.min(...times) : 0;
-  const tMax = times.length ? Math.max(...times) : 0;
-  const untilClamped = Math.min(until, tMax);
-
   return (
     <div className="flex flex-col gap-4">
+      <StreamSource stream={stream} />
       <div className="flex flex-wrap items-center gap-3">
         <input
           value={title}
@@ -407,85 +402,78 @@ export function InfinityChalkboard({
         ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div
-          role="radiogroup"
-          aria-label="Dimensions"
-          className="border-chalk/15 flex rounded-full border p-1"
-        >
-          {(
-            [
-              { id: "2d", label: "2D", enabled: true, hint: "Production" },
-              {
-                id: "3d",
-                label: "3D",
-                enabled: flags.chalkboard3d,
-                hint: "Experimental — set NEXT_PUBLIC_FEATURE_CHALKBOARD_3D=true",
-              },
-              {
-                id: "4d",
-                label: "4D",
-                enabled: flags.chalkboard4d,
-                hint: "Future — set NEXT_PUBLIC_FEATURE_CHALKBOARD_4D=true to preview the placeholder",
-              },
-            ] as const
-          ).map((m) => (
+      <div className="grid gap-6 lg:grid-cols-[minmax(14rem,1fr)_minmax(0,3fr)]">
+        <aside className="flex flex-col items-start gap-3">
+          <p className="label">Voice Stream segments</p>
+          {stream.text ? (
             <button
-              key={m.id}
               type="button"
-              role="radio"
-              aria-checked={mode === m.id}
-              disabled={!m.enabled}
-              title={m.hint}
-              onClick={() => setMode(m.id)}
-              className={`rounded-full px-4 py-1 font-sans text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${
-                mode === m.id
-                  ? "bg-chalk text-blackboard"
-                  : "text-chalk/80 hover:text-chalk"
-              }`}
+              onClick={() => live.pushText(stream.text)}
+              className="text-dust hover:text-chalk font-mono text-xs underline underline-offset-4"
             >
-              {m.label}
+              Place all
             </button>
-          ))}
-        </div>
+          ) : null}
+          <ol className="flex w-full flex-col gap-3">
+            {streamSegments.map((segment) => {
+              const text = segment.transcription?.trim();
+              if (!text) return null;
+              return (
+                <li key={segment.id}>
+                  <button
+                    type="button"
+                    onClick={() => live.pushText(text)}
+                    className="flex flex-col items-start gap-1 text-left font-sans text-sm"
+                  >
+                    <time className="label" dateTime={segment.startedAt}>
+                      {new Date(segment.startedAt).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </time>
+                    <span className="text-chalk/80 hover:text-chalk">{text}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </aside>
 
-        {mode === "2d" ? (
-          <div className="flex flex-wrap items-center gap-1">
-            {TOOLS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                aria-pressed={tool === t.id}
-                title={`${t.label} (${t.key.toUpperCase()})`}
-                onClick={() => setTool(t.id)}
-                className={`rounded-full px-3 py-1 font-sans text-xs transition-colors ${
-                  tool === t.id
-                    ? "bg-ochre text-blackboard"
-                    : "text-chalk/75 hover:text-chalk"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-            <span className="bg-chalk/15 mx-2 h-5 w-px" aria-hidden="true" />
-            {COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                aria-label={`Colour ${c}`}
-                aria-pressed={color === c}
-                onClick={() => setColor(c)}
-                className={`h-5 w-5 rounded-full border ${color === c ? "border-chalk ring-ochre/60 ring-2" : "border-chalk/20"}`}
-                style={{ backgroundColor: c }}
-              />
-            ))}
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-1">
+              {TOOLS.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  aria-pressed={tool === t.id}
+                  title={`${t.label} (${t.key.toUpperCase()})`}
+                  onClick={() => setTool(t.id)}
+                  className={`rounded-full px-3 py-1 font-sans text-xs transition-colors ${
+                    tool === t.id
+                      ? "bg-ochre text-blackboard"
+                      : "text-chalk/75 hover:text-chalk"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+              <span className="bg-chalk/15 mx-2 h-5 w-px" aria-hidden="true" />
+              {COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  aria-label={`Colour ${c}`}
+                  aria-pressed={color === c}
+                  onClick={() => setColor(c)}
+                  className={`h-5 w-5 rounded-full border ${color === c ? "border-chalk ring-ochre/60 ring-2" : "border-chalk/20"}`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
           </div>
-        ) : null}
-      </div>
 
-      <div className="chalk-surface border-chalk/10 relative h-[70vh] min-h-[28rem] overflow-hidden rounded-2xl border">
-        {mode === "2d" ? (
-          <>
+          <div className="chalk-surface border-chalk/10 relative h-[70vh] min-h-[28rem] overflow-hidden rounded-2xl border">
             <Board2D
               elements={elements}
               viewport={viewport}
@@ -543,55 +531,16 @@ export function InfinityChalkboard({
                 Redo
               </button>
             </div>
-          </>
-        ) : mode === "3d" ? (
-          <>
-            <Board3D elements={elements} timeDepth={timeDepth} until={untilClamped} />
-            <div className="border-chalk/15 bg-blackboard/80 text-chalk/80 absolute top-3 left-3 flex flex-col gap-2 rounded-xl border p-3 font-sans text-xs">
-              <span className="label text-ochre">Experimental · read-only</span>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={timeDepth}
-                  onChange={(e) => setTimeDepth(e.target.checked)}
-                />
-                Time as depth
-              </label>
-              {tMax > tMin ? (
-                <label className="flex items-center gap-2">
-                  Time
-                  <input
-                    type="range"
-                    min={tMin}
-                    max={tMax}
-                    value={untilClamped}
-                    onChange={(e) => setUntil(Number(e.target.value))}
-                  />
-                </label>
-              ) : null}
-            </div>
-          </>
-        ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
-            <p className="label text-ochre">Future · not launch-complete</p>
-            <p className="font-display max-w-lg text-2xl">
-              Four dimensions: space you can walk into, and time you can scrub.
-            </p>
-            <p className="text-chalk/70 max-w-lg font-sans text-sm">
-              The board already stamps every element with its creation time — the fourth
-              axis. The experimental 3D view uses it as depth and as a time slider; a
-              navigable 4D spacetime is planned, not built.
-            </p>
           </div>
-        )}
-      </div>
 
-      <LiveControls live={live} placeholder="Type a line onto the board…" />
-      <p className="text-dust font-sans text-xs">
-        Speak and your words land at the ochre cursor (click the board with Select to move
-        it). Say “draw a circle”, “add an arrow”, “draw a box” or “undo”. Scroll to zoom,
-        hold Space to pan.
-      </p>
+          <LiveControls live={live} placeholder="Type a line onto the board…" />
+          <p className="text-dust font-sans text-xs">
+            Speak and your words land at the ochre cursor (click the board with Select to
+            move it). Say “draw a circle”, “add an arrow”, “draw a box” or “undo”. Scroll
+            to zoom, hold Space to pan.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useTransition } from "react";
 
+import { CodexReplay } from "@/features/codex/CodexReplay";
 import { deleteSegmentAction, deleteStreamAction } from "@/app/actions/stream";
 import type { Playlist } from "@/lib/audio/store";
 import { usePlaylist } from "@/lib/audio/usePlaylist";
@@ -10,15 +11,25 @@ import type { SegmentDTO } from "@/lib/voice/stream";
 import { formatDuration } from "./format";
 import { ShareButton } from "./ShareButton";
 import { Timeline, type TimelineItem } from "./Timeline";
-import { useRecorder, type CapturedSpan } from "./useRecorder";
-
-type Pending = { id: string; span: CapturedSpan; failed?: boolean };
+import type { useRecorder } from "./useRecorder";
+import { useVoiceCapture } from "./useVoiceCapture";
 
 const segmentAudioUrl = (id: string) => `/api/stream/segments/${id}/audio`;
 
 export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDTO[] }) {
-  const [segments, setSegments] = useState(initialSegments);
-  const [pending, setPending] = useState<Pending[]>([]);
+  const {
+    recorder,
+    segments,
+    setSegments,
+    pending,
+    failedUploads,
+    carrying,
+    silent,
+    record,
+    pause,
+    finish,
+    retryFailed,
+  } = useVoiceCapture(initialSegments);
   const [, startTransition] = useTransition();
   const playlist = useMemo<Playlist | null>(
     () =>
@@ -37,51 +48,6 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
     [segments],
   );
   const { activeId, playFrom } = usePlaylist(playlist);
-
-  const upload = useCallback(async (item: Pending) => {
-    const form = new FormData();
-    form.append("audio", item.span.blob);
-    form.append("startedAt", item.span.startedAt.toISOString());
-    form.append("endedAt", item.span.endedAt.toISOString());
-    form.append("durationMs", String(Math.round(item.span.durationMs)));
-    try {
-      const res = await fetch("/api/stream/segments", { method: "POST", body: form });
-      if (!res.ok) throw new Error(String(res.status));
-      const { segment } = (await res.json()) as { segment: SegmentDTO };
-      setSegments((prev) => [...prev, segment].sort((a, b) => a.index - b.index));
-      setPending((prev) => prev.filter((p) => p.id !== item.id));
-    } catch {
-      setPending((prev) =>
-        prev.map((p) => (p.id === item.id ? { ...p, failed: true } : p)),
-      );
-    }
-  }, []);
-
-  const onSpan = useCallback(
-    (span: CapturedSpan) => {
-      const item = { id: crypto.randomUUID(), span };
-      setPending((prev) => [...prev, item]);
-      void upload(item);
-    },
-    [upload],
-  );
-
-  const recorder = useRecorder(onSpan);
-
-  // Poll while any transcription is still running.
-  const waiting = segments.some((s) => s.transcriptionStatus === "PENDING");
-  useEffect(() => {
-    if (!waiting) return;
-    const timer = setInterval(async () => {
-      const res = await fetch("/api/stream/segments", { cache: "no-store" });
-      if (res.ok)
-        setSegments(((await res.json()) as { segments: SegmentDTO[] }).segments);
-    }, 2500);
-    return () => clearInterval(timer);
-  }, [waiting]);
-
-  const retryFailed = () =>
-    pending.filter((p) => p.failed).forEach((p) => void upload(p));
 
   const removeSegment = (id: string) => {
     if (
@@ -124,9 +90,23 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
 
   return (
     <div className="pb-32">
-      <RecorderPanel recorder={recorder} totalMs={totalMs} />
+      <RecorderPanel
+        recorder={recorder}
+        totalMs={totalMs}
+        onRecord={() => void record()}
+        onPause={pause}
+        onStop={finish}
+        finishing={carrying}
+      />
 
-      {pending.some((p) => p.failed) ? (
+      {silent ? (
+        <p role="status" className="text-dust mt-4 text-center font-sans text-sm">
+          No sound came through this time, so there is nothing to carry up yet. Check the
+          microphone and speak a little closer.
+        </p>
+      ) : null}
+
+      {failedUploads ? (
         <button type="button" onClick={retryFailed} className="text-ochre mt-4 text-sm">
           Retry failed uploads
         </button>
@@ -135,7 +115,7 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
       <div className="mt-10">
         {items.length === 0 ? (
           <p className="font-display text-dust text-center text-xl">
-            Your stream is silent. Press record — it will keep running for as long as you
+            Your stream is silent. Press record and it keeps running for as long as you
             do.
           </p>
         ) : (
@@ -143,6 +123,9 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
             items={items}
             activeId={activeId}
             onPlay={playFrom}
+            renderDetail={(segment) => (
+              <CodexReplay audioUrl={segmentAudioUrl(segment.id)} />
+            )}
             renderActions={(segment) => (
               <>
                 <ShareButton segmentId={segment.id} label="Share" />
@@ -178,9 +161,17 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
 function RecorderPanel({
   recorder,
   totalMs,
+  onRecord,
+  onPause,
+  onStop,
+  finishing,
 }: {
   recorder: ReturnType<typeof useRecorder>;
   totalMs: number;
+  onRecord: () => void;
+  onPause: () => void;
+  onStop: () => void;
+  finishing: boolean;
 }) {
   const { state, elapsedMs, level, error, supported } = recorder;
   const bars = 28;
@@ -206,27 +197,29 @@ function RecorderPanel({
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         {state === "idle" ? (
           <RoundButton
-            onClick={() => void recorder.record()}
+            onClick={onRecord}
             primary
             label="Record"
-            disabled={!supported}
+            disabled={!supported || finishing}
           />
         ) : null}
         {state === "recording" ? (
-          <RoundButton onClick={recorder.pause} primary label="Pause" />
+          <RoundButton onClick={onPause} primary label="Pause" />
         ) : null}
         {state === "paused" ? (
-          <RoundButton onClick={() => void recorder.resume()} primary label="Resume" />
+          <RoundButton onClick={onRecord} primary label="Resume" />
         ) : null}
-        {state !== "idle" ? <RoundButton onClick={recorder.stop} label="Stop" /> : null}
+        {state !== "idle" ? <RoundButton onClick={onStop} label="Stop" /> : null}
       </div>
 
       <p className="text-dust mt-4 text-center font-mono text-xs">
-        {state === "recording"
-          ? `Recording · ${formatDuration(elapsedMs)}`
-          : state === "paused"
-            ? "Paused — resume on a whim"
-            : `Stream length ${formatDuration(totalMs)}`}
+        {finishing && state === "idle"
+          ? "Carrying your stream up through the dimensions..."
+          : state === "recording"
+            ? `Recording · ${formatDuration(elapsedMs)}`
+            : state === "paused"
+              ? "Paused. Resume when ready."
+              : `Stream length ${formatDuration(totalMs)}`}
       </p>
       {error ? (
         <p

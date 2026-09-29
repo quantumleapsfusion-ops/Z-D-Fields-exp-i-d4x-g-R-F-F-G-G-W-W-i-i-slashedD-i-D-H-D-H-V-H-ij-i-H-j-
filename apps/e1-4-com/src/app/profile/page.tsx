@@ -135,7 +135,7 @@ export default async function ProfilePage() {
         <h2 className="label text-ochre mb-3">Delete account</h2>
         <p className="text-chalk/70 mb-4 max-w-xl text-sm leading-relaxed">
           Permanently destroys your account, every Voice Stream segment and its audio, all
-          transcriptions, share links, chalkboards and your avatar — database rows and
+          transcriptions, share links, chalkboards and your avatar: database rows and
           stored files. This cannot be undone.
         </p>
         <DeleteAccountForm />

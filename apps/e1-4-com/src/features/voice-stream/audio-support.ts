@@ -103,7 +103,7 @@ export function describeMicError(err: unknown, platform: Platform = "other"): st
       return "No microphone was found on this device.";
     case "NotReadableError":
     case "TrackStartError":
-      return "The microphone is busy or unavailable — close other apps using it and try again.";
+      return "The microphone is busy or unavailable. Close other apps using it and try again.";
     case "OverconstrainedError":
     case "ConstraintNotSatisfiedError":
       return "Your microphone does not support the requested settings.";

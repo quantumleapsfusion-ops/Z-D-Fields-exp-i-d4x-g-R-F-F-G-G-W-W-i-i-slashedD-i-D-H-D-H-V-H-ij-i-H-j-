@@ -21,10 +21,6 @@ const bodySchema = z.object({
   existing: z.array(drawOpSchema).max(400).default([]),
 });
 
-/**
- * Generative visual loop (early access): turns the latest words into incremental drawing ops.
- * Falls back to a keyword stub when no LLM key is configured or the model reply is unusable.
- */
 export async function POST(request: Request) {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Sign in required" }, { status: 401 });

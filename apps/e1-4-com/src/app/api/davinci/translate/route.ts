@@ -12,7 +12,6 @@ const bodySchema = z.object({
   target: z.string().min(2).max(40),
 });
 
-/** Optional translate step behind the shared LLM interface. */
 export async function POST(request: Request) {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
@@ -21,10 +20,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
 
   if (!getLanguageModel("everyday")) {
-    return NextResponse.json(
-      { error: "Translation needs an LLM key (ANTHROPIC_API_KEY or OPENAI_API_KEY)." },
-      { status: 503 },
-    );
+    return NextResponse.json({ error: "Translation unavailable." }, { status: 503 });
   }
   try {
     const completion = await completeForUser({

@@ -3,75 +3,81 @@ export const site = {
   domain: "e1-4.com",
   url: "https://e1-4.com",
   org: "Earth One Global Coalescent",
-  /** Large standalone hero statement. */
   hero: "Greetings Earthling.",
-  /** Brand motto, shown as a quiet line beneath the hero statement. */
   motto: "Think.",
-  /** Hero subhead. */
-  subhead: "four ways to speak",
-  /** Approved tagline (DEVIN_BRIEF); used in metadata. */
+  subhead: "one voice, five dimensions",
   tagline: "earth life-forms",
-  /** The one sentence on the homepage. */
   pitch: "A social network with no typing. You speak; everything else follows.",
   philosophyUrl: "https://earth1.co",
   philosophyLabel: "earth1.co",
   description:
-    "e1-4 — earth life-forms. A voice-only social network: speak, and transcription, translation and visuals follow. Built by Earth One Global Coalescent.",
+    "e1-4, earth life-forms. A voice-only social network: speak, and transcription, translation and visuals follow. Built by Earth One Global Coalescent.",
 } as const;
 
 export type FeatureStatus = "ready" | "early" | "experimental";
+export type Dimension = 1 | 2 | 3 | 4 | 5;
 
 export type Feature = {
+  dimension: Dimension;
   title: string;
-  /** App route for the feature surface. */
   href: string;
-  /** Production readiness, shown as a small label in the app. */
+  short: string;
   status: FeatureStatus;
   codenames?: string;
   body: string;
   keywords?: string[];
-  emphasis?: boolean;
 };
 
 export const features: Feature[] = [
   {
+    dimension: 1,
     title: "Voice Stream",
     href: "/stream",
+    short: "Stream",
     status: "ready",
-    body: "One continuous recording per person, pausable and resumable on a whim. Not a post — an audio diary that runs for as long as a life does.",
+    body: "Record phrases here. Your stream feeds the other surfaces.",
   },
   {
-    title: "Da Vinci",
-    href: "/davinci",
-    status: "early",
-    codenames: "Inteligence // ARI // Stochastic I // Schroodinger",
-    body: "An assistant that listens as you speak, transcribes it as it's meant to be read, and draws what you're describing while you're still describing it.",
-  },
-  {
+    dimension: 2,
     title: "Infinity Chalkboard",
     href: "/chalkboard",
+    short: "Board",
     status: "ready",
     codenames: "Speech to Text // Binary // Sparks // Big-Bang",
-    body: "An unbounded board for working through the hard ideas out loud — physics, mechanics, anything too spatial for a sentence — in two dimensions, then three, then four.",
+    body: "Place words and drawings from your stream on an open board.",
   },
   {
-    title: "Gravity Board",
+    dimension: 3,
+    title: "Gravity Chalkboard",
     href: "/gravity",
+    short: "Gravity",
     status: "experimental",
-    codenames: "Topologoical Black Hole // Event Horizon // Superposition // Quantum",
-    body: "The chalkboard's edge case. Say something dense enough and it collapses past its own event horizon — a stochastic intelligence holds every version of the idea in superposition on the other side, until the board is ready to show you which one you meant. Transcription becomes topology: mock-ups, animation, a four-dimensional spacetime you can turn around and walk into.",
-    keywords: [
-      "event horizon",
-      "singularity",
-      "spacetime superposition",
-      "artificial random intelligence / artificial stochastic intelligence",
-    ],
-    emphasis: true,
+    codenames: "Topologoical Black Hole // Gravity // Depth",
+    body: "View your chalkboard in three dimensions. Time sets the depth.",
+  },
+  {
+    dimension: 4,
+    title: "Event Horizon",
+    href: "/horizon",
+    short: "Horizon",
+    status: "experimental",
+    codenames: "Event Horizon // Singularity // Spacetime",
+    body: "Track phrase density across your stream.",
+    keywords: ["event horizon", "singularity", "spacetime"],
+  },
+  {
+    dimension: 5,
+    title: "Superposition",
+    href: "/superposition",
+    short: "Ari",
+    status: "experimental",
+    codenames: "ARI // Stochastic I // Schroodinger // Quantum",
+    body: "Compare readings of your stream.",
   },
 ];
 
-export const statusLabel: Record<FeatureStatus, string> = {
-  ready: "Available",
-  early: "Early access",
-  experimental: "Experimental",
-};
+export const daVinci = {
+  title: "Da Vinci",
+  codenames: "Inteligence // Heisenberg × Poincaré",
+  body: "Moves between every dimension. Press Ctrl+K on any page.",
+} as const;

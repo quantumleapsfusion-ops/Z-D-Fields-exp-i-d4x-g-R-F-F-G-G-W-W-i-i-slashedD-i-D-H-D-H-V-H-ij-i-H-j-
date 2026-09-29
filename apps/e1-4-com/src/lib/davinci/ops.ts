@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-/** Da Vinci draws on a fixed virtual canvas; the client scales it to fit. */
 export const CANVAS = { width: 1000, height: 640 } as const;
 
 const coord = z.number().finite();
@@ -91,8 +90,6 @@ export function summarizeOps(ops: DrawOp[]): string {
     .map(([k, v]) => `${v} ${k}`)
     .join(", ")}). Labels: ${labels.join(" | ") || "none"}.`;
 }
-
-// ---------- Stub renderer (no LLM key) ----------
 
 function hash(text: string): number {
   let h = 2166136261;
@@ -407,10 +404,6 @@ const SYNONYMS: Record<string, string> = {
   then: "arrow",
 };
 
-/**
- * Keyword-driven sketch used when no LLM key is configured. Clearly a stub: it recognises a small
- * vocabulary of motifs and otherwise pins the key words to the board.
- */
 export function stubDraw(newText: string, existing: DrawOp[]): DrawResponse {
   const words = newText.toLowerCase().match(/[a-z']+/g) ?? [];
   const ops: DrawOp[] = [];

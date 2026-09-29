@@ -37,7 +37,7 @@ export default function PrivacyPage() {
         <h2 className="label mt-10">Your rights (GDPR / CCPA)</h2>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           <li>
-            <strong className="text-chalk">Access &amp; portability</strong> — download
+            <strong className="text-chalk">Access &amp; portability</strong>: download
             everything from your{" "}
             <Link href="/profile" className="text-ochre">
               profile
@@ -45,17 +45,17 @@ export default function PrivacyPage() {
             as JSON.
           </li>
           <li>
-            <strong className="text-chalk">Erasure</strong> — deleting a segment, your
+            <strong className="text-chalk">Erasure</strong>: deleting a segment, your
             whole stream, or your account hard-deletes database rows <em>and</em> stored
             audio/avatar files. There is no soft-delete or retention period.
           </li>
           <li>
-            <strong className="text-chalk">Revocation</strong> — share links can be
-            revoked at any time and stop working immediately.
+            <strong className="text-chalk">Revocation</strong>: share links can be revoked
+            at any time and stop working immediately.
           </li>
           <li>
-            <strong className="text-chalk">No sale of personal information</strong> — we
-            do not sell or share personal information for cross-context behavioural
+            <strong className="text-chalk">No sale of personal information</strong>: we do
+            not sell or share personal information for cross-context behavioural
             advertising.
           </li>
         </ul>

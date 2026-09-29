@@ -17,9 +17,8 @@ export const runtime = "nodejs";
 
 const bodySchema = z.object({ text: z.string().min(1).max(12000) });
 
-/** EXPERIMENTAL: sample several interpretations of a dense idea (the "superposition"). */
 export async function POST(request: Request) {
-  if (!flags.gravityBoard)
+  if (!flags.superposition)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
@@ -28,7 +27,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   const { text } = parsed.data;
 
-  // Heavy tier (claude-fable-5-1): Gravity Board is the one place that earns it.
   if (!getLanguageModel("heavy")) return NextResponse.json(stubSuperpose(text));
 
   try {
