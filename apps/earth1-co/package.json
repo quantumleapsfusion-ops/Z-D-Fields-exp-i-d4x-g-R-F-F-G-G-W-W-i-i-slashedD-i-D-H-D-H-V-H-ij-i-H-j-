@@ -2,7 +2,7 @@
   "name": "earth1-co",
   "version": "0.1.0",
   "private": true,
-  "description": "earth1.co — Earth One Global Coalescent corporate shell and governance portal.",
+  "description": "earth1.co — Earth One Coalescent corporate shell and governance portal.",
   "engines": {
     "node": ">=22"
   },

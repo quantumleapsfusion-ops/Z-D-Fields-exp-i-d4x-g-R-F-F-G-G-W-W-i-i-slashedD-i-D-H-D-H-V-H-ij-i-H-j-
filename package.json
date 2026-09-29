@@ -1,7 +1,7 @@
 {
   "name": "earth-one",
   "private": true,
-  "description": "Earth One Global Coalescent monorepo: earth1.co (corporate shell) and e1-4.com (earth life-forms).",
+  "description": "Earth One Coalescent monorepo: earth1.co (corporate shell) and e1-4.com (earth life-forms).",
   "engines": {
     "node": ">=22"
   },

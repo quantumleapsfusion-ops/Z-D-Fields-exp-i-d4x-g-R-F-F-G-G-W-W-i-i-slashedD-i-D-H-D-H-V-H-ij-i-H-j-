@@ -2,10 +2,10 @@ export const site = {
   name: "earth1",
   domain: "earth1.co",
   url: "https://earth1.co",
-  org: "Earth One Global Coalescent",
+  org: "Earth One Coalescent",
   tagline: "A coalescent, not a corporation.",
   description:
-    "Earth One Global Coalescent — the holding shell and governance portal behind e1-4.com. Absolute data sovereignty, user-controlled privacy, free speech.",
+    "Earth One Coalescent — the holding shell and governance portal behind e1-4.com. Absolute data sovereignty, user-controlled privacy, free speech.",
   flagship: {
     name: "e1-4",
     domain: "e1-4.com",

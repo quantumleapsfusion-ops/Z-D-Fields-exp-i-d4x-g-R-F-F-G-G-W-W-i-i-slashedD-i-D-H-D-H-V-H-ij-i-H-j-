@@ -4,8 +4,7 @@ export function CTA() {
   return (
     <section className="mx-auto max-w-5xl px-5 py-24 sm:px-8 sm:py-32">
       <p className="font-display max-w-3xl text-2xl leading-snug tracking-tight sm:text-4xl">
-        Built by Earth One Global Coalescent — global citizenship for all, one voice at a
-        time.
+        Built by Earth One Coalescent — global citizenship for all, one voice at a time.
       </p>
       <a
         href={site.philosophyUrl}
