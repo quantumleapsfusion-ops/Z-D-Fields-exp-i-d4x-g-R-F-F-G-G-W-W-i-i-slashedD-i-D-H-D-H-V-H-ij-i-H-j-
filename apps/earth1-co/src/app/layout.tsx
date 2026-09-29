@@ -32,6 +32,12 @@ export const metadata: Metadata = {
     siteName: site.org,
     title: `${site.org} — Global citizenship for all`,
     description: site.description,
+    images: [{ url: "/icon.svg", alt: "Earth One Ψ over π" }],
+  },
+  twitter: {
+    card: "summary",
+    title: site.org,
+    description: site.description,
   },
   twitter: {
     card: "summary_large_image",

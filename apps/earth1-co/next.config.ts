@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "export",
   reactStrictMode: true,
   transpilePackages: ["@earth-one/ui", "@earth-one/spacetime"],
   // earth1.co/e1-4 is the short link to the flagship.
