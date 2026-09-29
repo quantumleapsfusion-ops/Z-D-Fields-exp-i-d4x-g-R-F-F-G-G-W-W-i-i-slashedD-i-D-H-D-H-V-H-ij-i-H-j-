@@ -57,6 +57,28 @@ function wellHeight(r: number, a: number, now: number): number {
   return plateau + rim + swirl;
 }
 
+const RING_BANDS = [
+  { inner: 0.78, outer: 0.98, height: 0.18 },
+  { inner: 1.02, outer: 1.42, height: 0.3 },
+  { inner: 1.52, outer: 1.78, height: 0.22 },
+  { inner: 1.84, outer: 1.9, height: 0.12 },
+];
+
+/** Saturn at rest: a planet swelling from the centre, circled by bright ring bands and gaps. */
+function saturnHeight(r: number, a: number, now: number): number {
+  const planet = r < 0.62 ? 0.95 * Math.sqrt(1 - (r / 0.62) ** 2) : 0;
+  let ring = 0;
+  for (const band of RING_BANDS) {
+    if (r < band.inner || r > band.outer) continue;
+    const t = (r - band.inner) / (band.outer - band.inner);
+    const edge = Math.sin(Math.PI * t) ** 0.4;
+    const ringlets = 0.75 + 0.25 * Math.sin(r * 90);
+    const orbit = 0.85 + 0.15 * Math.sin(a * 2 - now * (0.9 / r));
+    ring = band.height * edge * ringlets * orbit;
+  }
+  return planet + ring;
+}
+
 function reliefHeight(print: SoundPrint, col: number, row: number): number {
   const frame = Math.min(FRAMES - 1, Math.floor((col / COLS) * FRAMES));
   const band = Math.min(BANDS - 1, Math.floor((row / ROWS) * BANDS));
@@ -172,7 +194,9 @@ export default function PinField({
           const ripple = history[Math.min(HISTORY - 1, Math.floor(r * 34))] * 0.9;
           const speech = envelope * 0.25 * Math.max(0, Math.cos(r * 5 - now * 9));
           let target = breath;
-          if (p === "listen") target = breath + ripple;
+          if (p === "rest")
+            target = breath * 0.5 + saturnHeight(r, Math.atan2(y, x), now);
+          else if (p === "listen") target = breath + ripple;
           else if (p === "line" && sound) target = breath + lineHeight(sound, col, y);
           else if (p === "board" && sound)
             target = breath + reliefHeight(sound, col, row) * 0.3;
