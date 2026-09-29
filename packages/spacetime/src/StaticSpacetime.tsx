@@ -1,11 +1,9 @@
 import { SHEET, project, screenToSheet, viewProjection, wellHeight } from "./geometry";
 import type { Well } from "./geometry";
-import { LOGO_RAINBOW, type RGB, type ResolvedTheme } from "./themes";
+import type { RGB, ResolvedTheme } from "./themes";
 
 const WIDTH = 1600;
 const HEIGHT = 1000;
-/** Where the singularity sits in the still frame (NDC y), roughly behind a hero logo. */
-const SINGULARITY_NDC_Y = 0.35;
 
 /** Deterministic star field so server and client renders agree. */
 function stars(fraction: number) {
@@ -18,16 +16,16 @@ function stars(fraction: number) {
   return out;
 }
 
-/** Static frame of the sheet for browsers without WebGL and for reduced-motion users. */
+/**
+ * Static frame of the sheet for browsers without GPU WebGL and for reduced-motion users. It cannot
+ * follow the page, so it leaves out the singularity's well, rays and rings.
+ */
 export function StaticSpacetime({ theme }: { theme: ResolvedTheme }) {
   const aspect = WIDTH / HEIGHT;
   const m = viewProjection(aspect);
-  const { singularity, sky } = theme;
-  const centre =
-    screenToSheet(0, singularity ? SINGULARITY_NDC_Y : 0, aspect) ?? ([0, -3] as const);
-  const wells: Well[] = singularity
-    ? [[centre[0], centre[1], singularity.mass, singularity.radius]]
-    : [];
+  const { sky } = theme;
+  const centre = screenToSheet(0, 0, aspect) ?? ([0, -3] as const);
+  const wells: Well[] = [];
 
   const toPath = (points: [number, number][]) => {
     let d = "";
@@ -58,9 +56,6 @@ export function StaticSpacetime({ theme }: { theme: ResolvedTheme }) {
     for (let r = SHEET.innerRadius + 0.3; r < reach; r += 0.3) pts.push(at(r, t));
     paths.push(toPath(pts));
   }
-
-  const logo = project(m, [centre[0], 0, centre[1]]);
-  const logoPx = logo && [((logo[0] + 1) / 2) * WIDTH, ((1 - logo[1]) / 2) * HEIGHT];
 
   const stroke =
     theme.colors.length > 1
@@ -117,25 +112,6 @@ export function StaticSpacetime({ theme }: { theme: ResolvedTheme }) {
         ))}
       </g>
       <rect width={WIDTH} height={HEIGHT} fill="url(#spacetime-horizon)" />
-      {singularity && logoPx && (
-        <g strokeLinecap="round" style={{ mixBlendMode: "screen" }}>
-          {LOGO_RAINBOW.map((c, i) => {
-            const a = i * 0.8976 + 0.35;
-            const [x, y] = logoPx;
-            return (
-              <line
-                key={i}
-                x1={(x + Math.cos(a) * 80).toFixed(1)}
-                y1={(y + Math.sin(a) * 80).toFixed(1)}
-                x2={(x + Math.cos(a) * 420).toFixed(1)}
-                y2={(y + Math.sin(a) * 420).toFixed(1)}
-                stroke={rgb(c, 0.22)}
-                strokeWidth={2}
-              />
-            );
-          })}
-        </g>
-      )}
     </svg>
   );
 }

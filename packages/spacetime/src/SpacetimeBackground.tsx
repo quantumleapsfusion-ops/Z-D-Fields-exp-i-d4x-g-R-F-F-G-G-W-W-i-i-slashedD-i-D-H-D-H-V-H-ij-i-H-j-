@@ -28,14 +28,23 @@ function subscribeReducedMotion(onChange: () => void) {
 const prefersReducedMotion = () => window.matchMedia(REDUCED_MOTION).matches;
 
 let webgl: boolean | undefined;
-/** One-off probe: can this browser build the grid shaders at all? */
+const SOFTWARE_RENDERER = /swiftshader|llvmpipe|softpipe|software|basic render/i;
+
+/**
+ * One-off probe: can this browser build the shaders on a real GPU? CPU rasterisers cannot hold a
+ * usable frame rate, so they get the static frame too.
+ */
 function supportsWebGL() {
   if (webgl === undefined) {
     const canvas = document.createElement("canvas");
     const probe = createSpacetimeRenderer(canvas, resolveTheme("e1-4"));
-    webgl = probe !== null;
     probe?.dispose();
     const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
+    const info = gl?.getExtension("WEBGL_debug_renderer_info");
+    const renderer = gl
+      ? String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER))
+      : "";
+    webgl = probe !== null && !SOFTWARE_RENDERER.test(renderer);
     gl?.getExtension("WEBGL_lose_context")?.loseContext();
   }
   return webgl;
@@ -74,8 +83,9 @@ export function SpacetimeBackground({
     let width = 0;
     let height = 0;
     const resize = () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
+      // The fixed layer excludes any scrollbar, so size to it rather than the window.
+      width = canvas.clientWidth || window.innerWidth;
+      height = canvas.clientHeight || window.innerHeight;
       renderer.resize(Math.round(width * dpr), Math.round(height * dpr));
     };
     resize();
