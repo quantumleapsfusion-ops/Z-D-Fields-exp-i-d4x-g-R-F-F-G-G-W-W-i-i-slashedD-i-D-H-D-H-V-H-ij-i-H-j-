@@ -13,9 +13,7 @@ function requireEnv(name: string): string {
 /**
  * Signs in with email+password through Supabase and returns the exact cookies
  * `@supabase/ssr` would set in the browser, so the Next.js proxy/server
- * components see a real session. The login page only offers OAuth buttons
- * (Google/Facebook/Microsoft), which cannot be driven headlessly, so the
- * smoke suite authenticates via this password grant instead.
+ * components see a real session, without driving the login form in every test.
  */
 export async function supabaseSessionCookies(): Promise<CookieToSet[]> {
   const jar: CookieToSet[] = [];
