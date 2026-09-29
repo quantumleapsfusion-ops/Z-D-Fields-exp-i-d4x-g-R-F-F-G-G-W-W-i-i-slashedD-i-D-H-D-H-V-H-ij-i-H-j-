@@ -57,7 +57,6 @@ export function useRecorder(onSpan: (span: CapturedSpan) => void) {
 
   const media = useRef<MediaStream | null>(null);
   const recorder = useRef<MediaRecorder | null>(null);
-  const chunks = useRef<Blob[]>([]);
   const spanStart = useRef<{ wall: Date; perf: number } | null>(null);
   const audioCtx = useRef<AudioContext | null>(null);
   const raf = useRef<number | null>(null);
@@ -106,8 +105,9 @@ export function useRecorder(onSpan: (span: CapturedSpan) => void) {
   const meter = useCallback((stream: MediaStream) => {
     const Ctor = getAudioContextCtor(window);
     if (!Ctor) return;
+    let ctx: AudioContext | undefined;
     try {
-      const ctx = new Ctor();
+      ctx = new Ctor();
       // iOS creates contexts suspended until resumed inside a user gesture.
       if (ctx.state === "suspended") void ctx.resume().catch(() => {});
       const analyser = ctx.createAnalyser();
@@ -126,6 +126,7 @@ export function useRecorder(onSpan: (span: CapturedSpan) => void) {
       audioCtx.current = ctx;
     } catch {
       // No meter; elapsed time is still updated by the recorder's ondataavailable below.
+      void ctx?.close().catch(() => {});
     }
   }, []);
 
@@ -140,36 +141,36 @@ export function useRecorder(onSpan: (span: CapturedSpan) => void) {
         if (!requested) throw err;
         rec = new MediaRecorder(stream);
       }
-      chunks.current = [];
+      const chunks: Blob[] = [];
+      const start = { wall: new Date(), perf: performance.now() };
       rec.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.current.push(e.data);
-        if (!audioCtx.current && spanStart.current)
-          setElapsedMs(performance.now() - spanStart.current.perf);
+        if (e.data.size > 0) chunks.push(e.data);
+        if (!audioCtx.current && spanStart.current === start)
+          setElapsedMs(performance.now() - start.perf);
       };
       rec.onerror = (event) => {
         const detail = (event as Event & { error?: unknown }).error;
         fail(detail ?? new DOMException("Recording failed", "UnknownError"));
       };
       rec.onstop = () => {
-        const start = spanStart.current;
-        spanStart.current = null;
-        if (!start || chunks.current.length === 0) return;
+        if (spanStart.current === start) spanStart.current = null;
+        if (chunks.length === 0) return;
         const type = resolveBlobType({
           recorderMimeType: rec.mimeType,
           requestedMimeType: requested,
-          firstChunkType: chunks.current[0]?.type,
+          firstChunkType: chunks[0]?.type,
           platform: platform.current,
         });
         const endedAt = new Date();
         onSpanRef.current({
-          blob: new Blob(chunks.current, { type }),
+          blob: new Blob(chunks, { type }),
           mimeType: type,
           startedAt: start.wall,
           endedAt,
           durationMs: performance.now() - start.perf,
         });
       };
-      spanStart.current = { wall: new Date(), perf: performance.now() };
+      spanStart.current = start;
       rec.start(TIMESLICE_MS);
       recorder.current = rec;
       setElapsedMs(0);

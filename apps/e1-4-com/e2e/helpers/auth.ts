@@ -46,7 +46,7 @@ export async function supabaseSessionCookies(): Promise<CookieToSet[]> {
 }
 
 export async function loginAs(context: BrowserContext, baseURL: string): Promise<void> {
-  const { hostname } = new URL(baseURL);
+  const { hostname, protocol } = new URL(baseURL);
   const cookies = await supabaseSessionCookies();
   await context.addCookies(
     cookies.map(({ name, value }) => ({
@@ -55,7 +55,7 @@ export async function loginAs(context: BrowserContext, baseURL: string): Promise
       domain: hostname,
       path: "/",
       httpOnly: false,
-      secure: false,
+      secure: protocol === "https:",
       sameSite: "Lax" as const,
     })),
   );
