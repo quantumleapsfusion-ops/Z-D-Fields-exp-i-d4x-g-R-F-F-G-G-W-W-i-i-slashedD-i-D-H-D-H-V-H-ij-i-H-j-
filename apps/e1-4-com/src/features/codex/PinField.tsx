@@ -146,7 +146,7 @@ export default function PinField({
     light.position.set(-3, -2, 6);
     scene.add(light);
 
-    const geometry = new THREE.IcosahedronGeometry(PITCH * 0.2, 0);
+    const geometry = new THREE.IcosahedronGeometry(PITCH * 0.12, 0);
     const material = new THREE.MeshStandardMaterial({
       color: 0xcfd3d9,
       metalness: 1,

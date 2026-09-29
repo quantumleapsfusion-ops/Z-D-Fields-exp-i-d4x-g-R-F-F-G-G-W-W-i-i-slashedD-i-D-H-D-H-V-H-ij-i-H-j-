@@ -1,11 +1,11 @@
 "use client";
 
+import { Logo } from "@earth-one/ui";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 
-import { MicMark } from "@/components/MicMark";
 import type { PinPhase } from "@/features/codex/PinField";
 import { sendVoice } from "@/features/voice-id/pcm";
 import { type CapturedSpan, useRecorder } from "@/features/voice-stream/useRecorder";
@@ -118,7 +118,7 @@ function Codex() {
       <Centre docked={docked}>
         <MicButton
           onClick={() => (recording ? capture.finish() : void capture.record())}
-          label={recording ? "Stop" : "Speak"}
+          label={recording ? "Stop" : "Speak to Da Vinci"}
           small={docked}
           level={recorder.state === "recording" ? recorder.level : 0}
           disabled={!recorder.supported || (carrying && !recording)}
@@ -260,7 +260,18 @@ function MicButton({
         className="absolute inset-0 rounded-[30%] bg-[#1f6bff]/30 blur-xl transition-transform duration-100"
         style={{ transform: `scale(${1 + Math.min(level, 1) * 0.9})` }}
       />
-      <MicMark className="relative h-full w-full drop-shadow-[0_0_40px_rgba(0,0,0,0.8)]" />
+      <E14Mark />
     </button>
+  );
+}
+
+/** The e1-4 Ψπ mark, sized to its container. */
+function E14Mark() {
+  return (
+    <Logo
+      size={224}
+      title="e1-4"
+      className="relative !h-full !w-full drop-shadow-[0_0_40px_rgba(56,189,248,0.25)]"
+    />
   );
 }
