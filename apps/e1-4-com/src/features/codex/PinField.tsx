@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
+import { watchTilt } from "@/lib/device/tilt";
 import type { Form } from "@/lib/gravity/superposition";
 import { BANDS, FRAMES, type SoundPrint, WAVE_POINTS } from "@/lib/sound/analyse";
 
@@ -12,6 +13,10 @@ const ROWS = 102;
 const PITCH = 0.043;
 const HISTORY = 160;
 const MAX_HEIGHT = 1.1;
+/** How far the metal pools toward the low side of a tilted phone. */
+const POOL = 0.16;
+/** How far the whole field leans with the phone, in radians. */
+const LEAN = 0.18;
 
 /**
  * `rest` breathes, `listen` ripples out from the live level, `line` raises the waveform as one
@@ -87,7 +92,8 @@ function reliefHeight(print: SoundPrint, col: number, row: number): number {
 
 /**
  * A field of liquid-metal atoms: thousands of tiny silver beads that rise and fall together to show the
- * voice. Everything is driven from props held in refs so the scene is built once.
+ * voice, and run toward whichever side the phone is tipped. Everything is driven from props held in
+ * refs so the scene is built once.
  */
 export default function PinField({
   phase,
@@ -164,6 +170,12 @@ export default function PinField({
     let envelope = 0;
     let lastPulse = state.current.pulse;
     let frame = 0;
+    const tilt = { x: 0, y: 0 };
+    const lean = { x: 0, y: 0 };
+    const stopTilt = watchTilt((next) => {
+      tilt.x = next.x;
+      tilt.y = next.y;
+    });
 
     const loop = () => {
       const now = performance.now() / 1000;
@@ -181,6 +193,9 @@ export default function PinField({
         lastPulse = beat;
       }
       envelope *= 0.94;
+      lean.x += (tilt.x - lean.x) * 0.08;
+      lean.y += (tilt.y - lean.y) * 0.08;
+      pins.rotation.set(-lean.y * LEAN, lean.x * LEAN, 0);
 
       for (let row = 0; row < ROWS; row += 1) {
         for (let col = 0; col < COLS; col += 1) {
@@ -203,9 +218,10 @@ export default function PinField({
             target = breath + reliefHeight(sound, col, row);
           else if (p === "form")
             target = breath + formHeight(shape, x / 2.2, y / 2.2) * 0.9;
+          const pool = (x * lean.x + y * lean.y) * POOL;
           target = Math.min(
             MAX_HEIGHT,
-            target + speech + ripple * (p === "listen" ? 0 : 0.5),
+            Math.max(0, target + speech + ripple * (p === "listen" ? 0 : 0.5) + pool),
           );
           heights[i] += (target - heights[i]) * 0.09;
           position.set(x, y, heights[i]);
@@ -227,6 +243,7 @@ export default function PinField({
 
     return () => {
       cancelAnimationFrame(frame);
+      stopTilt();
       observer.disconnect();
       geometry.dispose();
       material.dispose();
