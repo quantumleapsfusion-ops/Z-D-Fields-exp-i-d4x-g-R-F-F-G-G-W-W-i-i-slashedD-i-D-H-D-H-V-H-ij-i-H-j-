@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Logo } from "@earth-one/ui";
+import { VoiceNavigator } from "@/components/VoiceNavigator";
 import { getSessionUser } from "@/lib/auth/user";
 import { enabledFeatures } from "@/lib/features";
 import { site } from "@/lib/site";
@@ -40,6 +41,7 @@ export async function Nav() {
           >
             {site.philosophyLabel}
           </a>
+          <VoiceNavigator variant="pill" />
           {user ? (
             <Link
               href="/profile"
