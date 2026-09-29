@@ -1,7 +1,7 @@
 import type { Dimension } from "@/lib/site";
 
 export type StageId =
-  "voice" | "text" | "board" | "gravity" | "horizon" | "superposition" | "observed";
+  "voice" | "board" | "gravity" | "horizon" | "superposition" | "observed";
 
 export type Stage = {
   id: StageId;
@@ -10,63 +10,53 @@ export type Stage = {
   line: string;
 };
 
-/** The fixed order a stream travels in. Each stage hands its material to the next. */
+/** The fixed order a stream travels in. Each stage hands its sound to the next. */
 export const STAGES: Stage[] = [
   {
     id: "voice",
     dimension: 1,
     title: "Voice Stream",
-    line: "One line of sound.",
-  },
-  {
-    id: "text",
-    dimension: 1,
-    title: "Speech to text",
-    line: "The sound becomes words.",
+    line: "One line of sound, left to right.",
   },
   {
     id: "board",
     dimension: 2,
     title: "Infinity Chalkboard",
-    line: "The words spread across the board.",
+    line: "The sound spreads across the board: time runs across, pitch climbs up.",
   },
   {
     id: "gravity",
     dimension: 3,
     title: "Gravity Chalkboard",
-    line: "Their weight bends the board into a well.",
+    line: "Loudness lifts the board into hills.",
   },
   {
     id: "horizon",
     dimension: 4,
     title: "Event Horizon",
-    line: "Past this line nothing comes back out.",
+    line: "The weight folds it into a well. Past this line nothing comes back out.",
   },
   {
     id: "superposition",
     dimension: 5,
     title: "Superposition",
-    line: "Every reading at once, like the cat in the box.",
+    line: "Every shape the sound could be, at once, like the cat in the box.",
   },
   {
     id: "observed",
     dimension: 5,
     title: "Observed",
-    line: "The box opens. One reading remains.",
+    line: "The box opens. One shape remains.",
   },
 ];
 
-export const WORD_MS = 110;
-
 /** How long a stage holds before the next one starts. `null` means it is the last stage. */
-export function stageDuration(id: StageId, wordCount: number): number | null {
+export function stageDuration(id: StageId): number | null {
   switch (id) {
     case "voice":
-      return 3500;
-    case "text":
-      return Math.min(12000, Math.max(4000, wordCount * WORD_MS + 1500));
+      return 5000;
     case "board":
-      return 6500;
+      return 7000;
     case "gravity":
       return 7000;
     case "horizon":

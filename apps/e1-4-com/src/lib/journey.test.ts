@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { STAGES, WORD_MS, nextStage, stageDuration } from "@/lib/journey";
+import { STAGES, nextStage, stageDuration } from "@/lib/journey";
 
 describe("journey", () => {
   it("climbs the dimensions in order without skipping back", () => {
@@ -17,14 +17,8 @@ describe("journey", () => {
 
   it("gives every stage but the last a timer", () => {
     for (const stage of STAGES.slice(0, -1)) {
-      expect(stageDuration(stage.id, 10)).toBeGreaterThan(0);
+      expect(stageDuration(stage.id)).toBeGreaterThan(0);
     }
-    expect(stageDuration("observed", 10)).toBeNull();
-  });
-
-  it("lets speech-to-text run as long as the words need, within bounds", () => {
-    expect(stageDuration("text", 1)).toBe(4000);
-    expect(stageDuration("text", 50)).toBe(50 * WORD_MS + 1500);
-    expect(stageDuration("text", 10000)).toBe(12000);
+    expect(stageDuration("observed")).toBeNull();
   });
 });

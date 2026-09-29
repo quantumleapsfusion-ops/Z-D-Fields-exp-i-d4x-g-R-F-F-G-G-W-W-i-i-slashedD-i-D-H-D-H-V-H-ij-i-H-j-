@@ -100,8 +100,8 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
 
       {silent ? (
         <p role="status" className="text-dust mt-4 text-center font-sans text-sm">
-          No words came through this time, so there is nothing to carry up yet. Speak
-          closer to the microphone, or try Chrome or Safari.
+          No sound came through this time, so there is nothing to carry up yet. Check the
+          microphone and speak a little closer.
         </p>
       ) : null}
 

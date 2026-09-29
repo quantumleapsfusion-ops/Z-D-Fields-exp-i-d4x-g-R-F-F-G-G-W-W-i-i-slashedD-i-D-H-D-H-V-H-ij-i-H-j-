@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { transcribeOnDevice } from "@/features/live/onDeviceWhisper";
-import { useLiveTranscription } from "@/features/live/useLiveTranscription";
+import { decodeSound } from "@/features/sound/decode";
 import { useCarry } from "@/lib/carry";
+import type { SoundPrint } from "@/lib/sound/analyse";
 import type { SegmentDTO } from "@/lib/voice/stream";
 
 import { useRecorder, type CapturedSpan } from "./useRecorder";
@@ -15,23 +15,20 @@ export type PendingSpan = { id: string; span: CapturedSpan; failed?: boolean };
 const SPAN_GRACE_MS = 4000;
 
 /**
- * Records into the user's stream and, once Stop has settled (every span uploaded, every
- * transcription finished), carries this session's words into `/journey`. Words come from the
- * server transcript, else the browser's live recognition, else Whisper run on the device. A
- * session that yields no words stays put and reports `silent`.
+ * Records into the user's stream and, once Stop has settled (every span uploaded), measures this
+ * session's sound on the device and carries it into `/journey`. A session with no sound in it
+ * stays put and reports `silent`.
  */
 export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
   const router = useRouter();
-  const setCarryText = useCarry((state) => state.setText);
-  const live = useLiveTranscription();
+  const setSound = useCarry((state) => state.setSound);
   const [segments, setSegments] = useState(initialSegments);
   const [pending, setPending] = useState<PendingSpan[]>([]);
-  const [sessionIds, setSessionIds] = useState<string[]>([]);
   const [finished, setFinished] = useState(false);
   const [awaitingSpan, setAwaitingSpan] = useState(false);
   const [blobs, setBlobs] = useState<Blob[]>([]);
-  const [localText, setLocalText] = useState<string | null>(null);
-  const localStarted = useRef(false);
+  const [print, setPrint] = useState<SoundPrint | null | undefined>(undefined);
+  const analysed = useRef(false);
 
   const upload = useCallback(async (item: PendingSpan) => {
     const form = new FormData();
@@ -44,7 +41,6 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
       if (!res.ok) throw new Error(String(res.status));
       const { segment } = (await res.json()) as { segment: SegmentDTO };
       setSegments((prev) => [...prev, segment].sort((a, b) => a.index - b.index));
-      setSessionIds((prev) => [...prev, segment.id]);
       setPending((prev) => prev.filter((p) => p.id !== item.id));
     } catch {
       setPending((prev) =>
@@ -66,41 +62,25 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
 
   const recorder = useRecorder(onSpan);
 
-  const heard =
-    segments
-      .filter((s) => sessionIds.includes(s.id))
-      .map((s) => s.transcription?.trim())
-      .filter((text): text is string => Boolean(text))
-      .join(" ") || live.phrases.map((phrase) => phrase.text).join(" ");
-  const spoken = heard || localText || "";
-
-  const waiting = segments.some((s) => s.transcriptionStatus === "PENDING");
   const failedUploads = pending.some((p) => p.failed);
-  const settled = finished && !awaitingSpan && pending.length === 0 && !waiting;
-  const transcribing = settled && !heard && blobs.length > 0 && localText === null;
-  const silent = settled && !spoken && !transcribing;
+  const settled = finished && !awaitingSpan && pending.length === 0;
+  const analysing = settled && print === undefined;
+  const heard = Boolean(print && print.voicedRatio > 0);
+  const silent = settled && print !== undefined && !heard;
 
   const record = async () => {
     if (finished) {
-      setSessionIds([]);
       setBlobs([]);
-      setLocalText(null);
-      localStarted.current = false;
-      live.reset();
+      setPrint(undefined);
+      analysed.current = false;
     }
     setFinished(false);
     await recorder.record();
-    if (!live.listening) void live.start();
   };
-  const pause = () => {
-    recorder.pause();
-    live.stop();
-  };
+  const pause = () => recorder.pause();
   const finish = () => {
-    if (live.interim) live.pushText(live.interim);
     setAwaitingSpan(recorder.state === "recording");
     recorder.stop();
-    live.stop();
     setFinished(true);
   };
   const retryFailed = () => {
@@ -108,13 +88,6 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
     setPending((prev) => prev.map((p) => (p.failed ? { ...p, failed: false } : p)));
     failed.forEach((p) => void upload({ ...p, failed: false }));
   };
-  const carry = useCallback(
-    (text: string) => {
-      setCarryText(text);
-      router.push("/journey");
-    },
-    [router, setCarryText],
-  );
 
   useEffect(() => {
     if (!awaitingSpan) return;
@@ -123,41 +96,31 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
   }, [awaitingSpan]);
 
   useEffect(() => {
-    if (!settled || heard || !blobs.length || localStarted.current) return;
-    localStarted.current = true;
-    transcribeOnDevice(blobs)
-      .then(setLocalText)
-      .catch(() => setLocalText(""));
-  }, [settled, heard, blobs]);
+    if (!settled || analysed.current) return;
+    analysed.current = true;
+    decodeSound(blobs)
+      .then(setPrint)
+      .catch(() => setPrint(null));
+  }, [settled, blobs]);
 
   useEffect(() => {
-    if (settled && spoken) carry(spoken);
-  }, [settled, spoken, carry]);
-
-  useEffect(() => {
-    if (!waiting) return;
-    const timer = setInterval(async () => {
-      const res = await fetch("/api/stream/segments", { cache: "no-store" });
-      if (res.ok)
-        setSegments(((await res.json()) as { segments: SegmentDTO[] }).segments);
-    }, 2500);
-    return () => clearInterval(timer);
-  }, [waiting]);
+    if (!settled || !print || !heard) return;
+    setSound(print);
+    router.push("/journey");
+  }, [settled, print, heard, setSound, router]);
 
   return {
     recorder,
-    live,
     segments,
     setSegments,
     pending,
     failedUploads,
     carrying: finished && !silent && !failedUploads,
+    analysing,
     silent,
-    transcribing,
     record,
     pause,
     finish,
     retryFailed,
-    carry,
   };
 }

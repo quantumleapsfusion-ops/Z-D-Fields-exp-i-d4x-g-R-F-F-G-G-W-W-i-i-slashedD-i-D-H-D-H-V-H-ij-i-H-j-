@@ -6,13 +6,22 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import type { Form } from "@/lib/gravity/superposition";
 
-const COUNT = 2400;
+import { COUNT, GRID } from "./grid";
+
 const PALETTE = ["#f1ede1", "#93a294", "#d3a34c", "#e8857a", "#7fb7d9", "#9ccf8f"];
 
-/** `line` is a 1D strand, `flat` the 2D board, `well` a black hole's accretion disk. */
-export type Shape = Form | "flat" | "line" | "well";
+/**
+ * `line` is a 1D strand, `flat` the 2D board, `terrain` the board lifted by `relief`, `well` a
+ * black hole's accretion disk.
+ */
+export type Shape = Form | "flat" | "line" | "terrain" | "well";
 
-function target(form: Shape, i: number, out: THREE.Vector3): THREE.Vector3 {
+function target(
+  form: Shape,
+  i: number,
+  out: THREE.Vector3,
+  relief?: number[],
+): THREE.Vector3 {
   const t = i / COUNT;
   switch (form) {
     case "line": {
@@ -28,12 +37,12 @@ function target(form: Shape, i: number, out: THREE.Vector3): THREE.Vector3 {
         -0.9 / (r * r) + Math.sin(i) * 0.02,
       );
     }
-    case "flat": {
-      const side = Math.ceil(Math.sqrt(COUNT));
+    case "flat":
+    case "terrain": {
       return out.set(
-        ((i % side) / side - 0.5) * 5,
-        (Math.floor(i / side) / side - 0.5) * 3.2,
-        0,
+        ((i % GRID) / GRID - 0.5) * 5,
+        (Math.floor(i / GRID) / GRID - 0.5) * 3.2,
+        form === "terrain" ? (relief?.[i] ?? 0) * 1.4 : 0,
       );
     }
     case "sphere": {
@@ -90,13 +99,17 @@ export default function TopologyCollapse({
   form,
   seed,
   core: showCore = true,
+  relief,
 }: {
   form: Shape;
   seed: string;
   core?: boolean;
+  /** Height 0..1 per particle for `terrain`, row-major on a `GRID` × `GRID` board. */
+  relief?: number[];
 }) {
   const container = useRef<HTMLDivElement>(null);
   const formRef = useRef(form);
+  const reliefRef = useRef(relief);
   const coreRef = useRef(showCore);
   const changedAt = useRef(0);
 
@@ -108,6 +121,10 @@ export default function TopologyCollapse({
   useEffect(() => {
     coreRef.current = showCore;
   }, [showCore]);
+
+  useEffect(() => {
+    reliefRef.current = relief;
+  }, [relief]);
 
   useEffect(() => {
     const el = container.current;
@@ -181,7 +198,7 @@ export default function TopologyCollapse({
       // Particles are pulled through the core (the "event horizon") before reaching the target.
       const pull = Math.sin(Math.PI * ease) * 0.85;
       for (let i = 0; i < COUNT; i += 1) {
-        target(lastForm, i, tmp);
+        target(lastForm, i, tmp, reliefRef.current);
         const j = i * 3;
         for (let a = 0; a < 3; a += 1) {
           const v = from[j + a] + (tmp.getComponent(a) - from[j + a]) * ease;

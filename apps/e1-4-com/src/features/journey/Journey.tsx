@@ -2,77 +2,51 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { COUNT, GRID } from "@/features/gravity/grid";
 import type { Shape } from "@/features/gravity/TopologyCollapse";
-import { useStreamTranscript } from "@/features/voice-stream/useStreamTranscript";
 import { useCarry } from "@/lib/carry";
-import {
-  EVENT_HORIZON,
-  density,
-  stubSuperpose,
-  type Superposition,
-} from "@/lib/gravity/superposition";
-import { STAGES, WORD_MS, nextStage, stageDuration, type StageId } from "@/lib/journey";
+import { EVENT_HORIZON } from "@/lib/gravity/superposition";
+import { STAGES, type StageId, nextStage, stageDuration } from "@/lib/journey";
+import { BANDS, FRAMES, type SoundPrint } from "@/lib/sound/analyse";
+import { type SoundReading, readSound, soundDensity } from "@/lib/sound/reading";
 
 const TopologyCollapse = dynamic(() => import("@/features/gravity/TopologyCollapse"), {
   ssr: false,
 });
 
-const MAX_SPOKEN_WORDS = 95;
-const MAX_BOARD_WORDS = 42;
 const CYCLE_MS = 1400;
 
-function spread(i: number, salt: number): number {
-  const x = Math.sin(i * 12.9898 + salt * 78.233) * 43758.5453;
-  return x - Math.floor(x);
+/** Height per board particle: time runs across the board, pitch bands run up it. */
+function reliefOf(print: SoundPrint): number[] {
+  return Array.from({ length: COUNT }, (_, i) => {
+    const frame = Math.min(FRAMES - 1, Math.floor(((i % GRID) / GRID) * FRAMES));
+    const band = Math.min(BANDS - 1, Math.floor((Math.floor(i / GRID) / GRID) * BANDS));
+    return print.spectrogram[frame][band] ** 2 * (0.4 + print.loudness[frame] * 0.6);
+  });
 }
 
 /**
- * The stream's single path upward: sound, then words, then the board, the well, the horizon and
- * the box. Each stage runs on a timer and hands over to the next; nothing waits on a click.
+ * The stream's single path upward, drawn from the sound itself: its waveform, its spectrogram,
+ * the spectrogram as terrain, the well, and the shapes it could take. Each stage runs on a timer
+ * and hands over to the next; nothing waits on a click.
  */
 export function Journey() {
-  const stream = useStreamTranscript();
-  const [carried] = useState(() => useCarry.getState().text.trim());
-  const text = (carried || stream.text).trim();
-  const spoken = useMemo(() => text.split(/\s+/).filter(Boolean), [text]);
-  const loading = !carried && stream.loading;
-  const ready = !loading && spoken.length > 0;
-
+  const [print] = useState(() => useCarry.getState().sound);
+  const reading = useMemo(() => (print ? readSound(print) : null), [print]);
+  const relief = useMemo(() => (print ? reliefOf(print) : undefined), [print]);
   const [index, setIndex] = useState(0);
-  const [superposition, setSuperposition] = useState<Superposition | null>(null);
   const [cycle, setCycle] = useState(0);
   const stage = STAGES[index];
 
   useEffect(() => {
-    if (!ready) return;
-    let active = true;
-    fetch("/api/gravity/superpose", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text: text.slice(-12000) }),
-    })
-      .then((response) =>
-        response.ok ? (response.json() as Promise<Superposition>) : Promise.reject(),
-      )
-      .catch(() => stubSuperpose(text))
-      .then((result) => {
-        if (active) setSuperposition(result);
-      });
-    return () => {
-      active = false;
-    };
-  }, [ready, text]);
-
-  useEffect(() => {
-    if (!ready) return;
-    const ms = stageDuration(stage.id, Math.min(spoken.length, MAX_SPOKEN_WORDS));
+    if (!print) return;
+    const ms = stageDuration(stage.id);
     if (ms === null) return;
-    if (stage.id === "superposition" && !superposition) return;
     const timer = setTimeout(() => setIndex((current) => nextStage(current)), ms);
     return () => clearTimeout(timer);
-  }, [ready, stage.id, spoken.length, superposition]);
+  }, [print, stage.id]);
 
   useEffect(() => {
     if (stage.id !== "superposition") return;
@@ -80,23 +54,7 @@ export function Journey() {
     return () => clearInterval(timer);
   }, [stage.id]);
 
-  const candidates = superposition?.candidates ?? [];
-  const observed = superposition ? candidates[superposition.resolvedIndex] : undefined;
-  const shape = shapeFor(
-    stage.id,
-    candidates.length ? candidates[cycle % candidates.length].form : undefined,
-    observed?.form,
-  );
-
-  if (loading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="label animate-shimmer">Listening back</p>
-      </main>
-    );
-  }
-
-  if (!spoken.length) {
+  if (!print || !reading) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
         <p className="font-display text-dust text-2xl">Your stream is silent.</p>
@@ -107,15 +65,34 @@ export function Journey() {
     );
   }
 
+  const { candidates } = reading;
+  const observed = candidates[reading.resolvedIndex];
+  const shape = shapeFor(
+    stage.id,
+    candidates[cycle % candidates.length].form,
+    observed.form,
+  );
+  const drawn = stage.id === "voice" || stage.id === "board";
+
   return (
     <main className="relative h-screen overflow-hidden bg-black">
-      <div className="absolute inset-0">
+      <div
+        className={`absolute inset-0 transition-opacity duration-1000 ${drawn ? "opacity-0" : "opacity-100"}`}
+      >
         <TopologyCollapse
           form={shape}
-          seed={text.slice(0, 200)}
-          core={index >= STAGES.findIndex((s) => s.id === "gravity")}
+          seed={`${Math.round(print.centroidHz)}:${Math.round(print.durationMs)}`}
+          core={index >= STAGES.findIndex((s) => s.id === "horizon")}
+          relief={relief}
         />
       </div>
+
+      {stage.id === "voice" ? (
+        <SoundCanvas key="wave" print={print} mode="wave" revealMs={3500} />
+      ) : null}
+      {stage.id === "board" ? (
+        <SoundCanvas key="spectrogram" print={print} mode="spectrogram" revealMs={5000} />
+      ) : null}
 
       <header className="pointer-events-none absolute inset-x-0 top-0 flex flex-col gap-3 px-6 pt-8 sm:px-10">
         <ol className="flex gap-4" aria-label="Dimensions">
@@ -141,10 +118,11 @@ export function Journey() {
       </header>
 
       <section className="pointer-events-none absolute inset-x-0 bottom-0 px-6 pb-12 sm:px-10">
-        {stage.id === "voice" ? <Waveform /> : null}
-        {stage.id === "horizon" ? <HorizonMeter score={density(text)} /> : null}
-        {stage.id === "superposition" ? <Superposed candidates={candidates} /> : null}
-        {stage.id === "observed" && observed ? (
+        {stage.id === "horizon" ? <HorizonMeter score={soundDensity(print)} /> : null}
+        {stage.id === "superposition" ? (
+          <Superposed candidates={candidates} active={cycle % candidates.length} />
+        ) : null}
+        {stage.id === "observed" ? (
           <div className="animate-ink-in pointer-events-auto max-w-2xl">
             <p className="label">{observed.form}</p>
             <h2 className="font-display text-chalk mt-2 text-4xl sm:text-6xl">
@@ -153,105 +131,122 @@ export function Journey() {
             <p className="text-chalk/80 mt-4 font-sans text-lg leading-relaxed sm:text-xl">
               {observed.interpretation}
             </p>
+            <Measurements print={print} />
             <Link href="/" className="text-ochre mt-6 inline-block font-sans text-sm">
               Speak again
             </Link>
           </div>
         ) : null}
       </section>
-
-      {stage.id === "text" ? <SpokenWords words={spoken} /> : null}
-
-      {stage.id === "board" || stage.id === "gravity" ? (
-        <BoardWords
-          words={spoken.slice(0, MAX_BOARD_WORDS)}
-          falling={stage.id === "gravity"}
-        />
-      ) : null}
     </main>
   );
 }
 
-function shapeFor(
-  id: StageId,
-  cycling: Shape | undefined,
-  observed: Shape | undefined,
-): Shape {
+function shapeFor(id: StageId, cycling: Shape, observed: Shape): Shape {
   switch (id) {
     case "voice":
-    case "text":
       return "line";
     case "board":
       return "flat";
     case "gravity":
-      return "well";
+      return "terrain";
     case "horizon":
-      return "sphere";
+      return "well";
     case "superposition":
-      return cycling ?? "sphere";
+      return cycling;
     case "observed":
-      return observed ?? "sphere";
+      return observed;
   }
 }
 
-function Waveform() {
-  return (
-    <div className="flex h-16 items-center justify-center gap-[3px]" aria-hidden="true">
-      {Array.from({ length: 40 }, (_, i) => (
-        <span
-          key={i}
-          className="bg-ochre animate-wave h-full w-[3px] origin-center rounded-full"
-          style={{
-            animationDelay: `${(i % 10) * 90}ms`,
-            opacity: 0.4 + spread(i, 1) * 0.6,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+/** Full-screen drawing of the recording, revealed left to right as if written. */
+function SoundCanvas({
+  print,
+  mode,
+  revealMs,
+}: {
+  print: SoundPrint;
+  mode: "wave" | "spectrogram";
+  revealMs: number;
+}) {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const [shown, setShown] = useState(false);
 
-function SpokenWords({ words }: { words: string[] }) {
-  const shown = words.slice(0, MAX_SPOKEN_WORDS);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    const el = canvas.current;
+    if (!el) return;
+    const draw = () => {
+      const ctx = el.getContext("2d");
+      if (!ctx) return;
+      const ratio = window.devicePixelRatio || 1;
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      el.width = w * ratio;
+      el.height = h * ratio;
+      ctx.scale(ratio, ratio);
+      if (mode === "wave") drawWave(ctx, print, w, h);
+      else drawSpectrogram(ctx, print, w, h);
+    };
+    draw();
+    const observer = new ResizeObserver(draw);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [print, mode]);
+
   return (
-    <p
-      aria-live="polite"
-      className="font-display text-chalk pointer-events-none absolute inset-x-0 top-1/2 max-h-[70vh] -translate-y-1/2 overflow-hidden px-8 text-4xl leading-tight sm:px-16 sm:text-6xl"
+    <div
+      aria-hidden="true"
+      className="absolute inset-0 ease-out"
+      style={{
+        clipPath: shown ? "inset(0 0 0 0)" : "inset(0 100% 0 0)",
+        transition: `clip-path ${revealMs}ms linear`,
+      }}
     >
-      {shown.map((word, i) => (
-        <span
-          key={i}
-          className="animate-ink-in inline-block pr-[0.28em]"
-          style={{ animationDelay: `${i * WORD_MS}ms` }}
-        >
-          {word}
-        </span>
-      ))}
-      {words.length > shown.length ? <span className="text-dust">…</span> : null}
-    </p>
+      <canvas ref={canvas} className="h-full w-full" />
+    </div>
   );
 }
 
-function BoardWords({ words, falling }: { words: string[]; falling: boolean }) {
-  return (
-    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-      {words.map((word, i) => (
-        <span
-          key={i}
-          className="font-display text-chalk/80 absolute text-2xl transition-all ease-in sm:text-4xl"
-          style={{
-            left: falling ? "50%" : `${8 + spread(i, 2) * 80}%`,
-            top: falling ? "50%" : `${22 + spread(i, 3) * 56}%`,
-            opacity: falling ? 0 : 1,
-            transform: `translate(-50%, -50%) scale(${falling ? 0.1 : 1}) rotate(${falling ? 540 : (spread(i, 4) - 0.5) * 16}deg)`,
-            transitionDuration: `${3500 + spread(i, 5) * 2500}ms`,
-          }}
-        >
-          {word}
-        </span>
-      ))}
-    </div>
-  );
+function drawWave(
+  ctx: CanvasRenderingContext2D,
+  print: SoundPrint,
+  w: number,
+  h: number,
+) {
+  const n = print.waveform.length;
+  const step = w / n;
+  const mid = h / 2;
+  print.waveform.forEach((v, i) => {
+    const bar = Math.max(1, v * h * 0.36);
+    ctx.fillStyle = `rgba(211, 163, 76, ${0.35 + v * 0.65})`;
+    ctx.fillRect(i * step, mid - bar, Math.max(1, step - 1), bar * 2);
+  });
+}
+
+function drawSpectrogram(
+  ctx: CanvasRenderingContext2D,
+  print: SoundPrint,
+  w: number,
+  h: number,
+) {
+  const cw = w / FRAMES;
+  const ch = h / BANDS;
+  print.spectrogram.forEach((row, f) => {
+    row.forEach((v, b) => {
+      const ink = v ** 1.6;
+      if (ink < 0.02) return;
+      ctx.fillStyle =
+        ink > 0.6
+          ? `rgba(241, 237, 225, ${ink})`
+          : `rgba(211, 163, 76, ${Math.min(1, ink * 1.4)})`;
+      ctx.fillRect(f * cw, h - (b + 1) * ch, cw + 0.5, ch + 0.5);
+    });
+  });
 }
 
 function HorizonMeter({ score }: { score: number }) {
@@ -283,19 +278,45 @@ function HorizonMeter({ score }: { score: number }) {
   );
 }
 
-function Superposed({ candidates }: { candidates: Superposition["candidates"] }) {
+function Superposed({
+  candidates,
+  active,
+}: {
+  candidates: SoundReading["candidates"];
+  active: number;
+}) {
   return (
     <div className="grid max-w-3xl gap-3 sm:grid-cols-2">
       {candidates.map((candidate, i) => (
         <div
-          key={`${candidate.title}-${i}`}
-          className="animate-shimmer border-chalk/15 rounded-xl border bg-black/40 p-4"
-          style={{ animationDelay: `${i * 400}ms` }}
+          key={candidate.form}
+          className={`border-chalk/15 rounded-xl border bg-black/40 p-4 transition-opacity duration-500 ${
+            i === active ? "opacity-100" : "opacity-40"
+          }`}
         >
           <p className="label">{candidate.form}</p>
-          <p className="font-display text-chalk mt-1 text-lg">{candidate.title}</p>
+          <p className="font-display text-chalk mt-1 text-xl">{candidate.title}</p>
         </div>
       ))}
     </div>
+  );
+}
+
+function Measurements({ print }: { print: SoundPrint }) {
+  const facts = [
+    ["Length", `${(print.durationMs / 1000).toFixed(1)} s`],
+    ["Pitch", print.meanPitchHz ? `${Math.round(print.meanPitchHz)} Hz` : "none"],
+    ["Centre", `${Math.round(print.centroidHz)} Hz`],
+    ["Sound", `${Math.round(print.voicedRatio * 100)}%`],
+  ];
+  return (
+    <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-2">
+      {facts.map(([label, value]) => (
+        <div key={label}>
+          <dt className="label">{label}</dt>
+          <dd className="text-chalk font-mono text-sm">{value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
