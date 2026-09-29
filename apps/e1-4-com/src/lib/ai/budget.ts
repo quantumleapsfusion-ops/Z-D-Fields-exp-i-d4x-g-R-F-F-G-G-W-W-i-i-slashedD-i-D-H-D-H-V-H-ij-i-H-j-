@@ -17,6 +17,9 @@ const DEFAULT_PRICES: Record<string, [number, number]> = {
   "claude-sonnet-5": [3, 15],
   "claude-fable-5-1": [15, 75],
   "gpt-4o": [2.5, 10],
+  // Self-hosted: no per-token invoice. Rate limits still apply.
+  davinci: [0, 0],
+  "davinci-heavy": [0, 0],
 };
 
 function priceTable(): Record<string, [number, number]> {

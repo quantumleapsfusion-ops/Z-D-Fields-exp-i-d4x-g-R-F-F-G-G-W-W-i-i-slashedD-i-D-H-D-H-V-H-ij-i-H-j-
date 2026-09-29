@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const STT_VARS = ["STT_PROVIDER", "OPENAI_API_KEY", "DEEPGRAM_API_KEY", "DEEPGRAM_MODEL"];
+const STT_VARS = [
+  "STT_PROVIDER",
+  "OPENAI_API_KEY",
+  "DEEPGRAM_API_KEY",
+  "DEEPGRAM_MODEL",
+  "DAVINCI_URL",
+  "DAVINCI_SECRET",
+];
 
 async function load(vars: Record<string, string>) {
   vi.resetModules();
@@ -42,6 +49,18 @@ describe("getTranscriber", () => {
     expect(unkeyed.getTranscriber()).toBeNull();
   });
 
+  it("prefers Da Vinci when configured; STT_PROVIDER=davinci without config yields null", async () => {
+    const configured = await load({
+      DAVINCI_URL: "https://davinci.example/",
+      DAVINCI_SECRET: "s".repeat(32),
+      DEEPGRAM_API_KEY: "dg",
+    });
+    expect(configured.getTranscriber()).toMatchObject({ name: "davinci" });
+
+    const forced = await load({ STT_PROVIDER: "davinci", DEEPGRAM_API_KEY: "dg" });
+    expect(forced.getTranscriber()).toBeNull();
+  });
+
   it("STT_PROVIDER=none disables transcription even with keys", async () => {
     const { getTranscriber } = await load({
       STT_PROVIDER: "none",
@@ -52,6 +71,14 @@ describe("getTranscriber", () => {
 });
 
 describe("getLiveTranscriptionConfig", () => {
+  it("uses the browser (not Deepgram) when STT_PROVIDER=davinci", async () => {
+    const { getLiveTranscriptionConfig } = await load({
+      STT_PROVIDER: "davinci",
+      DEEPGRAM_API_KEY: "dg",
+    });
+    await expect(getLiveTranscriptionConfig()).resolves.toEqual({ provider: "browser" });
+  });
+
   it("uses the browser when Deepgram is not available", async () => {
     const { getLiveTranscriptionConfig } = await load({ OPENAI_API_KEY: "oa" });
     await expect(getLiveTranscriptionConfig()).resolves.toEqual({ provider: "browser" });

@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { AiBudgetError, completeForUser } from "@/lib/ai/budget";
 import { getUserId } from "@/lib/auth/user";
+import { DaVinciUnavailableError } from "@/lib/davinci/client";
 import { getLanguageModel } from "@/lib/llm";
 
 export const runtime = "nodejs";
@@ -25,7 +26,9 @@ async function handlePOST(request: Request) {
 
   if (!getLanguageModel("everyday")) {
     return NextResponse.json(
-      { error: "Translation needs an LLM key (ANTHROPIC_API_KEY or OPENAI_API_KEY)." },
+      {
+        error: "Translation needs Da Vinci (DAVINCI_URL + DAVINCI_SECRET) or an LLM key.",
+      },
       { status: 503 },
     );
   }
@@ -48,6 +51,7 @@ async function handlePOST(request: Request) {
     if (error instanceof AiBudgetError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
+    if (error instanceof DaVinciUnavailableError) throw error;
     console.error("[davinci] translate failed", error);
     return NextResponse.json({ error: "Translation failed." }, { status: 502 });
   }
