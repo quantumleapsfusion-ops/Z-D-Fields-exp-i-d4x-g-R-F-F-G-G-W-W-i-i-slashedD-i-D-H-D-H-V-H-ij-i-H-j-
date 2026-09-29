@@ -1,14 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Space_Grotesk } from "next/font/google";
-import { SpacetimeBackground } from "@earth-one/spacetime";
+import { Michroma, Space_Grotesk } from "next/font/google";
+import Link from "next/link";
 
 import "./globals.css";
+import { Nav } from "@/components/Nav";
+import { SolarSystem } from "@/components/SolarSystem";
+import { Starfield } from "@/components/Starfield";
 import { site } from "@/lib/site";
 
-const fraunces = Fraunces({
+const michroma = Michroma({
+  weight: "400",
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-fraunces",
+  variable: "--font-michroma",
 });
 
 const spaceGrotesk = Space_Grotesk({
@@ -32,7 +36,7 @@ export const metadata: Metadata = {
     siteName: site.org,
     title: `${site.org} — Global citizenship for all`,
     description: site.description,
-    images: [{ url: "/icon.svg", alt: "Earth One Ψ over π" }],
+    images: [{ url: "/icon.svg", alt: site.org }],
   },
   twitter: {
     card: "summary_large_image",
@@ -49,10 +53,19 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
-      <body className="bg-blackboard text-chalk min-h-screen font-sans antialiased">
-        <SpacetimeBackground theme="earth1" />
-        {children}
+    <html lang="en" className={`${michroma.variable} ${spaceGrotesk.variable}`}>
+      <body className="flex min-h-svh flex-col bg-black font-sans text-white antialiased">
+        <Starfield />
+        <SolarSystem />
+        <header className="px-6 pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-10 sm:pt-8">
+          <Link href="/" className="label transition-colors hover:text-white">
+            {site.org}
+          </Link>
+        </header>
+        <main className="flex flex-1 flex-col items-center justify-end px-6 pt-[52svh] pb-12 text-center sm:pt-[60svh]">
+          {children}
+        </main>
+        <Nav />
       </body>
     </html>
   );

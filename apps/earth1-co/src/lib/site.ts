@@ -3,10 +3,9 @@ export const site = {
   domain: "earth1.co",
   url: "https://earth1.co",
   org: "Earth 1 Coalescent",
-  tagline: "A coalescent, not a corporation.",
   focus: "Global citizenship for all.",
   description:
-    "Earth 1 Coalescent is a home for global citizenship: every person on Earth is a citizen of it, owns their own voice and data, and speaks freely across borders. The governance portal behind e1-4.com.",
+    "Earth 1 Coalescent is a home for global citizenship: every person on Earth is a citizen of it, owns their own voice and data, and speaks freely across borders.",
   keywords: [
     "global citizenship",
     "global citizen",
@@ -19,48 +18,46 @@ export const site = {
     "free speech",
     "privacy",
   ],
-  flagship: {
-    name: "e1-4",
-    domain: "e1-4.com",
-    url: "https://e1-4.com",
-    tagline: "earth life-forms",
-    pitch:
-      "A social network with no typing. Think out loud — you speak; everything else follows.",
-    talk: "Talk by voice. No number needed. Send a voice note or go live — they reply when they're ready, and the whole conversation is kept.",
-    shortPath: "/e1-4",
+  quote: {
+    latin: "Non nobis solum nati sumus.",
+    english: "We are not born for ourselves alone.",
+    author: "Cicero",
+    source: "De Officiis",
   },
-  contact: {
-    name: "Candace",
-    email: "candace@earth1.co",
-    purpose: "HR, careers, partnerships and anything else — reach out to us.",
+  pillars: [
+    {
+      slug: "mathematics",
+      title: "Mathematics",
+      line: "The one language every nation already shares.",
+    },
+    {
+      slug: "physics",
+      title: "Physics",
+      line: "The same laws hold on every shore.",
+    },
+    {
+      slug: "research",
+      title: "Research",
+      line: "Open questions, answered in the open, for everyone.",
+    },
+    {
+      slug: "philanthropy",
+      title: "Philanthropy",
+      line: "What we build, we give to the world.",
+    },
+    {
+      slug: "global-citizenship",
+      title: "Global Citizenship",
+      line: "Every person on Earth is a citizen of it.",
+    },
+  ],
+  founder: {
+    name: "Zachariah Robertson",
+    role: "Founder & Chief Executive",
+    email: "chiefexec@earth1.co",
+    inspiration: {
+      text: "What I cannot create, I do not understand.",
+      author: "Richard Feynman",
+    },
   },
 } as const;
-
-export type Principle = {
-  index: string;
-  title: string;
-  body: string;
-};
-
-export const principles: Principle[] = [
-  {
-    index: "I",
-    title: "Absolute data sovereignty",
-    body: "What you say is yours. Every recording, transcript and drawing on an Earth One platform belongs to the person who made it, is stored under their identifier, and leaves with them in one export or one deletion — audio, rows, and account, in that order, with nothing retained.",
-  },
-  {
-    index: "II",
-    title: "User-controlled privacy",
-    body: "Private by default. Nothing is public until its owner says so, per segment, per link, per person — and every grant can be revoked. Access rules are enforced at the database and storage layer, not in a settings page.",
-  },
-  {
-    index: "III",
-    title: "Free speech",
-    body: "Voice is the medium because voice is the person. We do not edit, rank, or suppress what people say. We build the tools that make it legible — transcription, translation, drawing — and leave the judgement to the listener.",
-  },
-  {
-    index: "IV",
-    title: "Legible machines",
-    body: "Where a model listens, draws, or summarises, we say which one, what it cost, and where it was wrong. Intelligence on our platforms is a labelled instrument, never an unmarked author.",
-  },
-];
