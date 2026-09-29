@@ -94,3 +94,9 @@
     }
   }
 }
+
+/* <Animated> toggles this while its contents are off screen or the tab is hidden. */
+[data-animation="paused"],
+[data-animation="paused"] * {
+  animation-play-state: paused !important;
+}
