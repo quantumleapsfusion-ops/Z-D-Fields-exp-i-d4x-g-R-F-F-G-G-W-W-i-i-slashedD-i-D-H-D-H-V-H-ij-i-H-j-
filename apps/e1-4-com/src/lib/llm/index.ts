@@ -1,7 +1,7 @@
 import { DaVinciModel, getDaVinci } from "@/lib/davinci/client";
 import { env } from "@/lib/env";
 
-import { AnthropicModel } from "./anthropic";
+import { AnthropicModel, VERCEL_AI_GATEWAY_URL } from "./anthropic";
 import { OpenAIModel } from "./openai";
 import type { LanguageModel, ModelTier } from "./types";
 
@@ -15,24 +15,43 @@ export type {
 
 /**
  * Picks the LLM for a tier. `LLM_PROVIDER` forces a provider; otherwise Anthropic then OpenAI.
+ * Anthropic is reached through Vercel AI Gateway when `AI_GATEWAY_API_KEY` is set (direct
+ * `ANTHROPIC_API_KEY` is used only when no gateway key exists).
  *   everyday → LLM_MODEL_EVERYDAY (default claude-sonnet-5; claude-haiku-4-5 is the cheaper option)
  *   heavy    → LLM_MODEL_HEAVY   (default claude-fable-5-1) — Gravity Board / heavy chalkboard only
  * Returns `null` when no key is configured — callers must render a stub instead of failing.
  */
 export function getLanguageModel(tier: ModelTier = "everyday"): LanguageModel | null {
-  const { provider, anthropicKey, everydayModel, heavyModel, openaiKey, openaiModel } =
-    env.llm;
+  const {
+    provider,
+    anthropicKey,
+    gatewayKey,
+    gatewayUrl,
+    everydayModel,
+    heavyModel,
+    openaiKey,
+    openaiModel,
+  } = env.llm;
   if (provider === "none") return null;
   if (provider === "davinci" || !provider) {
     const davinci = getDaVinci();
     if (davinci) return new DaVinciModel(davinci, tier);
     if (provider === "davinci") return null;
   }
-  if ((provider === "anthropic" || !provider) && anthropicKey) {
-    return new AnthropicModel(
-      anthropicKey,
-      tier === "heavy" ? heavyModel : everydayModel,
-    );
+  const model = tier === "heavy" ? heavyModel : everydayModel;
+  if (provider === "anthropic" || !provider) {
+    if (gatewayKey) {
+      return new AnthropicModel(
+        {
+          kind: "gateway",
+          apiKey: gatewayKey,
+          baseUrl: gatewayUrl ?? VERCEL_AI_GATEWAY_URL,
+        },
+        model,
+      );
+    }
+    if (anthropicKey)
+      return new AnthropicModel({ kind: "direct", apiKey: anthropicKey }, model);
   }
   if ((provider === "openai" || !provider) && openaiKey) {
     return new OpenAIModel(openaiKey, openaiModel);

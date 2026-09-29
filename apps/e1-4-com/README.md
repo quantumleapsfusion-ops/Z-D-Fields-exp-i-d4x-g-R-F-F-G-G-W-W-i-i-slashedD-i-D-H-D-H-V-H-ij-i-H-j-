@@ -132,6 +132,38 @@ Bucket access model:
 | `npm run prisma:deploy`  | Apply pending migrations (`migrate deploy`)           |
 | `npm run prisma:studio`  | Browse the database                                   |
 
+## Testing
+
+- **Unit (Vitest):** `src/**/*.test.ts`, pure logic only (LLM JSON extraction, Da Vinci ops,
+  Gravity superposition heuristics, duration formatting). No network, no database.
+- **E2E (Playwright):** `e2e/*.spec.ts` on desktop + mobile Chrome. Runs against a production
+  build (`npm run build` first; the config starts `next start` on port 3100) and only needs the
+  placeholder env from CI — it covers the public pages, the anonymous redirects, `/auth/callback`
+  error handling and the 401/404 guards on the API routes. Set `PLAYWRIGHT_BASE_URL` to run the
+  same suite against a deployed URL (e.g. a Vercel preview).
+
+Anything that needs a real session (OAuth, uploads, transcription, sharing, deletion) is exercised
+against the live Supabase project with `npm run test:live` — see `docs/live-e2e.md`.
+
+## Deploying to Vercel
+
+1. Import the repo in Vercel (framework preset: Next.js; Node 22 is picked up from `engines`).
+   `vercel.json` pins the region to `iad1` — change it to match your Supabase region.
+2. Add every variable from `.env.example` under **Settings → Environment Variables**:
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+   - `DATABASE_URL` (pooler, port 6543, `?pgbouncer=true`) and `DIRECT_URL` (port 5432)
+   - `NEXT_PUBLIC_SITE_URL=https://e1-4.com` (and the preview URL on the Preview environment)
+   - `ANTHROPIC_API_KEY`, `DEEPGRAM_API_KEY` or `OPENAI_API_KEY`, and the `AI_*` budget knobs
+   - Keep `NEXT_PUBLIC_FEATURE_GRAVITY_BOARD=false` in Production.
+3. The build runs `prisma generate && next build` (`postinstall` also generates the client).
+   Migrations are **not** run on deploy — apply them from a trusted machine with
+   `npm run prisma:deploy` (uses `DIRECT_URL`).
+4. In Supabase → **Authentication → URL Configuration**, set the Site URL to the production
+   domain and add `https://<your-domain>/auth/callback` plus
+   `https://*-<team>.vercel.app/auth/callback` to the redirect allow-list so previews can sign in.
+5. Route handlers that call the LLM/STT providers declare `runtime = "nodejs"`; `vercel.json`
+   raises their `maxDuration` so a slow model reply is not cut off at the default 10 s.
+
 ## Data model & deletion
 
 `User.id` equals the Supabase Auth user id. `VoiceStream` → `VoiceSegment` (audio blob path +
@@ -141,6 +173,11 @@ transcript) and `Share` (scope `PRIVATE | LINK | USER`) all cascade-delete from 
 `<uid>/` in the `voice` and `avatars` buckets, the Postgres rows, then the Supabase Auth user.
 It is exposed to the signed-in user as **Delete account** on `/profile`.
 
-## Optional integrations
+## AI keys
 
-Optional settings in `.env.example` control transcription, translation and drawing.
+`DEEPGRAM_API_KEY` / `OPENAI_API_KEY` drive speech-to-text. The LLM tiers (`LLM_MODEL_EVERYDAY`,
+`LLM_MODEL_HEAVY`) go through [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) when
+`AI_GATEWAY_API_KEY` is set (models are sent as `anthropic/<id>`, e.g. `anthropic/claude-fable-5.1`;
+the gateway needs paid credits for Claude models), otherwise straight to Anthropic via
+`ANTHROPIC_API_KEY`. Without either key each feature falls back to a
+clearly-labelled stub (`source: "stub"` / `transcriptionStatus: "SKIPPED"`) instead of failing.
