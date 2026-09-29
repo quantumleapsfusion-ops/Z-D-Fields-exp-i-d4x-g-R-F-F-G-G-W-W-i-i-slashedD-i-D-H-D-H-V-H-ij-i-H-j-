@@ -7,9 +7,9 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import type { Form } from "@/lib/gravity/superposition";
 import { BANDS, FRAMES, type SoundPrint, WAVE_POINTS } from "@/lib/sound/analyse";
 
-const COLS = 72;
-const ROWS = 44;
-const PITCH = 0.1;
+const COLS = 168;
+const ROWS = 102;
+const PITCH = 0.043;
 const HISTORY = 160;
 const MAX_HEIGHT = 1.1;
 
@@ -86,7 +86,7 @@ function reliefHeight(print: SoundPrint, col: number, row: number): number {
 }
 
 /**
- * A pin screen of liquid metal: thousands of silver pins that rise and fall together to show the
+ * A field of liquid-metal atoms: thousands of tiny silver beads that rise and fall together to show the
  * voice. Everything is driven from props held in refs so the scene is built once.
  */
 export default function PinField({
@@ -146,9 +146,7 @@ export default function PinField({
     light.position.set(-3, -2, 6);
     scene.add(light);
 
-    const geometry = new THREE.CylinderGeometry(PITCH * 0.42, PITCH * 0.42, 1, 8);
-    geometry.rotateX(Math.PI / 2);
-    geometry.translate(0, 0, 0.5);
+    const geometry = new THREE.IcosahedronGeometry(PITCH * 0.2, 0);
     const material = new THREE.MeshStandardMaterial({
       color: 0xcfd3d9,
       metalness: 1,
@@ -210,8 +208,7 @@ export default function PinField({
             target + speech + ripple * (p === "listen" ? 0 : 0.5),
           );
           heights[i] += (target - heights[i]) * 0.09;
-          position.set(x, y, 0);
-          scale.set(1, 1, Math.max(0.01, heights[i]));
+          position.set(x, y, heights[i]);
           matrix.compose(position, rotation, scale);
           pins.setMatrixAt(i, matrix);
         }

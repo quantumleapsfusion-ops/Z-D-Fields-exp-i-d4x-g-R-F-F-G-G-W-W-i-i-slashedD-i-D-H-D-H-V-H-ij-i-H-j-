@@ -1,38 +1,41 @@
 "use client";
 
-import { Logo } from "@earth-one/ui";
 import { motion } from "framer-motion";
 
 import { site } from "@/lib/site";
 
-import { SaturnRings } from "./SaturnRings";
+import { Galaxy } from "./Galaxy";
+import { Saturn } from "./Saturn";
 
 const ease = [0.2, 0.7, 0.2, 1] as const;
 
-/** Text-free hero: the Earth One mark as the singularity, Saturn's rings drifting around it. */
+/** Text-free hero: a turning Milky Way, with Saturn drifting in the foreground. */
 export function HeroSection() {
   return (
-    <section className="relative isolate mx-auto flex min-h-[88svh] max-w-5xl items-center justify-center px-5 sm:px-8">
+    <section className="relative isolate flex min-h-[92svh] items-center justify-center overflow-hidden">
       <h1 className="sr-only">
         {site.org}: {site.focus}
       </h1>
       <motion.div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 mx-auto w-[34rem] -translate-y-1/2 opacity-80 sm:w-[52rem]"
-        initial={{ opacity: 0, scale: 0.92, rotate: -4 }}
-        animate={{ opacity: 0.8, scale: 1, rotate: 0 }}
-        transition={{ duration: 1.6, ease }}
+        className="absolute inset-0 -z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 2, ease }}
       >
-        <SaturnRings className="w-full animate-[saturn-drift_24s_ease-in-out_infinite]" />
+        <Galaxy className="h-full w-full" />
       </motion.div>
+      <span
+        data-spacetime-singularity
+        aria-hidden="true"
+        className="absolute top-1/2 left-1/2 h-px w-px"
+      />
       <motion.div
-        initial={{ opacity: 0, scale: 0.92 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.9, ease }}
+        className="absolute right-[3%] bottom-[6%] w-[14rem] sm:right-[6%] sm:w-[24rem]"
+        initial={{ opacity: 0, x: 40, y: 20 }}
+        animate={{ opacity: 1, x: 0, y: 0 }}
+        transition={{ duration: 1.8, ease, delay: 0.4 }}
       >
-        <span data-spacetime-singularity>
-          <Logo size={140} brand="earth1" title={site.org} />
-        </span>
+        <Saturn className="w-full drop-shadow-[0_0_40px_rgba(255,210,150,0.15)]" />
       </motion.div>
     </section>
   );
