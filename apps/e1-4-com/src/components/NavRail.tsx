@@ -6,9 +6,10 @@ import { usePathname } from "next/navigation";
 import { Logo } from "@earth-one/ui";
 
 import { enabledFeatures } from "@/lib/features";
-import { site } from "@/lib/site";
+import { site, talkSurface } from "@/lib/site";
 
 const SHORT: Record<string, string> = {
+  "/talk": "Talk",
   "/stream": "Streams",
   "/davinci": "Da Vinci",
   "/chalkboard": "Board",
@@ -16,6 +17,12 @@ const SHORT: Record<string, string> = {
 };
 
 const GLYPH: Record<string, React.ReactNode> = {
+  "/talk": (
+    <g strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 5.5h16v10H10l-4 3.5v-3.5H4z" />
+      <path d="M9 9.5v2M12 8v5M15 9.5v2" />
+    </g>
+  ),
   "/stream": (
     <g strokeWidth="1.6" strokeLinecap="round">
       <path d="M4 12v0M8 8v8M12 5v14M16 8v8M20 12v0" />
@@ -44,7 +51,7 @@ const GLYPH: Record<string, React.ReactNode> = {
 /** Persistent left rail (md+) and bottom tab bar (mobile) for the app surfaces. */
 export function NavRail() {
   const pathname = usePathname();
-  const items = enabledFeatures();
+  const items = [talkSurface, ...enabledFeatures()];
 
   return (
     <>

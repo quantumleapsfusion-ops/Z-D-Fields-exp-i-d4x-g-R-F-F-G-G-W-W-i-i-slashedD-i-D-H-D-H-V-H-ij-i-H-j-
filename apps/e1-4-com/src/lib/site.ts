@@ -84,6 +84,12 @@ export const features: Feature[] = [
   },
 ];
 
+/**
+ * Talk — async voice conversations (voice notes + live streams). An app surface in the nav, kept
+ * out of `features` so the landing page's "four ways to speak" stays four.
+ */
+export const talkSurface = { title: "Talk", href: "/talk" } as const;
+
 export const statusLabel: Record<FeatureStatus, string> = {
   ready: "Available",
   early: "Early access",

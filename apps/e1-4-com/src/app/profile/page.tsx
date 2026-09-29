@@ -27,7 +27,7 @@ export default async function ProfilePage() {
     include: {
       shares: { where: { revokedAt: null }, orderBy: { createdAt: "desc" } },
       stream: { select: { _count: { select: { segments: true } } } },
-      _count: { select: { boards: true } },
+      _count: { select: { boards: true, memberships: true, voiceNotes: true } },
     },
   });
 
@@ -80,6 +80,12 @@ export default async function ProfilePage() {
           <li>
             <Link href="/stream" className="hover:text-ochre">
               Voice Stream segments: {user.stream?._count.segments ?? 0}
+            </Link>
+          </li>
+          <li>
+            <Link href="/talk" className="hover:text-ochre">
+              Conversations: {user._count.memberships} · voice notes sent:{" "}
+              {user._count.voiceNotes}
             </Link>
           </li>
           <li>Chalkboards: {user._count.boards}</li>
@@ -135,8 +141,8 @@ export default async function ProfilePage() {
         <h2 className="label text-ochre mb-3">Delete account</h2>
         <p className="text-chalk/70 mb-4 max-w-xl text-sm leading-relaxed">
           Permanently destroys your account, every Voice Stream segment and its audio, all
-          transcriptions, share links, chalkboards and your avatar — database rows and
-          stored files. This cannot be undone.
+          transcriptions, every voice note you sent in Talk, share links, chalkboards and
+          your avatar — database rows and stored files. This cannot be undone.
         </p>
         <DeleteAccountForm />
       </section>
