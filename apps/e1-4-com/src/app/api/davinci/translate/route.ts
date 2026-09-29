@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+
+import { withRuntimeEnv } from "@/lib/api/handler";
 import { z } from "zod";
 
 import { AiBudgetError, completeForUser } from "@/lib/ai/budget";
@@ -6,6 +8,7 @@ import { getUserId } from "@/lib/auth/user";
 import { getLanguageModel } from "@/lib/llm";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
   text: z.string().min(1).max(8000),
@@ -13,7 +16,7 @@ const bodySchema = z.object({
 });
 
 /** Optional translate step behind the shared LLM interface. */
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
@@ -49,3 +52,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Translation failed." }, { status: 502 });
   }
 }
+
+export const POST = withRuntimeEnv(handlePOST);

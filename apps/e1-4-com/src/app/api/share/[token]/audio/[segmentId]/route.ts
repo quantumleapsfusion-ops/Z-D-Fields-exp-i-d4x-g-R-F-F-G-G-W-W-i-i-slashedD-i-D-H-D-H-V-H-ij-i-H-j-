@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 
+import { withRuntimeEnv } from "@/lib/api/handler";
+
 import { prisma } from "@/lib/db";
 import { resolveShare } from "@/lib/voice/share";
 import { audioResponse, readSegmentAudio } from "@/lib/voice/stream";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export async function GET(
+async function handleGET(
   _request: Request,
   { params }: { params: Promise<{ token: string; segmentId: string }> },
 ) {
@@ -31,3 +34,5 @@ export async function GET(
     return NextResponse.json({ error: "Audio missing" }, { status: 404 });
   }
 }
+
+export const GET = withRuntimeEnv(handleGET);
