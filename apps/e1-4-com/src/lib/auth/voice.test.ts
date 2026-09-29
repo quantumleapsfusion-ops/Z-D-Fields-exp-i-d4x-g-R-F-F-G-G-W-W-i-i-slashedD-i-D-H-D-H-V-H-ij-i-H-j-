@@ -52,7 +52,10 @@ describe("voice auth", () => {
     prisma.voicePrint.findMany.mockResolvedValue([
       { id: "p1", userId: "u1", embedding: alice, sampleCount: 3 },
     ]);
-    const res = await verifyVoice({ phrase: "Zachariah, of Earth!", embedding: aliceish });
+    const res = await verifyVoice({
+      phrase: "Zachariah, of Earth!",
+      embedding: aliceish,
+    });
     expect(res).toEqual({ ok: true, userId: "u1" });
     expect(cookieClient.auth.verifyOtp).toHaveBeenCalledWith({
       token_hash: "tok",
@@ -94,25 +97,37 @@ describe("voice auth", () => {
   it("enrols a new voice with a placeholder auth user and no email exposure", async () => {
     const { enrollVoice } = await import("./voice");
     prisma.voicePrint.findMany.mockResolvedValue([]);
-    admin.auth.admin.createUser.mockResolvedValue({ data: { user: { id: "u9" } }, error: null });
+    admin.auth.admin.createUser.mockResolvedValue({
+      data: { user: { id: "u9" } },
+      error: null,
+    });
     prisma.user.upsert.mockResolvedValue({});
     prisma.voicePrint.create.mockResolvedValue({});
 
-    const res = await enrollVoice({ phrase: "New Voice Here", samples: [alice, aliceish] });
+    const res = await enrollVoice({
+      phrase: "New Voice Here",
+      samples: [alice, aliceish],
+    });
     expect(res).toEqual({ ok: true, userId: "u9" });
     const created = admin.auth.admin.createUser.mock.calls[0][0];
     expect(created.email).toMatch(/@voice\.e1-4\.com$/);
     expect(created.email_confirm).toBe(true);
     expect(prisma.voicePrint.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ userId: "u9", phrase: "new voice here", sampleCount: 2 }),
+        data: expect.objectContaining({
+          userId: "u9",
+          phrase: "new voice here",
+          sampleCount: 2,
+        }),
       }),
     );
   });
 
   it("will not hand an existing voice name to a different voice", async () => {
     const { enrollVoice } = await import("./voice");
-    prisma.voicePrint.findMany.mockResolvedValue([{ id: "p1", userId: "u1", embedding: alice }]);
+    prisma.voicePrint.findMany.mockResolvedValue([
+      { id: "p1", userId: "u1", embedding: alice },
+    ]);
     expect(await enrollVoice({ phrase: PHRASE, samples: [bob, bob] })).toMatchObject({
       reason: "phrase-taken",
     });
