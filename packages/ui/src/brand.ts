@@ -3,7 +3,7 @@
  * `tokens.css`; use these when a colour has to be computed in JS (canvas, OG images).
  */
 export const brand = {
-  org: "Earth One Global Coalescent",
+  org: "Earth 1 Coalescent",
   colors: {
     blackboard: "#070a1f",
     board2: "#0f1433",
