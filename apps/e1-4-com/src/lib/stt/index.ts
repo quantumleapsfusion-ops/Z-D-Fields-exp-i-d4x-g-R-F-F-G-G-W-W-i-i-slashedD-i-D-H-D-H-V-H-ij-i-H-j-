@@ -1,3 +1,4 @@
+import { DaVinciTranscriber, getDaVinci } from "@/lib/davinci/client";
 import { env } from "@/lib/env";
 
 import { DeepgramTranscriber, grantDeepgramToken } from "./deepgram";
@@ -13,6 +14,11 @@ export type { LiveTranscriptionConfig, Transcriber } from "./types";
 export function getTranscriber(): Transcriber | null {
   const { provider, deepgramKey, deepgramModel, openaiKey, whisperModel } = env.stt;
   if (provider === "none") return null;
+  if (provider === "davinci" || !provider) {
+    const davinci = getDaVinci();
+    if (davinci) return new DaVinciTranscriber(davinci);
+    if (provider === "davinci") return null;
+  }
   if ((provider === "deepgram" || !provider) && deepgramKey) {
     return new DeepgramTranscriber(deepgramKey, deepgramModel);
   }
@@ -25,7 +31,12 @@ export function getTranscriber(): Transcriber | null {
 /** Live transcription: Deepgram streaming when keyed, otherwise the browser's Web Speech API. */
 export async function getLiveTranscriptionConfig(): Promise<LiveTranscriptionConfig> {
   const { provider, deepgramKey, deepgramModel } = env.stt;
-  if (deepgramKey && provider !== "none" && provider !== "whisper") {
+  if (
+    deepgramKey &&
+    provider !== "none" &&
+    provider !== "whisper" &&
+    provider !== "davinci"
+  ) {
     try {
       return {
         provider: "deepgram",

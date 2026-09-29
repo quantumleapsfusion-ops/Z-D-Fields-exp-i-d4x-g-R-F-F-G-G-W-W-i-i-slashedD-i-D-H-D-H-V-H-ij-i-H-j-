@@ -1,5 +1,16 @@
+/** Thrown when a required variable is read at runtime and is blank. Routes map it to 503. */
+export class MissingEnvError extends Error {
+  readonly variable: string;
+
+  constructor(variable: string) {
+    super(`Missing required environment variable ${variable}`);
+    this.name = "MissingEnvError";
+    this.variable = variable;
+  }
+}
+
 function required(name: string, value: string | undefined): string {
-  if (!value) throw new Error(`Missing required environment variable ${name}`);
+  if (!value || value.trim() === "") throw new MissingEnvError(name);
   return value;
 }
 
@@ -30,14 +41,24 @@ function resolveSiteUrl(): string {
   return vercel ? `https://${vercel}` : "http://localhost:3000";
 }
 
-/** Safe for the browser. Inlined at build time by Next.js. */
+/**
+ * Safe for the browser. Inlined at build time by Next.js. Getters defer the
+ * "missing variable" check to first use so importing this module never throws
+ * (e.g. while `next build` collects page data with blank secrets).
+ */
 export const publicEnv = {
-  supabaseUrl: required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL),
-  supabaseAnonKey: required(
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  ),
-  siteUrl: resolveSiteUrl(),
+  get supabaseUrl(): string {
+    return required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL);
+  },
+  get supabaseAnonKey(): string {
+    return required(
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    );
+  },
+  get siteUrl(): string {
+    return resolveSiteUrl();
+  },
 };
 
 /** Server only. Never import from a client component. */
@@ -56,8 +77,15 @@ export function serverEnv() {
  * capability instead of crashing the process.
  */
 export const env = {
+  /** Self-hosted Da Vinci gateway. When both are set it is preferred over every third-party key. */
+  davinci: {
+    url: read("DAVINCI_URL"),
+    secret: read("DAVINCI_SECRET"),
+  },
+
   stt: {
-    provider: read("STT_PROVIDER") as "whisper" | "deepgram" | "none" | undefined,
+    provider: read("STT_PROVIDER") as
+      "davinci" | "whisper" | "deepgram" | "none" | undefined,
     openaiKey: read("OPENAI_API_KEY"),
     whisperModel: read("OPENAI_WHISPER_MODEL") ?? "whisper-1",
     deepgramKey: read("DEEPGRAM_API_KEY"),
@@ -65,7 +93,8 @@ export const env = {
   },
 
   llm: {
-    provider: read("LLM_PROVIDER") as "anthropic" | "openai" | "none" | undefined,
+    provider: read("LLM_PROVIDER") as
+      "davinci" | "anthropic" | "openai" | "none" | undefined,
     anthropicKey: read("ANTHROPIC_API_KEY"),
     /** Everyday Da Vinci work: summaries, labels, translation. */
     everydayModel: read("LLM_MODEL_EVERYDAY") ?? "claude-sonnet-5",

@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 
+import { withRuntimeEnv } from "@/lib/api/handler";
+
 import { getUserId } from "@/lib/auth/user";
 import { exportUserData } from "@/lib/privacy/hard-delete";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export async function GET() {
+async function handleGET() {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const data = await exportUserData(userId);
@@ -19,3 +22,5 @@ export async function GET() {
     },
   );
 }
+
+export const GET = withRuntimeEnv(handleGET);

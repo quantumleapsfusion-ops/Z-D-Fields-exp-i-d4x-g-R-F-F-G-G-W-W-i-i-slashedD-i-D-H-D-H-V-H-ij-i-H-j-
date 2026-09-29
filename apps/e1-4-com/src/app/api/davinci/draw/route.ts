@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+
+import { withRuntimeEnv } from "@/lib/api/handler";
 import { z } from "zod";
 
 import {
@@ -14,6 +16,7 @@ import { getUserId } from "@/lib/auth/user";
 import { extractJson, getLanguageModel } from "@/lib/llm";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
   transcript: z.string().max(20000),
@@ -21,7 +24,11 @@ const bodySchema = z.object({
   existing: z.array(drawOpSchema).max(400).default([]),
 });
 
-export async function POST(request: Request) {
+/**
+ * Generative visual loop (early access): turns the latest words into incremental drawing ops.
+ * Falls back to a keyword stub when no LLM key is configured or the model reply is unusable.
+ */
+async function handlePOST(request: Request) {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
@@ -54,3 +61,5 @@ export async function POST(request: Request) {
     return NextResponse.json(stubDraw(newText, existing));
   }
 }
+
+export const POST = withRuntimeEnv(handlePOST);

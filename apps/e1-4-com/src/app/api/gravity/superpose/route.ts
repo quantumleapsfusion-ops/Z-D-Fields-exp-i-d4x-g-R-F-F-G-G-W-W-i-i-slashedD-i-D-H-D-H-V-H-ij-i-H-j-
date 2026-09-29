@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+
+import { withRuntimeEnv } from "@/lib/api/handler";
 import { z } from "zod";
 
 import { AiBudgetError, completeForUser } from "@/lib/ai/budget";
@@ -14,10 +16,12 @@ import {
 import { extractJson, getLanguageModel } from "@/lib/llm";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({ text: z.string().min(1).max(12000) });
 
-export async function POST(request: Request) {
+/** EXPERIMENTAL: sample several interpretations of a dense idea (the "superposition"). */
+async function handlePOST(request: Request) {
   if (!flags.superposition)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   const userId = await getUserId();
@@ -51,3 +55,5 @@ export async function POST(request: Request) {
     return NextResponse.json(stubSuperpose(text));
   }
 }
+
+export const POST = withRuntimeEnv(handlePOST);
