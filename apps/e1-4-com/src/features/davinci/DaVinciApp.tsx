@@ -14,7 +14,6 @@ const DaVinciCanvas = dynamic(() => import("./DaVinciCanvas"), {
   loading: () => <div className="aspect-[1000/640] w-full" />,
 });
 
-/** How long to wait after the latest phrase before asking for more drawing. */
 const DRAW_DEBOUNCE_MS = 900;
 const LANGUAGES = [
   "Spanish",
@@ -26,15 +25,16 @@ const LANGUAGES = [
   "Hindi",
 ];
 
-/**
- * Da Vinci (early access). Speech → animated transcript → incremental drawing ops.
- * Transcription always works; without an LLM key the drawing layer runs a keyword stub.
- */
-export function DaVinciApp({ llmReady }: { llmReady: boolean }) {
+export function DaVinciApp({
+  llmReady,
+  layout = "page",
+}: {
+  llmReady: boolean;
+  layout?: "page" | "drawer";
+}) {
   const live = useLiveTranscription();
   const [ops, setOps] = useState<DrawOp[]>([]);
   const [caption, setCaption] = useState("");
-  const [source, setSource] = useState<DrawResponse["source"] | null>(null);
   const [drawing, setDrawing] = useState(false);
   const [translation, setTranslation] = useState<{ lang: string; text: string } | null>(
     null,
@@ -71,12 +71,11 @@ export function DaVinciApp({ llmReady }: { llmReady: boolean }) {
           existing: opsRef.current.slice(-400),
         }),
       });
-      if (!res.ok) throw new Error(`Draw failed (${res.status})`);
+      if (!res.ok) throw new Error("Drawing failed.");
       const data = (await res.json()) as DrawResponse;
       drawnUpTo.current = upTo;
       setOps((prev) => [...prev, ...data.ops]);
       setCaption(data.caption);
-      setSource(data.source);
     } catch (error) {
       setCaption(error instanceof Error ? error.message : "Drawing failed");
     } finally {
@@ -100,8 +99,8 @@ export function DaVinciApp({ llmReady }: { llmReady: boolean }) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ text: text.slice(-8000), target: lang }),
     });
-    const data = (await res.json()) as { text?: string; error?: string };
-    if (!res.ok || !data.text) setTranslateError(data.error ?? "Translation failed");
+    const data = (await res.json()) as { text?: string };
+    if (!res.ok || !data.text) setTranslateError("Translation unavailable.");
     else setTranslation({ lang, text: data.text });
   }
 
@@ -110,24 +109,18 @@ export function DaVinciApp({ llmReady }: { llmReady: boolean }) {
     drawnUpTo.current = 0;
     setOps([]);
     setCaption("");
-    setSource(null);
     setTranslation(null);
   }
 
   return (
     <div className="flex flex-col gap-8">
-      {!llmReady ? (
-        <p className="border-ochre/30 bg-ochre/5 text-chalk/80 rounded-xl border px-4 py-3 font-sans text-sm">
-          No LLM key configured — transcription works, and the canvas runs a small keyword
-          sketcher (try “sun over the mountains and the sea”). Add{" "}
-          <code>ANTHROPIC_API_KEY</code> or <code>OPENAI_API_KEY</code> to let Da Vinci
-          draw anything you describe.
-        </p>
-      ) : null}
+      <LiveControls live={live} placeholder="Describe something to draw..." />
 
-      <LiveControls live={live} placeholder="Describe something to draw…" />
-
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div
+        className={`grid grid-cols-[minmax(0,1fr)] gap-8 ${
+          layout === "drawer" ? "" : "lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
+        }`}
+      >
         <AnimatedTranscript phrases={live.phrases} interim={live.interim} />
 
         <figure className="flex min-w-0 flex-col gap-2">
@@ -136,10 +129,7 @@ export function DaVinciApp({ llmReady }: { llmReady: boolean }) {
           </div>
           <figcaption className="flex items-center justify-between gap-3">
             <span className={`label ${drawing ? "animate-shimmer text-ochre" : ""}`}>
-              {drawing ? "Drawing…" : caption || "The canvas fills in as you speak."}
-            </span>
-            <span className="label">
-              {source === "stub" ? "Stub sketcher" : source === "llm" ? "LLM" : ""}
+              {drawing ? "Drawing..." : caption || "Speak to draw."}
             </span>
           </figcaption>
         </figure>

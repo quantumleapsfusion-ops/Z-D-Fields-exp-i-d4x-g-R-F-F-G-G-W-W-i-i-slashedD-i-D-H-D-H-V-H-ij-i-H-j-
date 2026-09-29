@@ -1,4 +1,5 @@
 import type { Playlist } from "@/lib/audio/store";
+import { byDimension, dimensionOf, neighbour } from "@/lib/dimensions";
 
 export type AssistantAction =
   | { kind: "navigate"; href: string; label: string }
@@ -7,27 +8,82 @@ export type AssistantAction =
   | { kind: "answer"; text: string };
 
 const ROUTES: { match: RegExp; href: string; label: string }[] = [
-  { match: /\b(streams?|feed|voice)\b/i, href: "/stream", label: "Voice Stream" },
+  { match: /\b(streams?|feed|voice|1d)\b/i, href: "/stream", label: "1D Voice Stream" },
   {
-    match: /\b(boards?|chalk(board)?s?|canvas|draw)\b/i,
-    href: "/chalkboard",
-    label: "Infinity Chalkboard",
+    match: /\b(gravity chalkboard|3d)\b/i,
+    href: "/gravity",
+    label: "3D Gravity Chalkboard",
   },
-  { match: /\b(da ?vinci|assistant|sketch)\b/i, href: "/davinci", label: "Da Vinci" },
+  {
+    match: /\b(event horizon|horizon|4d)\b/i,
+    href: "/horizon",
+    label: "4D Event Horizon",
+  },
+  {
+    match: /\b(superposition|ari|5d)\b/i,
+    href: "/superposition",
+    label: "5D Superposition",
+  },
+  {
+    match: /\b(boards?|chalk(board)?s?|canvas|draw|2d)\b/i,
+    href: "/chalkboard",
+    label: "2D Infinity Chalkboard",
+  },
   { match: /\b(profile|account|settings)\b/i, href: "/profile", label: "Profile" },
   { match: /\b(home|landing|start)\b/i, href: "/", label: "Home" },
 ];
 
 const NAV_VERB = /^(go|open|take me|show|navigate|switch|jump)\b/i;
 
-/**
- * Mocked Da Vinci brain. Runs entirely on the client until the LLM-backed endpoint exists:
- * natural-language navigation, extractive synthesis of whatever is loaded in the audio dock,
- * and a small arithmetic evaluator for the "math" intent.
- */
-export function interpret(input: string, playlist: Playlist | null): AssistantAction {
+export function interpret(
+  input: string,
+  playlist: Playlist | null,
+  pathname?: string,
+): AssistantAction {
   const q = input.trim();
-  if (!q) return { kind: "answer", text: "Say or type what you need." };
+  if (!q) return { kind: "answer", text: "What do you need?" };
+
+  if (/\bda\s?vinci\b/i.test(q)) {
+    return { kind: "answer", text: "I'm here on every page. Press Ctrl+K." };
+  }
+
+  const explicitDimension = q.match(/\b(?:to|into)\s+(?:dimension\s*)?([1-5])d\b/i);
+  if (explicitDimension) {
+    const target = byDimension(Number(explicitDimension[1]) as 1 | 2 | 3 | 4 | 5);
+    if (target) {
+      if (dimensionOf(pathname ?? "")?.dimension === target.dimension) {
+        return {
+          kind: "answer",
+          text: `You're already in ${target.dimension}D.`,
+        };
+      }
+      return {
+        kind: "navigate",
+        href: target.href,
+        label: `${target.dimension}D ${target.title}`,
+      };
+    }
+  }
+
+  const direction: 1 | -1 | 0 =
+    /\b(lift|raise|ascend|higher)\b|\bup\s+(?:a\s+)?dimension\b/i.test(q)
+      ? 1
+      : /\b(collapse|lower|descend)\b|\bdown\s+(?:a\s+)?dimension\b/i.test(q)
+        ? -1
+        : 0;
+  if (direction) {
+    const current = pathname ? dimensionOf(pathname) : null;
+    if (!current) return { kind: "answer", text: "Open a dimension first." };
+    const target = neighbour(pathname as string, direction);
+    if (!target) {
+      return { kind: "answer", text: `You're already in ${current.dimension}D.` };
+    }
+    return {
+      kind: "navigate",
+      href: target.href,
+      label: `${target.dimension}D ${target.title}`,
+    };
+  }
 
   if (NAV_VERB.test(q)) {
     const route = ROUTES.find((r) => r.match.test(q));
@@ -38,7 +94,7 @@ export function interpret(input: string, playlist: Playlist | null): AssistantAc
     if (!playlist) {
       return {
         kind: "answer",
-        text: "Nothing is loaded in the dock. Open a stream and I'll synthesise it.",
+        text: "Open a stream first.",
       };
     }
     return {
@@ -59,7 +115,7 @@ export function interpret(input: string, playlist: Playlist | null): AssistantAc
 
   return {
     kind: "answer",
-    text: 'I can navigate ("open the board"), synthesise the loaded stream ("summarise") or work an expression ("2^10 / 4"). Full reasoning arrives with the LLM hookup.',
+    text: "I'm here on every page. Press Ctrl+K.",
   };
 }
 
@@ -68,11 +124,9 @@ function synthesise(playlist: Playlist): string {
     .map((s) => s.transcript?.trim())
     .filter((t): t is string => Boolean(t))
     .join(" ");
-  if (!text) return "The loaded stream has no transcript yet.";
+  if (!text) return "There is no transcript yet.";
   const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) ?? [text];
-  const lead = sentences.slice(0, 2).join(" ").trim();
-  const words = text.split(/\s+/).length;
-  return `${lead}${sentences.length > 2 ? " …" : ""} (${words} words across ${playlist.segments.length} parts.)`;
+  return sentences.slice(0, 2).join(" ").trim();
 }
 
 function extractExpression(q: string): string | null {
@@ -83,7 +137,6 @@ function extractExpression(q: string): string | null {
   return /^[\d\s+\-*/^().]+$/.test(cleaned) && /\d/.test(cleaned) ? cleaned : null;
 }
 
-/** Recursive-descent evaluator for + - * / ^ and parentheses; null on any malformed input. */
 export function evaluate(expression: string): string | null {
   const tokens = expression.match(/\d+(\.\d+)?|[+\-*/^()]/g);
   if (!tokens) return null;

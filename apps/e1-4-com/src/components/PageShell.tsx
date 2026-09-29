@@ -18,23 +18,20 @@ export function PageShell({
 }
 
 export function PageHeading({
+  dimension,
   title,
-  codenames,
   tagline,
-  status,
 }: {
+  dimension: number;
   title: string;
-  codenames?: string;
   tagline: string;
-  status?: string;
 }) {
   return (
     <div className="mb-8">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <div className="flex items-baseline gap-3">
+        <span className="label">{dimension}D</span>
         <h1 className="font-display text-4xl tracking-tight sm:text-5xl">{title}</h1>
-        {status ? <span className="label text-ochre">{status}</span> : null}
       </div>
-      {codenames ? <p className="label mt-2">{codenames}</p> : null}
       <p className="text-chalk/75 mt-4 max-w-3xl font-sans text-base leading-relaxed">
         {tagline}
       </p>

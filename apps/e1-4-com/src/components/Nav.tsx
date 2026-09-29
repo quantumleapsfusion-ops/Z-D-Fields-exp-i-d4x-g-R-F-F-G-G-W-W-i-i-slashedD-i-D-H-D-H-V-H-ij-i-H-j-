@@ -5,13 +5,6 @@ import { getSessionUser } from "@/lib/auth/user";
 import { enabledFeatures } from "@/lib/features";
 import { site } from "@/lib/site";
 
-const SHORT_TITLES: Record<string, string> = {
-  "/stream": "Stream",
-  "/davinci": "Da Vinci",
-  "/chalkboard": "Chalkboard",
-  "/gravity": "Gravity",
-};
-
 export async function Nav() {
   const user = await getSessionUser().catch(() => null);
 
@@ -31,7 +24,7 @@ export async function Nav() {
             {enabledFeatures().map((f) => (
               <li key={f.href}>
                 <Link href={f.href} className="label hover:text-chalk transition-colors">
-                  {SHORT_TITLES[f.href] ?? f.title}
+                  {f.dimension}D {f.short}
                 </Link>
               </li>
             ))}

@@ -1,20 +1,14 @@
-import { Waveform } from "@/components/Waveform";
 import { site } from "@/lib/site";
 
 export function Hero() {
   return (
-    <section className="mx-auto max-w-5xl px-5 pt-20 pb-20 sm:px-8 sm:pt-32 sm:pb-28">
-      <h1 className="font-display text-[3rem] leading-[0.95] tracking-tight sm:text-[5.5rem] lg:text-[7rem]">
+    <section className="mx-auto max-w-5xl px-5 pt-20 pb-12 sm:px-8 sm:pt-32">
+      <p className="label mb-6">{site.name}</p>
+      <h1 className="font-display text-5xl leading-tight tracking-tight sm:text-6xl">
         {site.hero}
       </h1>
-      <p className="font-display text-dust mt-5 text-2xl sm:text-3xl">{site.motto}</p>
-      <p className="text-dust mt-6 font-sans text-xl sm:mt-8 sm:text-2xl">
-        {site.subhead}
-      </p>
-      <p className="text-dust/80 mt-3 max-w-2xl font-sans text-base sm:text-lg">
-        {site.pitch}
-      </p>
-      <Waveform className="animate-drift mt-10" />
+      <p className="text-dust mt-5 font-sans text-lg">{site.subhead}</p>
+      <p className="text-dust mt-3 max-w-2xl font-sans text-base">{site.pitch}</p>
     </section>
   );
 }

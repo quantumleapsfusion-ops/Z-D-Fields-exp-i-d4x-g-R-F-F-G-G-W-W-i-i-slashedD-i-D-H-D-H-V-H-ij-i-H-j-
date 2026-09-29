@@ -1,13 +1,5 @@
 import { z } from "zod";
 
-/**
- * Gravity Board (EXPERIMENTAL). Honest prototype of "transcription becomes topology":
- * - `density()` is a heuristic for when an idea is "dense enough" to cross the event horizon.
- * - The stochastic step samples several interpretations (LLM at high temperature, or a random stub).
- * - `resolve()` picks the likeliest interpretation until the user chooses otherwise.
- * Nothing here realises a 4D spacetime; the 3D collapse is a visual mock-up.
- */
-
 export const FORMS = ["sphere", "torus", "knot", "spiral", "wave", "lattice"] as const;
 export type Form = (typeof FORMS)[number];
 
@@ -40,7 +32,6 @@ export function words(text: string): string[] {
   return (text.toLowerCase().match(/[a-z0-9']+/g) ?? []).filter((w) => !STOP.has(w));
 }
 
-/** 0..1 — how "dense" the idea is: length, lexical variety, long words and clause count. */
 export function density(text: string): number {
   const all = text.toLowerCase().match(/[a-z0-9']+/g) ?? [];
   if (all.length === 0) return 0;
@@ -58,7 +49,6 @@ export function density(text: string): number {
   return Math.min(1, score);
 }
 
-/** Heuristic resolution: model confidence blended with overlap against what was actually said. */
 export function resolve(text: string, candidates: Candidate[]): number {
   const said = new Set(words(text));
   let best = 0;
@@ -75,10 +65,8 @@ export function resolve(text: string, candidates: Candidate[]): number {
   return best;
 }
 
-export const SUPERPOSE_SYSTEM_PROMPT = `You are the stochastic intelligence behind the Gravity Board.
-The user has spoken an idea too dense for one reading. Hold it in superposition: return 4 genuinely
-DIFFERENT interpretations of what they might mean (different framings, not paraphrases).
-For each, choose the topology that best fits its shape: ${FORMS.join(", ")}.
+export const SUPERPOSE_SYSTEM_PROMPT = `Read the user's spoken text and return four distinct interpretations.
+Use different ideas, not paraphrases. Choose a form that fits each interpretation: ${FORMS.join(", ")}.
 Reply with ONLY JSON: {"candidates":[{"title":s,"interpretation":s,"form":s,"confidence":0..1}]}`;
 
 const FRAMES: {
@@ -89,36 +77,36 @@ const FRAMES: {
   {
     title: (k) => `${k} as a system`,
     body: (k, o) =>
-      `You are describing ${k} as a set of interacting parts — ${o} is one of them, and the behaviour lives in how they connect.`,
+      `Think about ${k} through its parts, including ${o}, and how they affect each other.`,
     form: "lattice",
   },
   {
     title: (k) => `${k} as a cycle`,
     body: (k, o) =>
-      `${cap(k)} returns on itself: what looks like progress through ${o} loops back to where it began.`,
+      `${cap(k)} may repeat: changes in ${o} can return the idea to where it started.`,
     form: "torus",
   },
   {
     title: (k) => `${k} as a gradient`,
-    body: (k, o) =>
-      `${cap(k)} is not a thing but a slope — everything flows from ${o} toward it.`,
+    body: (k, o) => `${cap(k)} can change gradually as ${o} changes.`,
     form: "wave",
   },
   {
     title: (k) => `${k} as growth`,
     body: (k, o) =>
-      `${cap(k)} unfolds outward from ${o}, each turn a little larger than the last.`,
+      `${cap(k)} can develop from ${o}, with each change affecting what comes next.`,
     form: "spiral",
   },
   {
     title: (k) => `${k} entangled`,
     body: (k, o) =>
-      `${cap(k)} and ${o} cannot be described separately; change one and the other moves.`,
+      `${cap(k)} and ${o} may affect each other. Changing one can change the other.`,
     form: "knot",
   },
   {
     title: (k) => `${k} as a whole`,
-    body: (k, o) => `Step back: ${k} and ${o} are the same object seen from two sides.`,
+    body: (k, o) =>
+      `Look at ${k} and ${o} together. They may describe the same idea from two sides.`,
     form: "sphere",
   },
 ];
@@ -127,7 +115,6 @@ function cap(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/** "Artificial random intelligence": the no-key stub samples framings at random. */
 export function stubSuperpose(
   text: string,
   random: () => number = Math.random,

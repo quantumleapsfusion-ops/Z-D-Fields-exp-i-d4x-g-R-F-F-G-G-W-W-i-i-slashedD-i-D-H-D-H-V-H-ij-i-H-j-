@@ -2,6 +2,12 @@
 @import "@earth-one/ui/tokens.css";
 @source "../../../../packages/ui/src";
 
+@theme {
+  --color-blackboard: #000;
+  --color-board: #000;
+  --color-board-2: #0a0a0a;
+}
+
 @layer base {
   html {
     color-scheme: dark;
@@ -33,16 +39,8 @@
   color: var(--color-dust);
 }
 
-/* Blackboard surface with a faint chalk-dust haze. */
 @utility chalk-surface {
   background-color: var(--color-blackboard);
-  background-image:
-    radial-gradient(
-      ellipse at 20% 10%,
-      --alpha(var(--color-chalk) / 5%),
-      transparent 55%
-    ),
-    radial-gradient(ellipse at 80% 90%, --alpha(var(--color-dust) / 6%), transparent 60%);
 }
 
 /* Chalk-line: a faint hand-drawn rule under headings */

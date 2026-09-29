@@ -1,11 +1,10 @@
-# e1-4 — earth life-forms
+# e1-4: earth life-forms
 
-Flagship of **Earth One Global Coalescent** (sibling: [earth1.co](https://earth1.co)).
+App by **Earth One Global Coalescent**.
 
-> A social network with no typing. You speak; everything else follows.
-
-This repo is the Next.js + Supabase **app shell** that the four features plug into:
-Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (feature-flagged).
+The app has five dimensions: Voice Stream, Infinity Chalkboard, Gravity Chalkboard, Event
+Horizon and Superposition. Voice Stream supplies text to the other surfaces. Da Vinci
+opens with Ctrl+K.
 
 ## Stack
 
@@ -17,8 +16,8 @@ Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (feature-flagged).
 | Storage   | Supabase Storage — `avatars` (public) and `voice` (private) buckets  |
 | Tooling   | ESLint, Prettier, GitHub Actions (lint + typecheck + build)          |
 
-Brand: chalkboard palette (`#0e1a13` board, `#f1ede1` chalk, `#93a294` dust, `#d3a34c` ochre),
-Fraunces (display) + Space Grotesk (body) via `next/font`, Ψ-over-π rainbow `Logo`.
+Palette: black (`#000`), chalk (`#f1ede1`), dust (`#93a294`) and ochre (`#d3a34c`).
+Fraunces and Space Grotesk are loaded with `next/font`.
 
 ## Project layout
 
@@ -27,7 +26,7 @@ prisma/schema.prisma             User, VoiceStream, VoiceSegment, Share
 prisma/migrations/               Prisma-managed table migrations
 prisma.config.ts                 Prisma CLI config (uses DIRECT_URL)
 supabase/migrations/*.sql        RLS policies, auth->profile trigger, storage buckets + policies
-src/proxy.ts                     Next 16 middleware: refreshes the Supabase session, guards /profile
+src/proxy.ts                     Refreshes the Supabase session and guards private routes
 src/lib/env.ts                   Typed env access (public vs server-only)
 src/lib/supabase/client.ts       Browser client (Client Components)
 src/lib/supabase/server.ts       Cookie-backed server client (RSC, Server Actions, Route Handlers)
@@ -37,9 +36,24 @@ src/lib/storage/                 StorageProvider interface + Supabase implementa
 src/lib/auth/                    OAuth provider list + sign-in/sign-out Server Actions
 src/lib/account/                 Profile actions (avatar upload) + hard-delete routine
 src/app/auth/callback/route.ts   OAuth code -> session exchange
-src/app/{page,login,profile}     Home, sign-in, profile
-src/components/                  Logo, SiteHeader, AvatarForm
+src/app/                         Home, auth, profile and dimension routes
+src/components/                  Navigation, page shell, audio dock and Da Vinci drawer
 ```
+
+## Dimensions
+
+| Dimension | Surface             | Route            |
+| --------- | ------------------- | ---------------- |
+| 1D        | Voice Stream        | `/stream`        |
+| 2D        | Infinity Chalkboard | `/chalkboard`    |
+| 3D        | Gravity Chalkboard  | `/gravity`       |
+| 4D        | Event Horizon       | `/horizon`       |
+| 5D        | Superposition       | `/superposition` |
+
+Voice Stream supplies transcript text to the other surfaces. The 3D, 4D and 5D routes
+can be disabled with `NEXT_PUBLIC_FEATURE_GRAVITY_CHALKBOARD`,
+`NEXT_PUBLIC_FEATURE_EVENT_HORIZON` and `NEXT_PUBLIC_FEATURE_SUPERPOSITION`. All default
+to `true`.
 
 ## Local setup
 
@@ -127,7 +141,6 @@ transcript) and `Share` (scope `PRIVATE | LINK | USER`) all cascade-delete from 
 `<uid>/` in the `voice` and `avatars` buckets, the Postgres rows, then the Supabase Auth user.
 It is exposed to the signed-in user as **Delete account** on `/profile`.
 
-## Later: Da Vinci keys
+## Optional integrations
 
-`.env.example` reserves `OPENAI_API_KEY`, `DEEPGRAM_API_KEY` and `ANTHROPIC_API_KEY` for the
-speech-to-text and LLM steps. They are unused by the shell.
+Optional settings in `.env.example` control transcription, translation and drawing.

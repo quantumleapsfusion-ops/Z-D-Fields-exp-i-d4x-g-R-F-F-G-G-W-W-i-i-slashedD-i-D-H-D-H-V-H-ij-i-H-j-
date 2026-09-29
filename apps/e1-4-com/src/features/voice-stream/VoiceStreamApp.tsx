@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import { deleteSegmentAction, deleteStreamAction } from "@/app/actions/stream";
 import type { Playlist } from "@/lib/audio/store";
 import { usePlaylist } from "@/lib/audio/usePlaylist";
+import { useCarry } from "@/lib/carry";
 import type { SegmentDTO } from "@/lib/voice/stream";
 
 import { formatDuration } from "./format";
@@ -20,6 +21,7 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
   const [segments, setSegments] = useState(initialSegments);
   const [pending, setPending] = useState<Pending[]>([]);
   const [, startTransition] = useTransition();
+  const setCarryText = useCarry((state) => state.setText);
   const playlist = useMemo<Playlist | null>(
     () =>
       segments.length > 0
@@ -37,6 +39,15 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
     [segments],
   );
   const { activeId, playFrom } = usePlaylist(playlist);
+
+  useEffect(() => {
+    setCarryText(
+      segments
+        .map((segment) => segment.transcription?.trim())
+        .filter((text): text is string => Boolean(text))
+        .join(" "),
+    );
+  }, [segments, setCarryText]);
 
   const upload = useCallback(async (item: Pending) => {
     const form = new FormData();
@@ -68,7 +79,6 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
 
   const recorder = useRecorder(onSpan);
 
-  // Poll while any transcription is still running.
   const waiting = segments.some((s) => s.transcriptionStatus === "PENDING");
   useEffect(() => {
     if (!waiting) return;
@@ -135,8 +145,7 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
       <div className="mt-10">
         {items.length === 0 ? (
           <p className="font-display text-dust text-center text-xl">
-            Your stream is silent. Press record — it will keep running for as long as you
-            do.
+            Record to add a segment to your stream.
           </p>
         ) : (
           <Timeline
@@ -225,7 +234,7 @@ function RecorderPanel({
         {state === "recording"
           ? `Recording · ${formatDuration(elapsedMs)}`
           : state === "paused"
-            ? "Paused — resume on a whim"
+            ? "Paused. Resume when ready."
             : `Stream length ${formatDuration(totalMs)}`}
       </p>
       {error ? (
