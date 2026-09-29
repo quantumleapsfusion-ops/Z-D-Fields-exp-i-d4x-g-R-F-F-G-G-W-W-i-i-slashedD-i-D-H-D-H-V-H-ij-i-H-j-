@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { VoiceGate } from "@/features/portal/MicPortal";
 import { getCurrentUser } from "@/lib/supabase/server";
+
+export const metadata: Metadata = { robots: { index: false } };
 
 /** Only same-site paths, so a crafted link cannot send a new session elsewhere. */
 function safeNext(next: unknown): string {
