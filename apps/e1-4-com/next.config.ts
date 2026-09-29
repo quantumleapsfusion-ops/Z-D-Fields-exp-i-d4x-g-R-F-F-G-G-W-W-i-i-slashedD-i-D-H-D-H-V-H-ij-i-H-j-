@@ -27,6 +27,10 @@ const nextConfig: NextConfig = {
   async redirects() {
     return WORDED_PAGES.map((source) => ({ source, destination: "/", permanent: false }));
   },
+  // Short personal links: e1-4.com/@handle.
+  async rewrites() {
+    return [{ source: "/@:handle", destination: "/u/:handle" }];
+  },
 };
 
 export default nextConfig;
