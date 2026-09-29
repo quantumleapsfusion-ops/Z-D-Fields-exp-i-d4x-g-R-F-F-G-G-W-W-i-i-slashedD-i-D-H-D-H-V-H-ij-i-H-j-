@@ -6,7 +6,10 @@ import { VoiceGate } from "@/features/voice-gate/VoiceGate";
 import { safeNextPath } from "@/lib/auth/next-path";
 import { getCurrentUser } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "Voice gate" };
+export const metadata: Metadata = {
+  title: "Voice gate",
+  robots: { index: false },
+};
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { next } = await searchParams;
