@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: site.title,
   description: site.description,
   applicationName: site.name,
+  keywords: [...site.keywords],
   openGraph: {
     type: "website",
     url: site.url,
@@ -28,6 +29,7 @@ export const metadata: Metadata = {
     title: site.title,
     description: site.description,
   },
+  robots: { index: true, follow: true },
   icons: { icon: "/icon.png", apple: "/apple-icon.png" },
 };
 

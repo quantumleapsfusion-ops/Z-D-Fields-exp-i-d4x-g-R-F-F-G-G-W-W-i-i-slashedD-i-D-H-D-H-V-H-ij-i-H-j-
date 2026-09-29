@@ -1,11 +1,48 @@
+import type { Metadata } from "next";
 import { Logo } from "@earth-one/ui";
 
 import { CiceroPassage } from "@/components/CiceroPassage";
 import { site } from "@/lib/site";
 
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
 export default function HomePage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${site.url}/#org`,
+        name: site.org,
+        alternateName: site.name,
+        url: site.url,
+        logo: `${site.url}/icon.png`,
+        description: site.description,
+        knowsAbout: ["Global citizenship"],
+        sameAs: [site.flagshipUrl],
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${site.url}/#website`,
+        name: site.org,
+        url: site.url,
+        description: site.description,
+        inLanguage: "en",
+        publisher: { "@id": `${site.url}/#org` },
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-black text-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <header className="flex min-h-[88svh] flex-col items-center justify-center px-6 text-center">
         <Logo
           brand="earth1"
