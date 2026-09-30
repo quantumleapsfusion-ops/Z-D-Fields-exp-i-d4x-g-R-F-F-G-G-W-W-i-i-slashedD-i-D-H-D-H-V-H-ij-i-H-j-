@@ -4,25 +4,20 @@ vi.mock("server-only", () => ({}));
 
 const { hardDeleteUser } = await import("@/lib/privacy/hard-delete");
 const { prisma } = await import("@/lib/db");
-const { createAdminClient } = await import("@/lib/supabase/admin");
 const { appendSegment } = await import("@/lib/voice/stream");
 const { newShareToken } = await import("@/lib/voice/share");
 
-const admin = createAdminClient();
 const base = process.env.LIVE_APP_URL ?? "http://localhost:3000";
 let uid = "";
 let token = "";
 let segmentId = "";
 
 beforeAll(async () => {
-  const { data, error } = await admin.auth.admin.createUser({
-    email: `devin-share-${Date.now()}@example.com`,
-    password: `Pw!${Date.now()}-share`,
-    email_confirm: true,
-    user_metadata: { full_name: "Share Owner" },
+  const user = await prisma.user.create({
+    data: { displayName: "Share Owner" },
+    select: { id: true },
   });
-  if (error) throw error;
-  uid = data.user.id;
+  uid = user.id;
   const seg = await appendSegment({
     userId: uid,
     audio: new Uint8Array(4096).fill(7),

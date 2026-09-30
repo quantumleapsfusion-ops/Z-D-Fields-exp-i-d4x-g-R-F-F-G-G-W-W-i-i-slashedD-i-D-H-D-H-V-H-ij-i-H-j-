@@ -6,12 +6,7 @@ loadEnv({ path: ".env.local" });
 const PORT = Number(process.env.E2E_PORT ?? 3100);
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
 
-/**
- * Smoke suite against a real Next.js server and the live Supabase project.
- * Requires the Supabase env plus E2E_TEST_EMAIL / E2E_TEST_PASSWORD (an
- * email+password user created via the Auth admin API). Chromium is launched
- * with a fake microphone so MediaRecorder produces real audio.
- */
+/** Smoke suite against a real Next.js server and test database. */
 export default defineConfig({
   testDir: "e2e",
   timeout: 60_000,

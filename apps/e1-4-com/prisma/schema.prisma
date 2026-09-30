@@ -1,8 +1,6 @@
-// e1-4.com data model — Prisma on Supabase Postgres.
-// Identity lives in Supabase Auth (`auth.users`); `users` is the app profile row with the same id.
-// Every user-owned row cascades from `User`, so `hardDeleteUser` (lib/privacy/hard-delete.ts)
-// only has to purge Storage objects, delete the profile row and then the auth user.
-// Row Level Security + Storage policies: supabase/migrations/*.sql
+// e1-4.com data model on Postgres.
+// Voiceprints identify users; sessions belong to this app.
+// hardDeleteUser removes Storage objects before deleting the user row.
 
 generator client {
   provider = "prisma-client"
@@ -13,10 +11,9 @@ datasource db {
   provider = "postgresql"
 }
 
-/// Profile row for a Supabase Auth user. `id` equals `auth.users.id`.
+/// Profile for a voice identity.
 model User {
-  id          String   @id @db.Uuid
-  email       String?  @unique
+  id          String   @id @default(uuid()) @db.Uuid
   displayName String?  @map("display_name")
   /// Public, lowercase `@handle` ([a-z0-9_]{3,20}) people use to find and add each other.
   handle      String?  @unique
@@ -34,9 +31,11 @@ model User {
   memberships          ConversationMember[]
   voiceNotes           VoiceNote[]
 
-  contacts  Contact[] @relation("ContactOwner")
-  contactOf Contact[] @relation("ContactTarget")
-  passkeys  Passkey[]
+  contacts    Contact[]    @relation("ContactOwner")
+  contactOf   Contact[]    @relation("ContactTarget")
+  sessions    Session[]
+  voiceprint  Voiceprint?
+  loginEvents LoginEvent[]
 
   @@map("users")
 }
@@ -242,34 +241,45 @@ model Contact {
   @@map("contacts")
 }
 
-/// A WebAuthn credential (passkey). `id` is the base64url credential id.
-model Passkey {
-  id         String    @id
-  userId     String    @map("user_id") @db.Uuid
-  publicKey  Bytes     @map("public_key")
-  counter    Int       @default(0)
-  transports String[]
-  deviceType String    @map("device_type")
-  backedUp   Boolean   @map("backed_up")
-  name       String?
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz
+model Session {
+  id         String   @id @default(uuid()) @db.Uuid
+  tokenHash  String   @unique @map("token_hash")
+  userId     String   @map("user_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz
+  lastSeenAt DateTime @default(now()) @map("last_seen_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@map("passkeys")
+  @@map("sessions")
 }
 
-/// Single-use WebAuthn challenge (registration or sign-in), valid for a few minutes.
-model AuthChallenge {
-  id        String   @id @default(uuid()) @db.Uuid
-  purpose   String
-  challenge String
-  userId    String?  @map("user_id") @db.Uuid
-  expiresAt DateTime @map("expires_at") @db.Timestamptz
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+model Voiceprint {
+  userId       String   @id @map("user_id") @db.Uuid
+  print        Float[]
+  samples      Int      @default(1)
+  modelVersion String   @map("model_version")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  @@index([expiresAt])
-  @@map("auth_challenges")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("voiceprints")
+}
+
+model LoginEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  at         DateTime @default(now()) @db.Timestamptz
+  method     String
+  success    Boolean
+  clientHash String   @map("client_hash")
+  device     String?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([clientHash, at])
+  @@index([userId, at])
+  @@map("login_events")
 }
