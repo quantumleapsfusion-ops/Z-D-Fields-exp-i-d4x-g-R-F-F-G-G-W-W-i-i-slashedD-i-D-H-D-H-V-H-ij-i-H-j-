@@ -62,7 +62,11 @@ export function drawLogoMask(width = 180): LogoMask {
  * Coverage at `u`, `v` in -1..1 across the mark (`v` = 1 at the top), bilinearly smoothed so beads
  * drifting through a stroke fade in and out rather than blink.
  */
-export function sampleMask({ width, height, cover }: LogoMask, u: number, v: number): number {
+export function sampleMask(
+  { width, height, cover }: LogoMask,
+  u: number,
+  v: number,
+): number {
   if (u <= -1 || u >= 1 || v <= -1 || v >= 1) return 0;
   const x = ((u + 1) / 2) * (width - 1);
   const y = ((1 - v) / 2) * (height - 1);

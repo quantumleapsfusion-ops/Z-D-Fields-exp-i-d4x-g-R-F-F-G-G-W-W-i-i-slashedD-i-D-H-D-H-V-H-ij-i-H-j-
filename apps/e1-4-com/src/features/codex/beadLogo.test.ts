@@ -31,7 +31,13 @@ describe("sampleMask", () => {
 describe("rainbowAt", () => {
   it("starts on the first brand colour and ends on the last", () => {
     const hex = (c: [number, number, number]) =>
-      `#${c.map((x) => Math.round(x * 255).toString(16).padStart(2, "0")).join("")}`;
+      `#${c
+        .map((x) =>
+          Math.round(x * 255)
+            .toString(16)
+            .padStart(2, "0"),
+        )
+        .join("")}`;
     expect(hex(rainbowAt(0))).toBe(brand.rainbow[0]);
     expect(hex(rainbowAt(1))).toBe(brand.rainbow[brand.rainbow.length - 1]);
     expect(hex(rainbowAt(-3))).toBe(brand.rainbow[0]);

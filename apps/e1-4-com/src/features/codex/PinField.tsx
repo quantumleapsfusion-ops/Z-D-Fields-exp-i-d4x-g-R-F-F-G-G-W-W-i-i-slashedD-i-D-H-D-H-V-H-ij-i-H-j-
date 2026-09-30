@@ -4,7 +4,13 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
-import { drawLogoMask, LOGO_ASPECT, type LogoMask, rainbowAt, sampleMask } from "@/features/codex/beadLogo";
+import {
+  drawLogoMask,
+  LOGO_ASPECT,
+  type LogoMask,
+  rainbowAt,
+  sampleMask,
+} from "@/features/codex/beadLogo";
 import { watchTilt } from "@/lib/device/tilt";
 import type { Form } from "@/lib/gravity/superposition";
 import { BANDS, FRAMES, type SoundPrint, WAVE_POINTS } from "@/lib/sound/analyse";
@@ -265,7 +271,8 @@ export default function PinField({
       envelope *= 0.94;
       const dt = Math.min(0.1, now - last);
       last = now;
-      const drawing = mask !== null && state.current.logo && (p === "rest" || p === "listen");
+      const drawing =
+        mask !== null && state.current.logo && (p === "rest" || p === "listen");
       shown += ((drawing ? 1 : 0) - shown) * 0.04;
       voice += ((p === "listen" ? Math.min(1, live * 1.8) : 0) - voice) * 0.2;
       spin += dt * (0.12 + voice * 2.4) * shown;
