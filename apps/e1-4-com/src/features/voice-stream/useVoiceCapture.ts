@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { decodeSound } from "@/features/sound/decode";
+import { sendVoice } from "@/features/voice-id/pcm";
 import { useCarry } from "@/lib/carry";
 import type { SoundPrint } from "@/lib/sound/analyse";
 import type { SegmentDTO } from "@/lib/voice/stream";
@@ -13,6 +14,7 @@ import { useRecorder, type CapturedSpan } from "./useRecorder";
 export type PendingSpan = { id: string; span: CapturedSpan; failed?: boolean };
 
 const SPAN_GRACE_MS = 4000;
+const VOICE_SAMPLE_MIN_MS = 1500;
 
 /**
  * Records into the user's stream and, once Stop has settled (every span uploaded), measures this
@@ -56,6 +58,7 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
       setBlobs((prev) => [...prev, span.blob]);
       setPending((prev) => [...prev, item]);
       void upload(item);
+      if (span.durationMs >= VOICE_SAMPLE_MIN_MS) void sendVoice(span.blob);
     },
     [upload],
   );

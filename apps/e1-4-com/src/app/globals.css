@@ -6,6 +6,20 @@
   --color-blackboard: #000;
   --color-board: #000;
   --color-board-2: #0a0a0a;
+  --animate-voice-shake: voice-shake 0.35s ease-in-out 2;
+
+  @keyframes voice-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-14px);
+    }
+    75% {
+      transform: translateX(14px);
+    }
+  }
 }
 
 @layer base {

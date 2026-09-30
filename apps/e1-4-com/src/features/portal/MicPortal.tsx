@@ -3,28 +3,83 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 
 import { MicMark } from "@/components/MicMark";
 import type { PinPhase } from "@/features/codex/PinField";
+import { sendVoice } from "@/features/voice-id/pcm";
+import { type CapturedSpan, useRecorder } from "@/features/voice-stream/useRecorder";
 import { useVoiceCapture } from "@/features/voice-stream/useVoiceCapture";
 
 const PinField = dynamic(() => import("@/features/codex/PinField"), { ssr: false });
 
 /** Da Vinci's front door: one microphone over a field of liquid metal. Everything follows from the sound. */
 export function MicPortal({ signedIn }: { signedIn: boolean }) {
-  return signedIn ? <Codex /> : <GuestPortal />;
+  return signedIn ? <Codex /> : <VoiceGate />;
 }
 
-function GuestPortal() {
+const VOICE_MAX_MS = 8000;
+
+/**
+ * The voice is the only key: speak, and the sound itself (measured on the device, matched on the
+ * server) opens that speaker's stream, or a new stream for a voice not heard before.
+ */
+export function VoiceGate({ next = "/" }: { next?: string }) {
   const router = useRouter();
+  const [phase, setPhase] = useState<"idle" | "checking" | "rejected">("idle");
+  const recorder = useRecorder(
+    useCallback(
+      async (span: CapturedSpan) => {
+        setPhase("checking");
+        if (await sendVoice(span.blob)) {
+          router.replace(next);
+          router.refresh();
+        } else {
+          setPhase("rejected");
+        }
+      },
+      [next, router],
+    ),
+  );
+  const recording = recorder.state === "recording";
+  const { stop } = recorder;
+
+  useEffect(() => {
+    if (!recording) return;
+    const timer = setTimeout(stop, VOICE_MAX_MS);
+    return () => clearTimeout(timer);
+  }, [recording, stop]);
+
+  useEffect(() => {
+    if (phase !== "rejected") return;
+    const timer = setTimeout(() => setPhase("idle"), 1200);
+    return () => clearTimeout(timer);
+  }, [phase]);
+
   return (
-    <Frame phase="rest">
+    <Frame
+      phase={recording || phase === "checking" ? "listen" : "rest"}
+      level={recorder.level}
+    >
       <Centre>
-        <MicButton
-          onClick={() => router.push("/login?next=/")}
-          label="Sign in to speak"
-        />
+        <div className={phase === "rejected" ? "animate-voice-shake" : undefined}>
+          <MicButton
+            onClick={() => (recording ? stop() : void recorder.record())}
+            label={recording ? "Stop" : "Speak to enter"}
+            level={recording ? recorder.level : 0}
+            disabled={!recorder.supported || phase === "checking"}
+          />
+        </div>
+        <p role="status" className="sr-only">
+          {recorder.error ??
+            (recording
+              ? "Listening"
+              : phase === "checking"
+                ? "Recognising your voice"
+                : phase === "rejected"
+                  ? "Voice not recognised. Tap and speak again."
+                  : "Tap and speak to enter")}
+        </p>
       </Centre>
     </Frame>
   );
