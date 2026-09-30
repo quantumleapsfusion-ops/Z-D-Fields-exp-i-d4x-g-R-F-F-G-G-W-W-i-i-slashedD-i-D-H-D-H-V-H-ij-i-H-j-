@@ -1,6 +1,6 @@
-const VERSION = "e1-4-v2";
+const VERSION = "e1-4-v3";
 const SHELL = [
-  "/icon.svg",
+  "/icon.png",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/manifest.webmanifest",

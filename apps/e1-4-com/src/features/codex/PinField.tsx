@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { LiquidMetal, type ShapeFn } from "@earth-one/liquid-metal";
 
+import { drawLogoMask, LOGO_ASPECT, sampleMask } from "@/features/codex/beadLogo";
 import { watchTilt } from "@/lib/device/tilt";
 import type { Form } from "@/lib/gravity/superposition";
 import { BANDS, FRAMES, type SoundPrint, WAVE_POINTS } from "@/lib/sound/analyse";
@@ -11,6 +12,10 @@ import { BANDS, FRAMES, type SoundPrint, WAVE_POINTS } from "@/lib/sound/analyse
 const LONG = 168;
 const SHORT = 102;
 const PITCH = 0.043;
+/** Half the height of the bead-drawn logo, in world units. */
+const LOGO_HALF_H = 0.95;
+/** How high the logo stands out of the pool. */
+const LOGO_RISE = 0.5;
 
 /**
  * `rest` is Saturn turning slowly in the pool, `listen` is the live level, `line` raises the
@@ -93,6 +98,13 @@ function tide(x: number, y: number, now: number): number {
   );
 }
 
+/** Slow spiral arms around the logo; they turn faster while someone speaks. */
+function vortexHeight(r: number, a: number, now: number, voice: number): number {
+  const arms =
+    0.06 * Math.sin(a * 3 - r * 7 + now * (1.2 + voice * 6)) * Math.min(1, r * 1.5);
+  return arms * Math.exp(-(r * r) / 6);
+}
+
 /**
  * A pool of liquid metal that shows the voice. Phase, sound print and form only choose the
  * shape the metal is pulled toward; the fluid does the moving.
@@ -103,6 +115,7 @@ export default function PinField({
   print,
   form = "sphere",
   pulse = 0,
+  logo = false,
 }: {
   phase: PinPhase;
   level?: number;
@@ -110,12 +123,24 @@ export default function PinField({
   form?: Form;
   /** Bump to send a wave through the metal, e.g. on every spoken word. */
   pulse?: number;
+  /** The metal itself draws the e1-4 Ψπ mark at the centre, and it stirs when spoken to. */
+  logo?: boolean;
 }) {
+  const mask = useMemo(() => (logo ? drawLogoMask() : null), [logo]);
+  const voice = phase === "listen" ? Math.min(1, level * 1.8) : 0;
   const shape = useMemo<ShapeFn>(
     () => (x, y, now, u, v) => {
       const r = Math.hypot(x, y);
       const a = Math.atan2(y, x);
       const base = tide(x, y, now);
+      if (mask && (phase === "rest" || phase === "listen")) {
+        const v = y / LOGO_HALF_H;
+        const wobble = voice * 0.09 * Math.sin(v * 9 - now * 8);
+        const ink = sampleMask(mask, (x * LOGO_ASPECT) / LOGO_HALF_H + wobble, v);
+        const rise =
+          ink * (LOGO_RISE + voice * 0.35 + 0.05 * Math.sin(now * 2.4 + x * 3 + y * 2));
+        return base * 0.5 + vortexHeight(r, a, now, voice) + rise;
+      }
       switch (phase) {
         case "rest":
           return base * 0.5 + saturnHeight(r, a, now);
@@ -133,7 +158,7 @@ export default function PinField({
           return base + formHeight(form, x / 2.2, y / 2.2) * 0.9;
       }
     },
-    [phase, print, form],
+    [phase, print, form, mask, voice],
   );
 
   return (
