@@ -65,7 +65,7 @@ export function toNoteDTO(n: VoiceNote): NoteDTO {
 }
 
 const memberInclude = {
-  user: { select: { id: true, displayName: true, email: true, avatarPath: true } },
+  user: { select: { id: true, displayName: true, avatarPath: true } },
 } satisfies Prisma.ConversationMemberInclude;
 
 type MemberRow = Prisma.ConversationMemberGetPayload<{ include: typeof memberInclude }>;
@@ -73,7 +73,7 @@ type MemberRow = Prisma.ConversationMemberGetPayload<{ include: typeof memberInc
 function toMemberDTO(m: MemberRow, viewerId: string, now = Date.now()): MemberDTO {
   return {
     id: m.userId,
-    name: m.user.displayName ?? m.user.email?.split("@")[0] ?? "Earthling",
+    name: m.user.displayName ?? "Earthling",
     image: m.user.avatarPath
       ? storage.getPublicUrl(AVATARS_BUCKET, m.user.avatarPath)
       : null,

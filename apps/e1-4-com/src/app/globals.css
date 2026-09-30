@@ -148,3 +148,19 @@
   background: var(--color-chalk);
   cursor: pointer;
 }
+
+.voice-command-orb {
+  background:
+    radial-gradient(
+      circle at 30% 22%,
+      #f1ede1 0%,
+      #93a294 12%,
+      #385147 35%,
+      transparent 65%
+    ),
+    radial-gradient(circle at 72% 75%, #d3a34c 0%, #263a31 33%, #0e1a13 75%);
+  box-shadow:
+    inset -8px -10px 20px #070f0b,
+    inset 4px 5px 12px #f1ede155,
+    0 6px 24px #0009;
+}

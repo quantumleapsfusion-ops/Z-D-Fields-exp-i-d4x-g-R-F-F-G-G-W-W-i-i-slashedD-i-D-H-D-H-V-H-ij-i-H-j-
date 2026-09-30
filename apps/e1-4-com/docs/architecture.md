@@ -11,7 +11,7 @@ flowchart LR
   browser -- PCM sample --> voiceid[/api/voice-id/]
   browser -- audio span + PCM --> segments[/api/stream/segments/]
   browser -- voice note / live clip --> talk[/api/talk/:id/notes/]
-  voiceid --> auth[(Supabase Auth: app_metadata.voiceprint)]
+  voiceid --> db
   segments --> db[(Postgres via Prisma)]
   talk --> db
   segments --> storage[(Supabase Storage: voice, talk buckets)]
@@ -31,7 +31,7 @@ sequenceDiagram
   participant G as VoiceGate / Stream recorder
   participant V as /api/voice-id
   participant S as /api/stream/segments
-  participant A as Supabase Auth
+  participant A as voiceprints + sessions (Postgres)
   participant D as voice_segments
 
   P->>G: speaks (signed out)
@@ -40,7 +40,7 @@ sequenceDiagram
   alt known voice
     V->>A: blend print, mint session
   else new voice
-    V->>A: create hidden <uuid>@voice.e1-4.com user, mint session
+    V->>A: create voice-only user + print, mint session
   end
   V-->>G: session cookie
   G->>S: same span (audio + PCM)
@@ -106,9 +106,9 @@ flowchart LR
     next[Next.js app: pages, route handlers, server actions]
   end
   subgraph Supabase
-    authz[Auth] --- pg[(Postgres + RLS)] --- obj[(Storage)]
+    pg[(Postgres + RLS: users, voiceprints, sessions)] --- obj[(Storage)]
   end
-  next -- service role, server only --> authz
+  next -- service role, server only --> obj
   next -- Prisma --> pg
   next -- signed URLs --> obj
   next -. optional keys .-> ai[STT / LLM providers]

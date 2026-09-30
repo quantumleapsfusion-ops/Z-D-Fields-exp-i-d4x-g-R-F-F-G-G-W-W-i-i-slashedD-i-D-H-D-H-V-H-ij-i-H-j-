@@ -1,21 +1,23 @@
 import "server-only";
 
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { publicEnv, serverEnv } from "@/lib/env";
 import type { StorageBucket, StorageProvider, UploadInput } from "./types";
 
 const LIST_PAGE_SIZE = 1000;
 
-/**
- * Supabase Storage implementation. Uses the service-role client so it can
- * operate on any object; callers are responsible for authorization (the
- * Server Actions that use it always scope paths to the signed-in uid).
- */
+function createStorageClient(): SupabaseClient {
+  return createSupabaseClient(publicEnv.supabaseUrl, serverEnv().supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
 export class SupabaseStorageProvider implements StorageProvider {
   private client: SupabaseClient | null = null;
 
   private get supabase() {
-    this.client ??= createAdminClient();
+    this.client ??= createStorageClient();
     return this.client;
   }
 
