@@ -2,12 +2,19 @@
 
 const WORD_MS = 330;
 
-function pickVoice(): SpeechSynthesisVoice | undefined {
-  const voices = window.speechSynthesis.getVoices();
+const FEMALE =
+  /samantha|ava|allison|susan|victoria|karen|moira|tessa|fiona|serena|zira|aria|jenny|libby|sonia|female|woman|google us english|google uk english female/i;
+
+/** Da Vinci's voice: a light, warm female English voice, preferring ones that run on the device. */
+export function pickVoice(
+  voices: SpeechSynthesisVoice[] = window.speechSynthesis.getVoices(),
+): SpeechSynthesisVoice | undefined {
   const english = voices.filter((v) => v.lang.toLowerCase().startsWith("en"));
   return (
-    english.find((v) => v.localService && /male|daniel|alex|fred|david/i.test(v.name)) ??
+    english.find((v) => v.localService && FEMALE.test(v.name)) ??
+    english.find((v) => FEMALE.test(v.name)) ??
     english.find((v) => v.localService) ??
+    english[0] ??
     voices.find((v) => v.localService)
   );
 }
@@ -51,8 +58,8 @@ export function speak(
     const utterance = new SpeechSynthesisUtterance(line);
     utterance.voice = voice;
     utterance.lang = voice.lang;
-    utterance.rate = 0.92;
-    utterance.pitch = 0.8;
+    utterance.rate = 1.02;
+    utterance.pitch = 1.3;
     utterance.onstart = () => !cancelled && onLine(index);
     utterance.onboundary = (event) => {
       if (!cancelled && event.name === "word") onWord();
