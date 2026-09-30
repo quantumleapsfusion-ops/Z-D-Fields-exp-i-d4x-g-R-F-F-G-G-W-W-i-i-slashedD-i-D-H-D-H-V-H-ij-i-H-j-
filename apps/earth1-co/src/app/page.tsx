@@ -3,6 +3,7 @@ import { Logo } from "@earth-one/ui";
 import { DomainBridge } from "@/components/DomainBridge";
 import { GovernanceManifesto } from "@/components/GovernanceManifesto";
 import { HeroSection } from "@/components/HeroSection";
+import { ResearchHub } from "@/components/ResearchHub";
 import { site } from "@/lib/site";
 
 export default function HomePage() {
@@ -24,6 +25,7 @@ export default function HomePage() {
       <main>
         <HeroSection />
         <GovernanceManifesto />
+        <ResearchHub />
         <DomainBridge />
       </main>
       <footer className="border-chalk/10 border-t">

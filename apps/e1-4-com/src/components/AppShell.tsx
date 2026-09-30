@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { AudioDock } from "@/components/AudioDock";
 import { DaVinciDrawer } from "@/components/DaVinciDrawer";
 import { NavRail } from "@/components/NavRail";
+import { VoiceCommandOrb } from "@/components/VoiceCommandOrb";
 
 /** Routes that render as full pages (marketing, auth, public shares) rather than app surfaces. */
 const BARE_PREFIXES = ["/login", "/auth", "/s/", "/privacy"];
@@ -22,6 +23,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {bare ? null : <NavRail />}
       <div className={bare ? "" : "pb-16 md:pb-0 md:pl-[4.5rem]"}>{children}</div>
       <AudioDock />
+      {pathname.startsWith("/s/") ? null : <VoiceCommandOrb />}
       {bare ? null : <DaVinciDrawer />}
     </>
   );
