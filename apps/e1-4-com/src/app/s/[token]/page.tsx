@@ -22,17 +22,30 @@ export default async function SharePage({
     orderBy: { index: "asc" },
   });
 
+  if (!share.includeAudio) {
+    const lines = share.includeTranscript
+      ? segments.filter((s) => s.transcription?.trim())
+      : [];
+    return (
+      <main className="text-chalk min-h-dvh bg-black px-6 py-16">
+        <article className="mx-auto flex max-w-xl flex-col gap-5 text-lg leading-relaxed">
+          {lines.length === 0 ? (
+            <p className="text-dust">Nothing to read here yet.</p>
+          ) : (
+            lines.map((s) => <p key={s.id}>{s.transcription}</p>)
+          )}
+        </article>
+      </main>
+    );
+  }
+
   return (
     <StreamField
-      entries={
-        share.includeAudio
-          ? segments.map((s) => ({
-              id: s.id,
-              durationMs: s.durationMs,
-              audioUrl: `/api/share/${token}/audio/${s.id}`,
-            }))
-          : []
-      }
+      entries={segments.map((s) => ({
+        id: s.id,
+        durationMs: s.durationMs,
+        audioUrl: `/api/share/${token}/audio/${s.id}`,
+      }))}
     />
   );
 }
