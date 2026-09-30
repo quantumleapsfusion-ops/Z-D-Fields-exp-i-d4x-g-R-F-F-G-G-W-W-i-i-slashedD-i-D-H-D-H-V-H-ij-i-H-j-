@@ -95,8 +95,7 @@ export default function Home() {
         </section>
         <section className="mx-auto max-w-5xl px-5 py-24 sm:px-8 sm:py-32">
           <p className="font-display max-w-3xl text-2xl leading-snug sm:text-4xl">
-            Built by Earth One Global Coalescent — global citizenship for all, one voice
-            at a time
+            Built by Earth 1 Coalescent — global citizenship for all, one voice at a time
           </p>
           <a
             href="https://earth1.co"
@@ -108,7 +107,7 @@ export default function Home() {
       </main>
       <footer className="border-chalk/10 border-t">
         <div className="text-dust mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-10 text-sm sm:px-8">
-          <span>Earth One Global Coalescent / e1-4.com</span>
+          <span>Earth 1 Coalescent / e1-4.com</span>
           <a href="https://earth1.co" className="hover:text-ochre transition-colors">
             earth1.co →
           </a>
