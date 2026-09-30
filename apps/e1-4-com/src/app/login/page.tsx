@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { VoiceGate } from "@/features/portal/MicPortal";
-import { getCurrentUser } from "@/lib/supabase/server";
+import { getUserId } from "@/lib/auth/user";
 
 export const metadata: Metadata = { robots: { index: false } };
 
@@ -15,6 +15,6 @@ function safeNext(next: unknown): string {
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { next } = await searchParams;
-  if (await getCurrentUser()) redirect(safeNext(next));
+  if (await getUserId()) redirect(safeNext(next));
   return <VoiceGate next={safeNext(next)} />;
 }

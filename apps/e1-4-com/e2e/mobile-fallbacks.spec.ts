@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { loginAs } from "./helpers/auth";
+import { cleanupE2eUsers, loginAs } from "./helpers/auth";
 
 /**
  * Mobile browser constraints, reproduced by patching the browser APIs the way
@@ -8,6 +8,10 @@ import { loginAs } from "./helpers/auth";
  * checked against each platform's user agent.
  */
 test.describe("mobile microphone fallbacks", () => {
+  test.afterEach(async () => {
+    await cleanupE2eUsers();
+  });
+
   test.beforeEach(async ({ context, baseURL }) => {
     await loginAs(context, baseURL!);
   });

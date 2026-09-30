@@ -6,6 +6,7 @@
 import { detectPitch, fft } from "@/lib/sound/analyse";
 
 export const VOICEPRINT_SAMPLE_RATE = 16_000;
+export const VOICEPRINT_MODEL_VERSION = "mfcc-v1";
 /** Shortest stretch of voiced sound (in frames of 10 ms) worth identifying. */
 export const MIN_VOICED_FRAMES = 80;
 

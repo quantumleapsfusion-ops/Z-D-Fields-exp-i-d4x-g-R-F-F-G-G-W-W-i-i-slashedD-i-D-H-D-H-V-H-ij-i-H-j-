@@ -2,14 +2,12 @@ import "server-only";
 
 import { prisma } from "@/lib/db";
 import { AVATARS_BUCKET, VOICE_BUCKET, storage } from "@/lib/storage";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { leaveConversation } from "@/lib/talk/conversations";
 
 export interface HardDeleteResult {
   userId: string;
   objectsDeleted: number;
   dbRowsRemoved: boolean;
-  authUserRemoved: boolean;
 }
 
 /**
@@ -19,7 +17,6 @@ export interface HardDeleteResult {
  *   2. Storage objects under `<uid>/` in the `voice` and `avatars` buckets
  *      (Voice Stream segments and every Talk voice note the user sent)
  *   3. Postgres rows (User; streams/segments/shares/boards/usage/notes/memberships cascade)
- *   4. The Supabase Auth user itself
  *
  * Storage goes first so a failure there leaves the DB rows (and thus the paths
  * needed to retry) intact — no row is ever deleted while its blob survives.
@@ -40,20 +37,12 @@ export async function hardDeleteUser(userId: string): Promise<HardDeleteResult> 
     storage.removePrefix(AVATARS_BUCKET, userId),
   ]);
 
-  await prisma.authChallenge.deleteMany({ where: { userId } });
   const deleted = await prisma.user.deleteMany({ where: { id: userId } });
-
-  const admin = createAdminClient();
-  const { error } = await admin.auth.admin.deleteUser(userId);
-  if (error && error.status !== 404) {
-    throw new Error(`auth.admin.deleteUser(${userId}): ${error.message}`);
-  }
 
   return {
     userId,
     objectsDeleted: voiceRemoved + avatarsRemoved,
     dbRowsRemoved: deleted.count > 0,
-    authUserRemoved: !error,
   };
 }
 
@@ -101,21 +90,15 @@ export async function exportUserData(userId: string) {
     select: {
       id: true,
       displayName: true,
-      email: true,
       handle: true,
       avatarPath: true,
       createdAt: true,
+      voiceprint: {
+        select: { modelVersion: true, samples: true, createdAt: true },
+      },
+      _count: { select: { sessions: true } },
       contacts: {
         select: { contact: { select: { handle: true } }, createdAt: true },
-      },
-      passkeys: {
-        select: {
-          id: true,
-          name: true,
-          deviceType: true,
-          createdAt: true,
-          lastUsedAt: true,
-        },
       },
       stream: {
         select: {

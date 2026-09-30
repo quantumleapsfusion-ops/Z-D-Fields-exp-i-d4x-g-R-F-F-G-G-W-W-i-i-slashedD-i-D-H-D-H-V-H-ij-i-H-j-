@@ -3,14 +3,11 @@ import Link from "next/link";
 import { removeAvatar } from "@/app/actions/profile";
 import { Avatar } from "@/components/Nav";
 import { PageShell } from "@/components/PageShell";
-import { AddPasskeyButton, RemovePasskeyButton } from "@/features/people/Passkeys";
 import { HandleForm } from "@/features/people/PeopleForms";
 import { signOut } from "@/lib/auth/actions";
-import { listPasskeys } from "@/lib/auth/passkeys";
 import { requireUser } from "@/lib/auth/user";
 import { prisma } from "@/lib/db";
 import { AVATARS_BUCKET, storage } from "@/lib/storage";
-import { getCurrentUser } from "@/lib/supabase/server";
 
 import {
   AvatarForm,
@@ -23,8 +20,6 @@ export const metadata = { title: "Profile", robots: { index: false } };
 
 export default async function ProfilePage() {
   const sessionUser = await requireUser("/profile");
-  const authUser = await getCurrentUser();
-  const providers = authUser?.identities?.map((i) => i.provider) ?? [];
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: sessionUser.id },
     include: {
@@ -35,7 +30,6 @@ export default async function ProfilePage() {
       },
     },
   });
-  const passkeys = await listPasskeys(user.id);
 
   return (
     <PageShell>
@@ -47,15 +41,13 @@ export default async function ProfilePage() {
                 ? storage.getPublicUrl(AVATARS_BUCKET, user.avatarPath)
                 : sessionUser.image
             }
-            name={user.displayName ?? user.email}
+            name={user.displayName ?? "Earthling"}
             size={88}
           />
           <div>
             <h1 className="font-display text-4xl tracking-tight">
               {user.displayName ?? "Earthling"}
             </h1>
-            <p className="text-dust mt-1 font-sans text-sm">{user.email}</p>
-            <p className="label mt-2">{providers.join(" · ") || "Supabase Auth"}</p>
           </div>
         </div>
 
@@ -92,30 +84,6 @@ export default async function ProfilePage() {
                 "People add you by your handle instead of a phone number."
               )}
             </p>
-          </div>
-          <div>
-            <h2 className="label mb-3">Passkeys</h2>
-            {passkeys.length > 0 ? (
-              <ul className="mb-3 space-y-1">
-                {passkeys.map((p) => (
-                  <li
-                    key={p.id}
-                    className="flex items-center justify-between gap-3 text-sm"
-                  >
-                    <span className="text-chalk/80 truncate">
-                      {p.name ?? "Passkey"} · added {p.createdAt.toLocaleDateString()}
-                    </span>
-                    <RemovePasskeyButton id={p.id} />
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-dust mb-3 text-xs">
-                Sign in with Face ID, fingerprint or your device PIN. Verified by e1-4
-                itself; only a public key is stored.
-              </p>
-            )}
-            <AddPasskeyButton />
           </div>
         </div>
 

@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-import { expectLoggedOut, loginAs } from "./helpers/auth";
+import { cleanupE2eUsers, expectLoggedOut, loginAs } from "./helpers/auth";
+
+test.afterEach(async () => {
+  await cleanupE2eUsers();
+});
 
 test.describe("smoke: login → record → share", () => {
   test("landing renders and links into the app", async ({ page }) => {

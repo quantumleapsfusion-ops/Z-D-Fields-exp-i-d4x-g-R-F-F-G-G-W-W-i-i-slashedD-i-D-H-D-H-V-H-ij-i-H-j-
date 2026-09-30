@@ -10,6 +10,8 @@ import type { PinPhase } from "@/features/codex/PinField";
 import { sendVoice } from "@/features/voice-id/pcm";
 import { type CapturedSpan, useRecorder } from "@/features/voice-stream/useRecorder";
 import { useVoiceCapture } from "@/features/voice-stream/useVoiceCapture";
+import { haptic } from "@/lib/device/haptics";
+import { requestTilt } from "@/lib/device/tilt";
 
 const PinField = dynamic(() => import("@/features/codex/PinField"), { ssr: false });
 
@@ -32,9 +34,11 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
       async (span: CapturedSpan) => {
         setPhase("checking");
         if (await sendVoice(span.blob)) {
+          haptic("accepted");
           router.replace(next);
           router.refresh();
         } else {
+          haptic("rejected");
           setPhase("rejected");
         }
       },
@@ -64,7 +68,16 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
       <Centre>
         <div className={phase === "rejected" ? "animate-voice-shake" : undefined}>
           <MicButton
-            onClick={() => (recording ? stop() : void recorder.record())}
+            onClick={() => {
+              if (recording) {
+                haptic("stop");
+                stop();
+              } else {
+                haptic("start");
+                void requestTilt();
+                void recorder.record();
+              }
+            }}
             label={recording ? "Stop" : "Speak to enter"}
             level={recording ? recorder.level : 0}
             disabled={!recorder.supported || phase === "checking"}
@@ -117,7 +130,14 @@ function Codex() {
     >
       <Centre docked={docked}>
         <MicButton
-          onClick={() => (recording ? capture.finish() : void capture.record())}
+          onClick={() => {
+            if (recording) {
+              capture.finish();
+            } else {
+              void requestTilt();
+              void capture.record();
+            }
+          }}
           label={recording ? "Stop" : "Speak to Da Vinci"}
           small={docked}
           level={recorder.state === "recording" ? recorder.level : 0}

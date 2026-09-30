@@ -7,7 +7,7 @@ import { serverEnv } from "@/lib/env";
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function createPrismaClient() {
-  // Pooled (transaction-mode) Supabase connection for the app runtime.
+  // Pooled (transaction-mode) Postgres connection for the app runtime.
   const adapter = new PrismaPg({ connectionString: serverEnv().databaseUrl });
   return new PrismaClient({ adapter });
 }
