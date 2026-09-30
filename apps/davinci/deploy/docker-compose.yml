@@ -1,0 +1,119 @@
+# Da Vinci on one Hetzner GEX130 (1× L40S 48 GB). Only Caddy (443) is exposed;
+# the model servers listen on the internal network and the gateway alone talks to them.
+#
+#   cp .env.example .env && edit
+#   docker compose up -d
+#
+# VRAM budget (48 GB): LLM FP8 ≈ 28 GB weights + KV cache (0.55) · embeddings ≈ 1.5 GB (0.05)
+# · STT ≈ 3–6 GB (uses whatever is left). Adjust --gpu-memory-utilization if OOM.
+
+name: davinci
+
+x-gpu: &gpu
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
+  ipc: host
+  restart: unless-stopped
+  volumes:
+    - hf-cache:/root/.cache/huggingface
+
+services:
+  llm:
+    <<: *gpu
+    image: vllm/vllm-openai:${VLLM_TAG:-latest}
+    command: >
+      --model ${LLM_MODEL:-Qwen/Qwen3.8-27B}
+      --served-model-name ${LLM_MODEL:-Qwen/Qwen3.8-27B}
+      --quantization fp8 --kv-cache-dtype fp8
+      --max-model-len ${LLM_MAX_LEN:-32768}
+      --gpu-memory-utilization ${LLM_GPU_FRACTION:-0.55}
+      --enable-prefix-caching
+      --guided-decoding-backend xgrammar
+      --port 8001
+    environment:
+      HF_TOKEN: ${HF_TOKEN:-}
+    expose: ["8001"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8001/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 900s
+
+  embed:
+    <<: *gpu
+    image: vllm/vllm-openai:${VLLM_TAG:-latest}
+    command: >
+      --model ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
+      --served-model-name ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
+      --task embed
+      --max-model-len 8192
+      --gpu-memory-utilization ${EMBED_GPU_FRACTION:-0.05}
+      --port 8003
+    environment:
+      HF_TOKEN: ${HF_TOKEN:-}
+    expose: ["8003"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8003/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 300s
+
+  # Speech-to-text, OpenAI-compatible /v1/audio/transcriptions.
+  # Phase 1 default: faster-whisper (large-v3-turbo) via speaches. Swap STT_IMAGE/STT_MODEL for
+  # Qwen3-ASR once its serving path is validated on the box (see README, "STT backends").
+  stt:
+    <<: *gpu
+    image: ${STT_IMAGE:-ghcr.io/speaches-ai/speaches:latest-cuda}
+    environment:
+      WHISPER__MODEL: ${STT_MODEL:-Systran/faster-whisper-large-v3-turbo}
+      WHISPER__COMPUTE_TYPE: float16
+      ENABLE_UI: "false"
+      UVICORN_PORT: "8002"
+    expose: ["8002"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8002/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 300s
+
+  gateway:
+    build: ..
+    image: davinci-gateway:local
+    restart: unless-stopped
+    environment:
+      DAVINCI_SECRET: ${DAVINCI_SECRET:?set DAVINCI_SECRET in .env}
+      DAVINCI_LLM_URL: http://llm:8001/v1
+      DAVINCI_LLM_MODEL_EVERYDAY: ${LLM_MODEL:-Qwen/Qwen3.8-27B}
+      DAVINCI_LLM_MODEL_HEAVY: ${LLM_MODEL:-Qwen/Qwen3.8-27B}
+      DAVINCI_STT_URL: http://stt:8002/v1
+      DAVINCI_STT_MODEL: ${STT_MODEL:-Systran/faster-whisper-large-v3-turbo}
+      DAVINCI_EMBED_URL: http://embed:8003/v1
+      DAVINCI_EMBED_MODEL: ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
+      DAVINCI_EMBED_DIMENSIONS: ${EMBED_DIMENSIONS:-1024}
+    expose: ["8000"]
+    depends_on:
+      llm: { condition: service_started }
+      embed: { condition: service_started }
+      stt: { condition: service_started }
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DAVINCI_HOST: ${DAVINCI_HOST:?set DAVINCI_HOST in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [gateway]
+
+volumes:
+  hf-cache:
+  caddy-data:
+  caddy-config:

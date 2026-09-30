@@ -1,3 +1,4 @@
+import { DaVinciModel, getDaVinci } from "@/lib/davinci/client";
 import { env } from "@/lib/env";
 
 import { AnthropicModel } from "./anthropic";
@@ -22,6 +23,11 @@ export function getLanguageModel(tier: ModelTier = "everyday"): LanguageModel | 
   const { provider, anthropicKey, everydayModel, heavyModel, openaiKey, openaiModel } =
     env.llm;
   if (provider === "none") return null;
+  if (provider === "davinci" || !provider) {
+    const davinci = getDaVinci();
+    if (davinci) return new DaVinciModel(davinci, tier);
+    if (provider === "davinci") return null;
+  }
   if ((provider === "anthropic" || !provider) && anthropicKey) {
     return new AnthropicModel(
       anthropicKey,

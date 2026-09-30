@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { DaVinciUnavailableError } from "@/lib/davinci/client";
 import { MissingEnvError } from "@/lib/env";
 
 type RouteHandler<Req extends Request, Ctx> = (
@@ -9,7 +10,8 @@ type RouteHandler<Req extends Request, Ctx> = (
 
 /**
  * Wraps a Route Handler so a blank required secret (Supabase, database, …)
- * becomes a clear 503 instead of a generic 500. Other errors are re-thrown.
+ * becomes a clear 503 instead of a generic 500, as does an unreachable Da Vinci gateway.
+ * Other errors are re-thrown.
  */
 export function withRuntimeEnv<Req extends Request, Ctx = unknown>(
   handler: RouteHandler<Req, Ctx>,
@@ -26,6 +28,15 @@ export function withRuntimeEnv<Req extends Request, Ctx = unknown>(
           {
             error: `Service not configured: ${error.variable} is not set on the server.`,
           },
+          { status: 503 },
+        );
+      }
+      if (error instanceof DaVinciUnavailableError) {
+        console.error(
+          `[api] ${request.method} ${new URL(request.url).pathname}: ${error.message}`,
+        );
+        return NextResponse.json(
+          { error: "Da Vinci is unavailable right now. Try again shortly." },
           { status: 503 },
         );
       }

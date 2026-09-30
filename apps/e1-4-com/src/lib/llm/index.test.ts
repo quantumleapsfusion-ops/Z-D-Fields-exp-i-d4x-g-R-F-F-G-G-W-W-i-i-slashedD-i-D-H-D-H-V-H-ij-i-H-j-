@@ -7,6 +7,8 @@ const LLM_VARS = [
   "LLM_MODEL_EVERYDAY",
   "LLM_MODEL_HEAVY",
   "OPENAI_MODEL",
+  "DAVINCI_URL",
+  "DAVINCI_SECRET",
 ];
 
 async function load(vars: Record<string, string>) {
@@ -71,6 +73,36 @@ describe("getLanguageModel", () => {
 
     const none = await load({ LLM_PROVIDER: "none", ANTHROPIC_API_KEY: "a" });
     expect(none.getLanguageModel()).toBeNull();
+  });
+
+  it("prefers Da Vinci over third-party keys when DAVINCI_URL + DAVINCI_SECRET are set", async () => {
+    const { getLanguageModel } = await load({
+      DAVINCI_URL: "https://davinci.example",
+      DAVINCI_SECRET: "s".repeat(32),
+      ANTHROPIC_API_KEY: "a",
+      OPENAI_API_KEY: "o",
+    });
+    expect(getLanguageModel("everyday")).toMatchObject({
+      name: "davinci:everyday",
+      model: "davinci",
+    });
+    expect(getLanguageModel("heavy")).toMatchObject({
+      name: "davinci:heavy",
+      model: "davinci-heavy",
+    });
+  });
+
+  it("ignores a half-configured Da Vinci and never selects it when forced without config", async () => {
+    const half = await load({
+      DAVINCI_URL: "https://davinci.example",
+      ANTHROPIC_API_KEY: "a",
+    });
+    expect(half.getLanguageModel()).toMatchObject({
+      name: expect.stringMatching(/^anthropic:/),
+    });
+
+    const forced = await load({ LLM_PROVIDER: "davinci", ANTHROPIC_API_KEY: "a" });
+    expect(forced.getLanguageModel()).toBeNull();
   });
 });
 

@@ -77,8 +77,15 @@ export function serverEnv() {
  * capability instead of crashing the process.
  */
 export const env = {
+  /** Self-hosted Da Vinci gateway. When both are set it is preferred over every third-party key. */
+  davinci: {
+    url: read("DAVINCI_URL"),
+    secret: read("DAVINCI_SECRET"),
+  },
+
   stt: {
-    provider: read("STT_PROVIDER") as "whisper" | "deepgram" | "none" | undefined,
+    provider: read("STT_PROVIDER") as
+      "davinci" | "whisper" | "deepgram" | "none" | undefined,
     openaiKey: read("OPENAI_API_KEY"),
     whisperModel: read("OPENAI_WHISPER_MODEL") ?? "whisper-1",
     deepgramKey: read("DEEPGRAM_API_KEY"),
@@ -86,7 +93,8 @@ export const env = {
   },
 
   llm: {
-    provider: read("LLM_PROVIDER") as "anthropic" | "openai" | "none" | undefined,
+    provider: read("LLM_PROVIDER") as
+      "davinci" | "anthropic" | "openai" | "none" | undefined,
     anthropicKey: read("ANTHROPIC_API_KEY"),
     /** Everyday Da Vinci work: summaries, labels, translation. */
     everydayModel: read("LLM_MODEL_EVERYDAY") ?? "claude-sonnet-5",
