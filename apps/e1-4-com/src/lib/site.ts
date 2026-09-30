@@ -2,7 +2,7 @@ export const site = {
   name: "e1-4",
   domain: "e1-4.com",
   url: "https://e1-4.com",
-  org: "Earth One Global Coalescent",
+  org: "Earth 1 Coalescent",
   hero: "Greetings Earthling.",
   motto: "Think.",
   subhead: "one voice, five dimensions",
@@ -20,12 +20,12 @@ export const site = {
     "transcription",
     "thinking tools",
     "e1-4",
-    "Earth One Global Coalescent",
+    "Earth 1 Coalescent",
   ],
   philosophyUrl: "https://earth1.co",
   philosophyLabel: "earth1.co",
   description:
-    "e1-4 is a place to think out loud. A voice-first social network with no typing: speak, and your voice becomes transcripts, translations, drawings and an infinite chalkboard for working ideas through. Built by Earth One Global Coalescent.",
+    "e1-4 is a place to think out loud. A voice-first social network with no typing: speak, and your voice becomes transcripts, translations, drawings and an infinite chalkboard for working ideas through. Built by Earth 1 Coalescent.",
 } as const;
 
 export type FeatureStatus = "ready" | "early" | "experimental";
