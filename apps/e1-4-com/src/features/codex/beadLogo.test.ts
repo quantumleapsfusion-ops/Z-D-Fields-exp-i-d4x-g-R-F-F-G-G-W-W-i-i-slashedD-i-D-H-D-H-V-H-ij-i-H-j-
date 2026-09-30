@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { logoAspect, maskFromPixels, sampleColor, sampleMask } from "./beadLogo";
+import { logoAspect, maskFromPixels, sampleMask } from "./beadLogo";
 
-/** 3 × 3 pixels, only the centre is covered, and it is pure red. */
+/** 3 × 3 pixels, only the centre is covered. */
 const centre = maskFromPixels(
   3,
   3,
@@ -33,13 +33,6 @@ describe("sampleMask", () => {
     );
     expect(sampleMask(topRow, 0, 0.9)).toBeGreaterThan(0.9);
     expect(sampleMask(topRow, 0, -0.9)).toBeLessThan(0.1);
-  });
-});
-
-describe("sampleColor", () => {
-  it("returns the glyph's own colour", () => {
-    expect(sampleColor(centre, 0, 0, [0, 0, 0])).toEqual([1, 0, 0]);
-    expect(sampleColor(centre, -0.9, 0.9, [0, 0, 0])).toEqual([0, 0, 0]);
   });
 });
 

@@ -7,7 +7,6 @@ import {
   loadLogoMask,
   type LogoMask,
   logoAspect,
-  sampleColor,
   sampleMask,
 } from "@/features/codex/beadLogo";
 import { watchTilt } from "@/lib/device/tilt";
@@ -22,6 +21,8 @@ const PITCH = 0.03;
 const LOGO_HALF_H = 0.95;
 /** How high the logo stands out of the pool. */
 const LOGO_RISE = 0.5;
+/** The logo's beads are black chrome against the silver pool. */
+const LOGO_INK = 0.14;
 
 /**
  * `rest` is Saturn turning slowly in the pool, `listen` is the live level, `line` raises the
@@ -187,7 +188,7 @@ export default function PinField({
             const u = (x * aspect) / LOGO_HALF_H;
             const v = y / LOGO_HALF_H;
             const ink = sampleMask(drawn, u, v);
-            if (ink > 0.02) sampleColor(drawn, u, v, out);
+            out.fill(LOGO_INK);
             return ink;
           }
         : undefined,
