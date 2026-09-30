@@ -6,5 +6,6 @@ export {
   LiquidMetal,
   type LiquidMetalProps,
   type ShapeFn,
+  type TintFn,
   type Tilt,
 } from "./LiquidMetal";

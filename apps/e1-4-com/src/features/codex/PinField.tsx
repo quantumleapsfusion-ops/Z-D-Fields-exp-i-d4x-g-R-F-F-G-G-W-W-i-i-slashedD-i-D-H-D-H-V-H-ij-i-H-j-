@@ -1,17 +1,23 @@
 "use client";
 
-import { useMemo } from "react";
-import { LiquidMetal, type ShapeFn } from "@earth-one/liquid-metal";
+import { useEffect, useMemo, useState } from "react";
+import { LiquidMetal, type ShapeFn, type TintFn } from "@earth-one/liquid-metal";
 
-import { drawLogoMask, LOGO_ASPECT, sampleMask } from "@/features/codex/beadLogo";
+import {
+  loadLogoMask,
+  type LogoMask,
+  logoAspect,
+  sampleColor,
+  sampleMask,
+} from "@/features/codex/beadLogo";
 import { watchTilt } from "@/lib/device/tilt";
 import type { Form } from "@/lib/gravity/superposition";
 import { BANDS, FRAMES, type SoundPrint, WAVE_POINTS } from "@/lib/sound/analyse";
 
 /** Bead grid for a landscape screen; portrait screens swap the two so the field is always tall enough. */
-const LONG = 168;
-const SHORT = 102;
-const PITCH = 0.043;
+const LONG = 240;
+const SHORT = 146;
+const PITCH = 0.03;
 /** Half the height of the bead-drawn logo, in world units. */
 const LOGO_HALF_H = 0.95;
 /** How high the logo stands out of the pool. */
@@ -126,17 +132,31 @@ export default function PinField({
   /** The metal itself draws the e1-4 Ψπ mark at the centre, and it stirs when spoken to. */
   logo?: boolean;
 }) {
-  const mask = useMemo(() => (logo ? drawLogoMask() : null), [logo]);
+  const [mask, setMask] = useState<LogoMask | null>(null);
+  useEffect(() => {
+    if (!logo) return;
+    let live = true;
+    loadLogoMask()
+      .then((loaded) => {
+        if (live) setMask(loaded);
+      })
+      .catch(() => null);
+    return () => {
+      live = false;
+    };
+  }, [logo]);
+  const drawn = logo && mask && (phase === "rest" || phase === "listen") ? mask : null;
+  const aspect = drawn ? logoAspect(drawn) : 1;
   const voice = phase === "listen" ? Math.min(1, level * 1.8) : 0;
   const shape = useMemo<ShapeFn>(
     () => (x, y, now, u, v) => {
       const r = Math.hypot(x, y);
       const a = Math.atan2(y, x);
       const base = tide(x, y, now);
-      if (mask && (phase === "rest" || phase === "listen")) {
+      if (drawn) {
         const v = y / LOGO_HALF_H;
         const wobble = voice * 0.09 * Math.sin(v * 9 - now * 8);
-        const ink = sampleMask(mask, (x * LOGO_ASPECT) / LOGO_HALF_H + wobble, v);
+        const ink = sampleMask(drawn, (x * aspect) / LOGO_HALF_H + wobble, v);
         const rise =
           ink * (LOGO_RISE + voice * 0.35 + 0.05 * Math.sin(now * 2.4 + x * 3 + y * 2));
         return base * 0.5 + vortexHeight(r, a, now, voice) + rise;
@@ -158,12 +178,26 @@ export default function PinField({
           return base + formHeight(form, x / 2.2, y / 2.2) * 0.9;
       }
     },
-    [phase, print, form, mask, voice],
+    [phase, print, form, drawn, aspect, voice],
+  );
+  const tint = useMemo<TintFn | undefined>(
+    () =>
+      drawn
+        ? (x, y, out) => {
+            const u = (x * aspect) / LOGO_HALF_H;
+            const v = y / LOGO_HALF_H;
+            const ink = sampleMask(drawn, u, v);
+            if (ink > 0.02) sampleColor(drawn, u, v, out);
+            return ink;
+          }
+        : undefined,
+    [drawn, aspect],
   );
 
   return (
     <LiquidMetal
       shape={shape}
+      tint={tint}
       pulse={pulse}
       level={phase === "listen" ? level : 0}
       cols={LONG}
