@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useCarry } from "@/lib/carry";
+import { talkSource } from "@/lib/talk/dimensions";
 import { transcriptText, type TranscribedSegment } from "@/lib/voice/transcript";
 
 export type StreamTranscript = {
@@ -21,9 +22,18 @@ export function useStreamTranscript(): StreamTranscript {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // `?talk=<id>` opens a conversation in this dimension instead of your own stream.
   const requestSegments = useCallback(async () => {
-    const response = await fetch("/api/stream/segments", { cache: "no-store" });
+    const talkId = talkSource(window.location.search);
+    const response = await fetch(
+      talkId ? `/api/talk/${talkId}` : "/api/stream/segments",
+      { cache: "no-store" },
+    );
     if (!response.ok) throw new Error(`Could not load stream (${response.status})`);
+    if (talkId) {
+      const data = (await response.json()) as { notes: TranscribedSegment[] };
+      return data.notes;
+    }
     const data = (await response.json()) as { segments: TranscribedSegment[] };
     return data.segments;
   }, []);
@@ -33,7 +43,7 @@ export function useStreamTranscript(): StreamTranscript {
       const nextText = transcriptText(next);
       setSegments(next);
       setServerText(nextText);
-      if (nextText) setCarryText(nextText);
+      if (nextText && !talkSource(window.location.search)) setCarryText(nextText);
     },
     [setCarryText],
   );

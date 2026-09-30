@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import {
@@ -12,6 +13,7 @@ import { Avatar } from "@/components/Avatar";
 import { formatDay, formatDuration, formatTime } from "@/features/voice-stream/format";
 import { useRecorder, type CapturedSpan } from "@/features/voice-stream/useRecorder";
 import { usePlayback, type Playlist } from "@/lib/audio/store";
+import { DIMENSIONS, inTalk } from "@/lib/talk/dimensions";
 import { usePlaylist } from "@/lib/audio/usePlaylist";
 import type { MemberDTO, NoteDTO, ThreadDTO } from "@/lib/talk/conversations";
 import {
@@ -306,6 +308,19 @@ export function TalkThread({
           </button>
         </div>
       </header>
+
+      <nav aria-label="Open in a dimension" className="mt-4 flex gap-2">
+        {DIMENSIONS.map((dim) => (
+          <Link
+            key={dim.d}
+            href={inTalk(dim.href, conversationId)}
+            aria-label={dim.label}
+            className="border-chalk/20 text-dust hover:border-ochre hover:text-chalk flex h-9 w-9 items-center justify-center rounded-full border font-mono text-xs transition-colors"
+          >
+            {dim.d}D
+          </Link>
+        ))}
+      </nav>
 
       {liveElsewhere.map((m) => (
         <div
