@@ -9,11 +9,21 @@ import { Fluid } from "./fluid";
 /**
  * Returns the height (0..~1) the metal should be pulled toward at world position
  * (x, y) — the field is centred on the origin, `PITCH` apart per bead — at time `t`.
+ * `u`/`v` are the same position normalised to 0..1 across the whole grid.
  */
-export type ShapeFn = (x: number, y: number, t: number) => number;
+export type ShapeFn = (x: number, y: number, t: number, u: number, v: number) => number;
+
+/** How the device leans, each axis in -1..1: `x` as the right edge dips, `y` as the top dips. */
+export type Tilt = { x: number; y: number };
 
 export type LiquidMetalProps = {
   shape: ShapeFn;
+  /** Subscribe to device lean; the metal pools toward the low side and the field leans with it. */
+  tilt?: (onTilt: (tilt: Tilt) => void) => () => void;
+  /** Swap `cols`/`rows` when the element is taller than wide so the pool stays tall enough. */
+  autoOrient?: boolean;
+  /** Stretch the field past the viewport edges so it always covers the screen. */
+  cover?: boolean;
   /** Bump to send one ring out from the centre, e.g. on every spoken word. */
   pulse?: number;
   /** 0..1 live sound level; keeps the surface trembling while someone speaks. */
@@ -33,6 +43,12 @@ export const DEFAULT_PITCH = 0.043;
 const MAX_HEIGHT = 1.15;
 /** Seconds between the stray drops that keep a resting pool alive. */
 const DROP_EVERY = 1.6;
+/** Margin past the screen edges so leaning never shows the end of the field. */
+const COVER = 1.12;
+/** How far the metal pools toward the low side when tilted. */
+const POOL = 0.16;
+/** How far the whole field leans with the device, in radians. */
+const LEAN = 0.18;
 
 /**
  * A pool of liquid metal made of thousands of beads. Each bead sits on a wave-equation
@@ -43,10 +59,13 @@ const DROP_EVERY = 1.6;
  */
 export function LiquidMetal({
   shape,
+  tilt: watchTilt,
+  autoOrient = false,
+  cover = false,
   pulse = 0,
   level = 0,
-  cols = DEFAULT_COLS,
-  rows = DEFAULT_ROWS,
+  cols: colsProp = DEFAULT_COLS,
+  rows: rowsProp = DEFAULT_ROWS,
   pitch = DEFAULT_PITCH,
   interactive = true,
   className,
@@ -61,6 +80,9 @@ export function LiquidMetal({
   useEffect(() => {
     const el = container.current;
     if (!el) return;
+    const portrait = autoOrient && el.clientHeight > el.clientWidth;
+    const cols = portrait ? Math.min(colsProp, rowsProp) : Math.max(colsProp, rowsProp);
+    const rows = portrait ? Math.max(colsProp, rowsProp) : Math.min(colsProp, rowsProp);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -85,8 +107,28 @@ export function LiquidMetal({
       camera.position.set(0, -distance * 0.42, distance * 0.93);
       camera.lookAt(0, 0, 0.2);
       camera.updateProjectionMatrix();
+      camera.updateMatrixWorld();
+      if (!cover) return;
+      let reachX = 0;
+      let reachY = 0;
+      for (const [sx, sy] of [
+        [-1, -1],
+        [1, -1],
+        [-1, 1],
+        [1, 1],
+      ]) {
+        corner.set(sx, sy, 0.5).unproject(camera).sub(camera.position);
+        if (corner.z >= 0) continue;
+        const t = -camera.position.z / corner.z;
+        reachX = Math.max(reachX, Math.abs(camera.position.x + corner.x * t));
+        reachY = Math.max(reachY, Math.abs(camera.position.y + corner.y * t));
+      }
+      beads.scale.set(
+        Math.max(1, (reachX * COVER) / halfW),
+        Math.max(1, (reachY * COVER) / halfH),
+        1,
+      );
     };
-    fit();
 
     const key = new THREE.DirectionalLight(0xffffff, 1.4);
     key.position.set(-3, -2, 6);
@@ -103,6 +145,15 @@ export function LiquidMetal({
     });
     const beads = new THREE.InstancedMesh(geometry, material, cols * rows);
     scene.add(beads);
+    const corner = new THREE.Vector3();
+    fit();
+
+    const tilt: Tilt = { x: 0, y: 0 };
+    const lean: Tilt = { x: 0, y: 0 };
+    const stopTilt = watchTilt?.((next) => {
+      tilt.x = next.x;
+      tilt.y = next.y;
+    });
 
     const fluid = new Fluid(cols, rows);
     const matrix = new THREE.Matrix4();
@@ -117,7 +168,11 @@ export function LiquidMetal({
         const y = (row - (rows - 1) / 2) * pitch;
         for (let col = 0; col < cols; col += 1) {
           const x = (col - (cols - 1) / 2) * pitch;
-          fluid.target[row * cols + col] = Math.min(MAX_HEIGHT, fn(x, y, t));
+          const pool = (x * lean.x + y * lean.y) * POOL;
+          fluid.target[row * cols + col] = Math.max(
+            0,
+            Math.min(MAX_HEIGHT, fn(x, y, t, col / cols, row / rows) + pool),
+          );
         }
       }
     };
@@ -162,6 +217,9 @@ export function LiquidMetal({
       const dt = last ? now - last : 1 / 60;
       last = now;
 
+      lean.x += (tilt.x - lean.x) * 0.08;
+      lean.y += (tilt.y - lean.y) * 0.08;
+      beads.rotation.set(-lean.y * LEAN, lean.x * LEAN, 0);
       fillTarget(now);
       const { pulse: beat, level: lvl } = live.current;
       if (beat !== lastPulse) {
@@ -225,8 +283,8 @@ export function LiquidMetal({
       );
       raycaster.setFromCamera(ndc, camera);
       if (!raycaster.ray.intersectPlane(plane, hit)) return;
-      const cx = hit.x / pitch + (cols - 1) / 2;
-      const cy = hit.y / pitch + (rows - 1) / 2;
+      const cx = hit.x / beads.scale.x / pitch + (cols - 1) / 2;
+      const cy = hit.y / beads.scale.y / pitch + (rows - 1) / 2;
       const moved = Number.isNaN(lastX) ? 1 : Math.hypot(cx - lastX, cy - lastY);
       lastX = cx;
       lastY = cy;
@@ -253,6 +311,7 @@ export function LiquidMetal({
 
     return () => {
       cancelAnimationFrame(frame);
+      stopTilt?.();
       io.disconnect();
       ro.disconnect();
       document.removeEventListener("visibilitychange", sync);
@@ -268,7 +327,7 @@ export function LiquidMetal({
       renderer.dispose();
       el.removeChild(renderer.domElement);
     };
-  }, [cols, rows, pitch, interactive]);
+  }, [colsProp, rowsProp, pitch, interactive, autoOrient, cover, watchTilt]);
 
   return (
     <div ref={container} aria-hidden="true" className={className ?? "h-full w-full"} />

@@ -1,20 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  DEFAULT_COLS,
-  DEFAULT_PITCH,
-  DEFAULT_ROWS,
-  LiquidMetal,
-  type ShapeFn,
-} from "@earth-one/liquid-metal";
+import { LiquidMetal, type ShapeFn } from "@earth-one/liquid-metal";
 
+import { watchTilt } from "@/lib/device/tilt";
 import type { Form } from "@/lib/gravity/superposition";
 import { BANDS, FRAMES, type SoundPrint, WAVE_POINTS } from "@/lib/sound/analyse";
 
-const COLS = DEFAULT_COLS;
-const ROWS = DEFAULT_ROWS;
-const PITCH = DEFAULT_PITCH;
+/** Bead grid for a landscape screen; portrait screens swap the two so the field is always tall enough. */
+const LONG = 168;
+const SHORT = 102;
+const PITCH = 0.043;
 
 /**
  * `rest` is Saturn turning slowly in the pool, `listen` is the live level, `line` raises the
@@ -48,9 +44,8 @@ function formHeight(form: Form, u: number, v: number): number {
   }
 }
 
-function lineHeight(print: SoundPrint, col: number, y: number): number {
-  const w =
-    print.waveform[Math.min(WAVE_POINTS - 1, Math.floor((col / COLS) * WAVE_POINTS))];
+function lineHeight(print: SoundPrint, u: number, y: number): number {
+  const w = print.waveform[Math.min(WAVE_POINTS - 1, Math.floor(u * WAVE_POINTS))];
   return w * 0.9 * Math.exp(-(y * y) / (0.01 + w * 0.5));
 }
 
@@ -83,9 +78,9 @@ function saturnHeight(r: number, a: number, now: number): number {
   return planet + ring;
 }
 
-function reliefHeight(print: SoundPrint, col: number, row: number): number {
-  const frame = Math.min(FRAMES - 1, Math.floor((col / COLS) * FRAMES));
-  const band = Math.min(BANDS - 1, Math.floor((row / ROWS) * BANDS));
+function reliefHeight(print: SoundPrint, u: number, v: number): number {
+  const frame = Math.min(FRAMES - 1, Math.floor(u * FRAMES));
+  const band = Math.min(BANDS - 1, Math.floor(v * BANDS));
   return print.spectrogram[frame][band] ** 2 * (0.35 + print.loudness[frame] * 0.65);
 }
 
@@ -117,11 +112,9 @@ export default function PinField({
   pulse?: number;
 }) {
   const shape = useMemo<ShapeFn>(
-    () => (x, y, now) => {
+    () => (x, y, now, u, v) => {
       const r = Math.hypot(x, y);
       const a = Math.atan2(y, x);
-      const col = Math.round(x / PITCH + (COLS - 1) / 2);
-      const row = Math.round(y / PITCH + (ROWS - 1) / 2);
       const base = tide(x, y, now);
       switch (phase) {
         case "rest":
@@ -129,11 +122,11 @@ export default function PinField({
         case "listen":
           return base;
         case "line":
-          return print ? base + lineHeight(print, col, y) : base;
+          return print ? base + lineHeight(print, u, y) : base;
         case "board":
-          return print ? base + reliefHeight(print, col, row) * 0.3 : base;
+          return print ? base + reliefHeight(print, u, v) * 0.3 : base;
         case "relief":
-          return print ? base + reliefHeight(print, col, row) : base;
+          return print ? base + reliefHeight(print, u, v) : base;
         case "well":
           return wellHeight(r, a, now);
         case "form":
@@ -148,9 +141,12 @@ export default function PinField({
       shape={shape}
       pulse={pulse}
       level={phase === "listen" ? level : 0}
-      cols={COLS}
-      rows={ROWS}
+      cols={LONG}
+      rows={SHORT}
       pitch={PITCH}
+      autoOrient
+      cover
+      tilt={watchTilt}
     />
   );
 }

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { decodeSound } from "@/features/sound/decode";
 import { sendVoice } from "@/features/voice-id/pcm";
 import { useCarry } from "@/lib/carry";
+import { haptic } from "@/lib/device/haptics";
 import type { SoundPrint } from "@/lib/sound/analyse";
 import type { SegmentDTO } from "@/lib/voice/stream";
 
@@ -15,6 +16,22 @@ export type PendingSpan = { id: string; span: CapturedSpan; failed?: boolean };
 
 const SPAN_GRACE_MS = 4000;
 const VOICE_SAMPLE_MIN_MS = 1500;
+/** Waits before each further upload attempt; a phone on a flaky connection gets three tries. */
+const RETRY_DELAYS_MS = [1000, 3000];
+
+async function postWithRetry(form: FormData): Promise<Response> {
+  for (let attempt = 0; ; attempt += 1) {
+    const res = await fetch("/api/stream/segments", { method: "POST", body: form }).catch(
+      () => null,
+    );
+    if (res?.ok) return res;
+    const retryable = !res || res.status >= 500 || res.status === 429;
+    const wait = RETRY_DELAYS_MS[attempt];
+    if (!retryable || wait === undefined)
+      throw new Error(String(res?.status ?? "network"));
+    await new Promise((resolve) => setTimeout(resolve, wait));
+  }
+}
 
 /**
  * Records into the user's stream and, once Stop has settled (every span uploaded), measures this
@@ -39,8 +56,7 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
     form.append("endedAt", item.span.endedAt.toISOString());
     form.append("durationMs", String(Math.round(item.span.durationMs)));
     try {
-      const res = await fetch("/api/stream/segments", { method: "POST", body: form });
-      if (!res.ok) throw new Error(String(res.status));
+      const res = await postWithRetry(form);
       const { segment } = (await res.json()) as { segment: SegmentDTO };
       setSegments((prev) => [...prev, segment].sort((a, b) => a.index - b.index));
       setPending((prev) => prev.filter((p) => p.id !== item.id));
@@ -66,7 +82,8 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
   const recorder = useRecorder(onSpan);
 
   const failedUploads = pending.some((p) => p.failed);
-  const settled = finished && !awaitingSpan && pending.length === 0;
+  const uploading = pending.some((p) => !p.failed);
+  const settled = finished && !awaitingSpan && !uploading;
   const analysing = settled && print === undefined;
   const heard = Boolean(print && print.voicedRatio > 0);
   const silent = settled && print !== undefined && !heard;
@@ -78,11 +95,13 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
       analysed.current = false;
     }
     setFinished(false);
+    haptic("start");
     await recorder.record();
   };
   const pause = () => recorder.pause();
   const finish = () => {
     setAwaitingSpan(recorder.state === "recording");
+    haptic("stop");
     recorder.stop();
     setFinished(true);
   };
@@ -108,6 +127,7 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
 
   useEffect(() => {
     if (!settled || !print || !heard) return;
+    haptic("saved");
     setSound(print);
     router.push("/journey");
   }, [settled, print, heard, setSound, router]);
@@ -118,7 +138,7 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
     setSegments,
     pending,
     failedUploads,
-    carrying: finished && !silent && !failedUploads,
+    carrying: finished && !silent,
     analysing,
     silent,
     record,
