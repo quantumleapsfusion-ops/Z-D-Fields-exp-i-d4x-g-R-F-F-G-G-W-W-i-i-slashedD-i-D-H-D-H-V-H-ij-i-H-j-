@@ -2,7 +2,7 @@ import { fileURLToPath } from "node:url";
 
 import { defineConfig } from "vitest/config";
 
-// Live checks against the real Supabase project. Never run in CI; see docs/live-e2e.md.
+// Live checks against Postgres and Storage. Never run in CI; see docs/live-e2e.md.
 export default defineConfig({
   resolve: {
     alias: {

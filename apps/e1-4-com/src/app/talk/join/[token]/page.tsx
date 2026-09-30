@@ -20,9 +20,7 @@ export default async function JoinPage({
   if (conversation.members.some((m) => m.userId === user.id)) {
     redirect(`/talk/${conversation.id}`);
   }
-  const names = conversation.members.map(
-    (m) => m.user.displayName ?? m.user.email?.split("@")[0] ?? "Earthling",
-  );
+  const names = conversation.members.map((m) => m.user.displayName ?? "Earthling");
 
   return (
     <PageShell>
