@@ -6,11 +6,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { MicMark } from "@/components/MicMark";
 import { readLastEntry, rememberEntry } from "@/features/codex/entries";
-import type { PinPhase } from "@/features/codex/PinField";
+import { pinsFor } from "@/features/codex/stages";
 import { speak } from "@/features/codex/voice";
 import { useCarry } from "@/lib/carry";
-import type { Form } from "@/lib/gravity/superposition";
-import { STAGES, type StageId, nextStage, stageDuration } from "@/lib/journey";
+import { STAGES, nextStage, stageDuration } from "@/lib/journey";
 import { narrate, summarise } from "@/lib/sound/commentary";
 import { readSound } from "@/lib/sound/reading";
 
@@ -115,21 +114,4 @@ function SpeakAgain() {
       <MicMark className="h-full w-full drop-shadow-[0_0_40px_rgba(0,0,0,0.8)]" />
     </Link>
   );
-}
-
-function pinsFor(id: StageId, cycling: Form, observed: Form): [PinPhase, Form] {
-  switch (id) {
-    case "voice":
-      return ["line", observed];
-    case "board":
-      return ["board", observed];
-    case "gravity":
-      return ["relief", observed];
-    case "horizon":
-      return ["well", observed];
-    case "superposition":
-      return ["form", cycling];
-    case "observed":
-      return ["form", observed];
-  }
 }

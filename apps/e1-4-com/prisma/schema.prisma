@@ -79,6 +79,8 @@ model VoiceSegment {
   transcription       String?
   transcriptionStatus TranscriptionStatus @default(PENDING) @map("transcription_status")
   transcriptionError  String?             @map("transcription_error")
+  /// Whether the speaker's voice matched the stream owner's voiceprint; null when not checked.
+  speakerVerified     Boolean?            @map("speaker_verified")
   createdAt           DateTime            @default(now()) @map("created_at") @db.Timestamptz
 
   stream VoiceStream @relation(fields: [streamId], references: [id], onDelete: Cascade)

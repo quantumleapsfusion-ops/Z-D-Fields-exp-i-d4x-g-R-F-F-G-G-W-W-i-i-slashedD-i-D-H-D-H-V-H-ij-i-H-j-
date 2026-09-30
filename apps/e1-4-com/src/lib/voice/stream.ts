@@ -14,6 +14,7 @@ export type SegmentDTO = {
   mimeType: string;
   transcription: string | null;
   transcriptionStatus: VoiceSegment["transcriptionStatus"];
+  speakerVerified: boolean | null;
 };
 
 export function toSegmentDTO(s: VoiceSegment): SegmentDTO {
@@ -26,6 +27,7 @@ export function toSegmentDTO(s: VoiceSegment): SegmentDTO {
     mimeType: s.mimeType,
     transcription: s.transcription,
     transcriptionStatus: s.transcriptionStatus,
+    speakerVerified: s.speakerVerified,
   };
 }
 
@@ -55,6 +57,7 @@ type AppendInput = {
   durationMs: number;
   startedAt: Date;
   endedAt: Date;
+  speakerVerified?: boolean | null;
 };
 
 /**
@@ -94,6 +97,7 @@ export async function appendSegment(input: AppendInput): Promise<VoiceSegment> {
           durationMs: Math.max(0, Math.round(input.durationMs)),
           startedAt: input.startedAt,
           endedAt: input.endedAt,
+          speakerVerified: input.speakerVerified ?? null,
           transcriptionStatus: transcriber ? "PENDING" : "SKIPPED",
         },
       });

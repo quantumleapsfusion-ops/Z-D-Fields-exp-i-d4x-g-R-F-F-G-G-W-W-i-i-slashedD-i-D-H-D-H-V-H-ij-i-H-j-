@@ -133,6 +133,7 @@ export async function exportUserData(userId: string) {
               endedAt: true,
               transcription: true,
               transcriptionStatus: true,
+              speakerVerified: true,
             },
           },
         },

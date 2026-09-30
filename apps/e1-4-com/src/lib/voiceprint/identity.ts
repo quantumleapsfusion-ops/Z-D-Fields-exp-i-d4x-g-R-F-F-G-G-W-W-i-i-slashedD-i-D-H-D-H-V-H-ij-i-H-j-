@@ -77,22 +77,48 @@ async function signIn(admin: Admin, user: User) {
 }
 
 /**
- * The voice is the key: signed in, it refines the speaker's print; signed out, the closest
- * matching speaker is signed in, and an unheard voice is given a stream of its own.
+ * Whether `sample` is the voice of `user`. A match refines the stored print; a different voice
+ * leaves it untouched. A user with no print yet claims this voice as theirs.
+ */
+async function checkSpeaker(
+  admin: Admin,
+  user: User,
+  sample: Voiceprint,
+): Promise<boolean> {
+  const stored = storedPrint(user);
+  if (stored && distance(stored.print, sample) > MATCH_DISTANCE) return false;
+  await remember(admin, user, sample);
+  return true;
+}
+
+/** Speaker check for an entry recorded by a signed-in user. */
+export async function verifySpeaker(
+  userId: string,
+  sample: Voiceprint,
+): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.auth.admin.getUserById(userId);
+  if (error) throw error;
+  return checkSpeaker(admin, data.user, sample);
+}
+
+/**
+ * The voice is the key: signed in, it is checked against the speaker's print; signed out, the
+ * closest matching speaker is signed in, and an unheard voice is given a stream of its own.
  */
 export async function identifyVoice(sample: Voiceprint, current: User | null) {
   const admin = createAdminClient();
   if (current) {
-    await remember(admin, current, sample);
-    return { userId: current.id, enrolled: false };
+    const matched = await checkSpeaker(admin, current, sample);
+    return { userId: current.id, enrolled: false, matched };
   }
   const match = await closestSpeaker(admin, sample);
   if (match) {
     await remember(admin, match, sample);
     await signIn(admin, match);
-    return { userId: match.id, enrolled: false };
+    return { userId: match.id, enrolled: false, matched: true };
   }
   const user = await enroll(admin, sample);
   await signIn(admin, user);
-  return { userId: user.id, enrolled: true };
+  return { userId: user.id, enrolled: true, matched: true };
 }

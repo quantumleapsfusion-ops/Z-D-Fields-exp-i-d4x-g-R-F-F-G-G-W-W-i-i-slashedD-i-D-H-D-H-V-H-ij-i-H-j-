@@ -1,5 +1,6 @@
 "use client";
 
+import QRCode from "qrcode";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import {
@@ -9,6 +10,7 @@ import {
   rotateInviteAction,
 } from "@/app/actions/talk";
 import { Avatar } from "@/components/Avatar";
+import { TalkField } from "@/features/talk/TalkField";
 import { formatDay, formatDuration, formatTime } from "@/features/voice-stream/format";
 import { useRecorder, type CapturedSpan } from "@/features/voice-stream/useRecorder";
 import { usePlayback, type Playlist } from "@/lib/audio/store";
@@ -44,7 +46,9 @@ function postLive(conversationId: string, liveId: string | null, keepalive = fal
 }
 
 /**
- * One conversation: async voice notes and live streams, newest first. Everything plays back as a
+ * One conversation, with no words on screen: the note being heard climbs the 1D-5D spacetime
+ * field, and the thread below is voices as avatars and waveforms. Async voice notes and live
+ * streams, newest first. Everything plays back as a
  * single chronological playlist in the AudioDock, so "play from here" keeps going through the
  * replies. Polls for new notes and live presence while the tab is visible.
  */
@@ -264,67 +268,71 @@ export function TalkThread({
     (recording ? recorder.elapsedMs : 0);
 
   const items = groupThread(notes).reverse();
+  const [lastHeardId, setLastHeardId] = useState<string | null>(null);
+  if (activeId && activeId !== lastHeardId) setLastHeardId(activeId);
+  const fieldNote = notes.find((n) => n.id === (activeId ?? lastHeardId)) ?? null;
 
   return (
     <div className="pb-32">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="font-display truncate text-3xl tracking-tight sm:text-4xl">
-            {initial.title}
-          </h1>
-          <div className="mt-3 flex items-center gap-3">
-            <div className="flex -space-x-2">
-              {members.map((m) => (
-                <Avatar key={m.id} image={m.image} name={m.name} size={28} />
-              ))}
-            </div>
-            <p className="label">
-              {members.map((m) => (m.you ? "You" : m.name)).join(" · ")}
-            </p>
-          </div>
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="sr-only">{initial.title}</h1>
+        <div className="flex -space-x-2" role="list" aria-label="Members">
+          {members.map((m) => (
+            <span key={m.id} role="listitem" title={m.you ? "You" : m.name}>
+              <Avatar image={m.image} name={m.name} size={36} />
+              <span className="sr-only">{m.you ? "You" : m.name}</span>
+            </span>
+          ))}
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <InviteButton
             conversationId={conversationId}
             initialToken={initial.inviteToken}
           />
-          <button
-            type="button"
-            onClick={leave}
-            className="text-dust hover:text-ochre text-sm"
-          >
-            Leave
-          </button>
+          <IconButton onClick={leave} label="Leave" tone="quiet">
+            <path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10" />
+          </IconButton>
         </div>
       </header>
 
       {liveElsewhere.map((m) => (
-        <div
-          key={m.id}
-          className="border-ochre/40 bg-ochre/[0.06] mt-6 flex items-center justify-between gap-4 rounded-sm border px-4 py-3"
-        >
-          <p className="text-chalk text-sm">
-            <span className="text-ochre animate-pulse">●</span> {m.name} is live now
-          </p>
+        <div key={m.id} className="mt-6 flex items-center justify-center gap-4">
+          <span className="relative" title={m.name}>
+            <span
+              aria-hidden="true"
+              className="border-ochre absolute -inset-1.5 animate-pulse rounded-full border-2"
+            />
+            <Avatar image={m.image} name={m.name} size={44} />
+          </span>
           {following === m.liveId ? (
-            <button
-              type="button"
+            <IconButton
               onClick={() => setFollowing(null)}
-              className="text-dust hover:text-ochre text-sm"
+              label={`Stop listening to ${m.name}`}
+              tone="quiet"
             >
-              Stop listening
-            </button>
+              <path d="M6 6h12v12H6z" />
+            </IconButton>
           ) : (
-            <button
-              type="button"
+            <IconButton
               onClick={() => listenLive(m.liveId!)}
-              className="bg-ochre text-blackboard rounded-full px-4 py-1.5 text-sm font-medium"
+              label={`Listen live to ${m.name}`}
+              tone="primary"
             >
-              Listen live
-            </button>
+              <path d="M4 15v-3a8 8 0 0 1 16 0v3M4 15h3v5H4zM17 15h3v5h-3z" />
+            </IconButton>
           )}
         </div>
       ))}
+
+      <div className="mt-4">
+        <TalkField
+          note={fieldNote}
+          playing={Boolean(activeId)}
+          recording={recording}
+          level={recorder.level}
+          audioUrl={noteAudioUrl}
+        />
+      </div>
 
       <Composer
         recorder={recorder}
@@ -336,35 +344,43 @@ export function TalkThread({
       />
 
       {pending.some((p) => p.failed) ? (
-        <button
-          type="button"
-          onClick={() => pending.filter((p) => p.failed).forEach((p) => void upload(p))}
-          className="text-ochre mt-4 text-sm"
-        >
-          Retry failed sends
-        </button>
+        <div className="mt-4 flex justify-center">
+          <IconButton
+            onClick={() => pending.filter((p) => p.failed).forEach((p) => void upload(p))}
+            label="Retry failed sends"
+            tone="alert"
+          >
+            <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" />
+          </IconButton>
+        </div>
       ) : null}
 
       <div className="mt-10">
-        {pending
-          .filter((p) => !p.liveId || p.failed)
-          .map((p) => (
-            <p
-              key={p.id}
-              className="border-chalk/15 text-dust mb-3 rounded-sm border border-dashed px-5 py-3 text-sm"
-            >
-              {p.failed ? "Send failed — kept here until you retry." : "Sending…"}{" "}
-              {formatDuration(p.span.durationMs)}
-            </p>
-          ))}
+        <ul className="mb-3 flex flex-col items-end gap-3">
+          {pending
+            .filter((p) => !p.liveId || p.failed)
+            .map((p) => (
+              <li
+                key={p.id}
+                className={`h-11 rounded-full border border-dashed ${
+                  p.failed ? "border-ochre/60" : "border-chalk/25 animate-pulse"
+                }`}
+                style={{ width: glyphWidth(p.span.durationMs) }}
+              >
+                <span className="sr-only">
+                  {p.failed ? "Send failed" : "Sending"} ·{" "}
+                  {formatDuration(p.span.durationMs)}
+                </span>
+              </li>
+            ))}
+        </ul>
         {items.length === 0 && pending.length === 0 ? (
-          <p className="font-display text-dust text-center text-xl">
-            Nothing said yet. Send a voice note, or go live — they can reply whenever.
-          </p>
+          <p className="sr-only">Nothing said yet.</p>
         ) : (
           <ThreadList
             items={items}
             names={names}
+            members={members}
             viewerId={viewerId}
             activeId={activeId}
             liveIds={new Set(members.map((m) => m.liveId).filter(Boolean) as string[])}
@@ -392,69 +408,74 @@ function Composer({
   onLive: () => void;
   onFinish: () => void;
 }) {
-  const { state, elapsedMs, level, error, supported } = recorder;
+  const { state, elapsedMs, error, supported } = recorder;
   const live = mode === "live";
-  const bars = 28;
 
   return (
-    <section className="border-chalk/10 bg-chalk/[0.02] mt-8 rounded-sm border px-6 py-6">
-      <div className="flex h-12 items-center justify-center gap-[3px]" aria-hidden="true">
-        {Array.from({ length: bars }, (_, i) => {
-          const wave = Math.sin((i / bars) * Math.PI);
-          const h = state === "recording" ? 8 + wave * level * 90 : 6;
-          return (
-            <span
-              key={i}
-              className={`w-[3px] rounded-full transition-[height] duration-75 ${
-                state === "recording" ? "bg-ochre" : "bg-chalk/25"
-              }`}
-              style={{ height: `${Math.min(100, h)}%` }}
-            />
-          );
-        })}
-      </div>
-
-      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+    <section className="mt-2 flex flex-col items-center gap-3">
+      <div className="flex items-center justify-center gap-4">
         {state === "idle" ? (
           <>
-            <Pill
+            <IconButton
               onClick={onNote}
-              primary
-              disabled={!supported}
               label="Record voice note"
-            />
-            <Pill onClick={onLive} disabled={!supported} label="Go live" />
+              tone="primary"
+              size="lg"
+              disabled={!supported}
+            >
+              <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3" />
+            </IconButton>
+            <IconButton onClick={onLive} label="Go live" disabled={!supported}>
+              <path d="M12 12h.01M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8" />
+            </IconButton>
           </>
         ) : null}
         {state === "recording" ? (
-          <Pill onClick={onFinish} primary label={live ? "End live" : "Send"} />
+          <IconButton
+            onClick={onFinish}
+            label={live ? "End live" : "Send"}
+            tone="primary"
+            size="lg"
+          >
+            {live ? <path d="M7 7h10v10H7z" /> : <path d="M5 12h13M13 6l6 6-6 6" />}
+          </IconButton>
         ) : null}
         {state === "paused" ? (
           <>
-            <Pill
+            <IconButton
               onClick={() => void recorder.resume()}
-              primary
               label={live ? "Resume live" : "Keep talking"}
-            />
-            <Pill onClick={onFinish} label={live ? "End live" : "Done"} />
+              tone="primary"
+              size="lg"
+            >
+              <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3" />
+            </IconButton>
+            <IconButton onClick={onFinish} label={live ? "End live" : "Done"}>
+              <path d="M5 12l5 5 9-10" />
+            </IconButton>
           </>
         ) : null}
       </div>
-
-      <p className="text-dust mt-4 text-center font-mono text-xs">
+      {state === "recording" && live ? (
+        <span
+          aria-hidden="true"
+          className="bg-ochre h-2 w-2 animate-pulse rounded-full"
+        />
+      ) : null}
+      <p role="status" className="sr-only">
         {state === "recording"
           ? live
-            ? `● Live · ${formatDuration(liveElapsed)} — anyone here hears you now`
-            : `Recording · ${formatDuration(elapsedMs)}`
+            ? `Live, ${formatDuration(liveElapsed)}. Anyone here hears you now.`
+            : `Recording, ${formatDuration(elapsedMs)}`
           : state === "paused"
-            ? "Paused — what you said so far was sent"
-            : "No call needed: they listen and reply when they're ready."}
+            ? "Paused. What you said so far was sent."
+            : "Send a voice note or go live."}
       </p>
       {error ? (
         <p
           role="alert"
           data-testid="recorder-error"
-          className="text-ochre mt-2 text-center text-sm"
+          className="text-ochre text-center text-sm"
         >
           {error}
         </p>
@@ -463,31 +484,59 @@ function Composer({
   );
 }
 
-function Pill({
+const TONES = {
+  primary: "bg-ochre text-blackboard hover:opacity-90",
+  plain: "border-chalk/25 text-chalk hover:border-ochre hover:text-ochre border",
+  quiet: "text-dust hover:text-ochre",
+  alert: "border-ochre/60 text-ochre border",
+} as const;
+
+function IconButton({
   onClick,
   label,
-  primary,
+  tone = "plain",
+  size = "md",
   disabled,
+  children,
 }: {
   onClick: () => void;
   label: string;
-  primary?: boolean;
+  tone?: keyof typeof TONES;
+  size?: "sm" | "md" | "lg";
   disabled?: boolean;
+  children: React.ReactNode;
 }) {
+  const box = size === "lg" ? "h-16 w-16" : size === "sm" ? "h-8 w-8" : "h-11 w-11";
+  const icon = size === "lg" ? "h-7 w-7" : size === "sm" ? "h-4 w-4" : "h-5 w-5";
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`h-11 rounded-full px-5 font-sans text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-        primary
-          ? "bg-ochre text-blackboard font-medium hover:opacity-90"
-          : "border-chalk/25 text-chalk hover:border-ochre hover:text-ochre border"
-      }`}
+      aria-label={label}
+      title={label}
+      className={`flex shrink-0 items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${box} ${TONES[tone]}`}
     >
-      {label}
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className={icon}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {children}
+      </svg>
     </button>
   );
+}
+
+/** Width of a note's glyph: grows with its length, on a log scale so long notes stay on screen. */
+function glyphWidth(durationMs: number): string {
+  const seconds = Math.max(1, durationMs / 1000);
+  return `${Math.min(100, 28 + Math.log2(seconds) * 12)}%`;
 }
 
 function itemStart(item: ThreadItem<NoteDTO>) {
@@ -497,6 +546,7 @@ function itemStart(item: ThreadItem<NoteDTO>) {
 function ThreadList({
   items,
   names,
+  members,
   viewerId,
   activeId,
   liveIds,
@@ -505,6 +555,7 @@ function ThreadList({
 }: {
   items: ThreadItem<NoteDTO>[];
   names: Map<string, string>;
+  members: MemberDTO[];
   viewerId: string;
   activeId: string | null;
   liveIds: Set<string>;
@@ -518,12 +569,14 @@ function ThreadList({
     if (last?.day === day) last.items.push(item);
     else groups.push({ day, items: [item] });
   }
+  const people = new Map(members.map((m) => [m.id, m]));
 
   return (
     <ol>
       {groups.map((group) => (
         <li key={group.day} className="mb-8">
-          <p className="label mb-4 text-center">{group.day}</p>
+          <div aria-hidden="true" className="hairline mb-4" />
+          <h2 className="sr-only">{group.day}</h2>
           <ol className="space-y-3">
             {group.items.map((item) => {
               const parts = item.kind === "note" ? [item.note] : item.parts;
@@ -531,62 +584,57 @@ function ThreadList({
               const mine = first.senderId === viewerId;
               const active = parts.some((p) => p.id === activeId);
               const liveNow = item.kind === "live" && liveIds.has(item.liveId);
+              const durationMs = parts.reduce((s, p) => s + p.durationMs, 0);
+              const sender = people.get(first.senderId);
+              const name = names.get(first.senderId) ?? "Someone";
+              const transcript = parts
+                .map((p) => p.transcription?.trim())
+                .filter(Boolean)
+                .join(" ");
               return (
                 <li
                   key={item.kind === "note" ? item.note.id : item.liveId}
-                  className={`flex ${mine ? "justify-end" : "justify-start"}`}
+                  className={`flex items-center gap-2 ${mine ? "flex-row-reverse" : ""}`}
                 >
-                  <article
-                    className={`w-full max-w-[85%] rounded-2xl border px-4 py-3 transition-colors ${
+                  <button
+                    type="button"
+                    onClick={() => onPlay(first.id)}
+                    aria-label={`Play ${name} from ${formatTime(first.startedAt)}, ${formatDuration(durationMs)}`}
+                    className={`flex h-12 items-center gap-3 rounded-full border px-1.5 pr-4 transition-colors ${
+                      mine ? "flex-row-reverse pr-1.5 pl-4" : ""
+                    } ${
                       active
-                        ? "border-ochre/50 bg-chalk/[0.05]"
-                        : mine
-                          ? "border-chalk/15 bg-chalk/[0.03]"
-                          : "border-chalk/10"
+                        ? "border-ochre/60 bg-chalk/[0.05]"
+                        : "border-chalk/15 hover:border-chalk/40"
                     }`}
+                    style={{ width: glyphWidth(durationMs) }}
                   >
-                    <header className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => onPlay(first.id)}
-                          aria-label={`Play from ${formatTime(first.startedAt)}`}
-                          className="border-chalk/25 text-chalk hover:border-ochre hover:text-ochre flex h-7 w-7 items-center justify-center rounded-full border transition-colors"
-                        >
-                          <svg
-                            width="10"
-                            height="10"
-                            viewBox="0 0 12 12"
-                            aria-hidden="true"
-                          >
-                            <path d="M2 1l9 5-9 5z" fill="currentColor" />
-                          </svg>
-                        </button>
-                        <span className="text-chalk text-sm">
-                          {names.get(first.senderId) ?? "Someone"}
-                        </span>
-                        <span className="text-dust font-mono text-xs">
-                          {formatTime(first.startedAt)} ·{" "}
-                          {formatDuration(parts.reduce((s, p) => s + p.durationMs, 0))}
-                        </span>
-                        {item.kind === "live" ? (
-                          <span className={`label ${liveNow ? "text-ochre" : ""}`}>
-                            {liveNow ? "● Live" : "Live"}
-                          </span>
-                        ) : null}
-                      </div>
-                      {mine ? (
-                        <button
-                          type="button"
-                          onClick={() => onDelete(parts.map((p) => p.id))}
-                          className="text-dust hover:text-ochre text-xs"
-                        >
-                          Unsend
-                        </button>
+                    <span className="relative shrink-0">
+                      {liveNow ? (
+                        <span
+                          aria-hidden="true"
+                          className="border-ochre absolute -inset-1 animate-pulse rounded-full border-2"
+                        />
                       ) : null}
-                    </header>
-                    <Transcript parts={parts} />
-                  </article>
+                      <Avatar
+                        image={sender?.image}
+                        name={sender?.name ?? name}
+                        size={36}
+                      />
+                    </span>
+                    <Glyph seed={first.id} active={active} />
+                  </button>
+                  {mine ? (
+                    <IconButton
+                      onClick={() => onDelete(parts.map((p) => p.id))}
+                      label="Unsend"
+                      tone="quiet"
+                      size="sm"
+                    >
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </IconButton>
+                  ) : null}
+                  {transcript ? <p className="sr-only">{transcript}</p> : null}
                 </li>
               );
             })}
@@ -597,24 +645,31 @@ function ThreadList({
   );
 }
 
-function Transcript({ parts }: { parts: NoteDTO[] }) {
-  const text = parts
-    .map((p) => p.transcription?.trim())
-    .filter(Boolean)
-    .join(" ");
-  if (text) {
-    return (
-      <p className="font-display text-chalk/90 mt-2 text-base leading-relaxed">{text}</p>
-    );
+/** A note's waveform stand-in: deterministic bars from its id, lit while it plays. */
+function glyphBars(seed: string): number[] {
+  let h = 0;
+  for (let i = 0; i < seed.length; i += 1) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  const bars: number[] = [];
+  for (let i = 0; i < 24; i += 1) {
+    h = (h * 1103515245 + 12345) | 0;
+    bars.push(25 + (Math.abs(h >> 8) % 75) * Math.sin(((i + 1) / 25) * Math.PI));
   }
-  if (parts.some((p) => p.transcriptionStatus === "PENDING")) {
-    return <p className="text-dust mt-2 animate-pulse text-sm">Transcribing…</p>;
-  }
-  if (parts.every((p) => p.transcriptionStatus === "SKIPPED")) return null;
-  if (parts.some((p) => p.transcriptionStatus === "FAILED")) {
-    return <p className="text-ochre/80 mt-2 text-sm">Transcription failed.</p>;
-  }
-  return <p className="text-dust mt-2 text-sm italic">(silence)</p>;
+  return bars;
+}
+
+function Glyph({ seed, active }: { seed: string; active: boolean }) {
+  const bars = glyphBars(seed);
+  return (
+    <span aria-hidden="true" className="flex h-7 min-w-0 flex-1 items-center gap-[3px]">
+      {bars.map((height, i) => (
+        <span
+          key={i}
+          className={`w-[3px] shrink-0 rounded-full ${active ? "bg-ochre" : "bg-chalk/35"}`}
+          style={{ height: `${Math.min(100, height)}%` }}
+        />
+      ))}
+    </span>
+  );
 }
 
 function InviteButton({
@@ -626,17 +681,33 @@ function InviteButton({
 }) {
   const [token, setToken] = useState(initialToken);
   const [url, setUrl] = useState<string | null>(null);
+  const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [pending, start] = useTransition();
 
   const linkFor = (t: string) => `${window.location.origin}/talk/join/${t}`;
+
+  useEffect(() => {
+    if (!url) return;
+    let cancelled = false;
+    void QRCode.toString(url, {
+      type: "svg",
+      margin: 1,
+      color: { dark: "#f1ede1", light: "#000000" },
+    }).then((svg) => {
+      if (!cancelled) setQr(svg);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
 
   const open = async () => {
     const link = linkFor(token);
     setUrl(link);
     if (typeof navigator.share === "function") {
       try {
-        await navigator.share({ title: "Talk with me on e1-4", url: link });
+        await navigator.share({ url: link });
         return;
       } catch {
         // Dismissed or unsupported; fall back to copy.
@@ -660,34 +731,53 @@ function InviteButton({
 
   return (
     <div className="relative">
-      <button
-        type="button"
+      <IconButton
         onClick={() => (url ? setUrl(null) : void open())}
-        className="border-chalk/25 hover:border-ochre hover:text-ochre rounded-full border px-4 py-1.5 text-sm"
+        label="Invite"
+        tone="plain"
       >
-        Invite
-      </button>
+        <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />
+      </IconButton>
       {url ? (
-        <div className="border-chalk/15 bg-blackboard absolute right-0 z-20 mt-2 w-80 rounded-sm border p-4 shadow-xl">
-          <p className="label mb-2">Invite link</p>
-          <input
-            readOnly
-            value={url}
-            onFocus={(e) => e.currentTarget.select()}
-            className="border-chalk/15 w-full rounded-sm border bg-transparent px-2 py-1 font-mono text-xs"
-          />
-          <p className="text-dust mt-2 text-xs">
-            {copied ? "Copied. " : ""}Anyone who opens it and signs in joins this
-            conversation.
-          </p>
-          <button
-            type="button"
-            disabled={pending}
-            onClick={rotate}
-            className="text-dust hover:text-ochre mt-3 text-xs disabled:opacity-50"
-          >
-            Make a new link (old one stops working)
-          </button>
+        <div className="border-chalk/15 bg-blackboard absolute right-0 z-20 mt-2 flex w-56 flex-col items-center gap-3 rounded-sm border p-4 shadow-xl">
+          {qr ? (
+            <div
+              className="w-44 overflow-hidden rounded-sm"
+              role="img"
+              aria-label="Invite code"
+              dangerouslySetInnerHTML={{ __html: qr }}
+            />
+          ) : (
+            <div aria-hidden="true" className="bg-chalk/5 h-44 w-44 animate-pulse" />
+          )}
+          <input readOnly value={url} aria-label="Invite link" className="sr-only" />
+          <div className="flex items-center gap-2">
+            <IconButton
+              onClick={() =>
+                void navigator.clipboard.writeText(url).then(
+                  () => setCopied(true),
+                  () => setCopied(false),
+                )
+              }
+              label={copied ? "Copied" : "Copy invite link"}
+              size="sm"
+            >
+              {copied ? (
+                <path d="M5 12l5 5 9-10" />
+              ) : (
+                <path d="M8 8h11v11H8zM5 16V5h11" />
+              )}
+            </IconButton>
+            <IconButton
+              onClick={rotate}
+              label="Make a new link (old one stops working)"
+              tone="quiet"
+              size="sm"
+              disabled={pending}
+            >
+              <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" />
+            </IconButton>
+          </div>
         </div>
       ) : null}
     </div>

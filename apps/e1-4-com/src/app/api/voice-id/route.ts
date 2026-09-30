@@ -42,8 +42,8 @@ export async function POST(request: Request) {
 
   const current = await getCurrentUser().catch(() => null);
   try {
-    const { enrolled } = await identifyVoice(print, current);
-    return NextResponse.json({ ok: true, enrolled });
+    const { enrolled, matched } = await identifyVoice(print, current);
+    return NextResponse.json({ ok: true, enrolled, matched });
   } catch (err) {
     console.error("voice-id failed", err);
     return NextResponse.json({ error: "Voice not recognised" }, { status: 500 });
