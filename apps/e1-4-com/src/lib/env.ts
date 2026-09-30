@@ -96,8 +96,11 @@ export const env = {
     provider: read("LLM_PROVIDER") as
       "davinci" | "anthropic" | "openai" | "none" | undefined,
     anthropicKey: read("ANTHROPIC_API_KEY"),
-    /** Vercel AI Gateway key; when set, Anthropic calls go through the gateway. */
-    gatewayKey: read("AI_GATEWAY_API_KEY"),
+    /**
+     * Vercel AI Gateway key; when set, Anthropic calls go through the gateway. On Vercel the
+     * deployment's OIDC token authenticates the gateway without a key.
+     */
+    gatewayKey: read("AI_GATEWAY_API_KEY") ?? read("VERCEL_OIDC_TOKEN"),
     gatewayUrl: read("AI_GATEWAY_BASE_URL"),
     /** Everyday Da Vinci work: summaries, labels, translation. */
     everydayModel: read("LLM_MODEL_EVERYDAY") ?? "claude-sonnet-5",
