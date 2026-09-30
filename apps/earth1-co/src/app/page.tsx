@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { CiceroPassage } from "@/components/CiceroPassage";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -63,6 +64,20 @@ export default function HomePage() {
           <span className="mt-3 block text-white/40">{site.quote.author}</span>
         </figcaption>
       </figure>
+
+      <div className="mt-[30svh] w-full text-left font-serif">
+        <CiceroPassage />
+
+        <section
+          aria-labelledby="equations-heading"
+          className="mx-auto mt-32 max-w-[92rem] pb-16"
+        >
+          <h2 id="equations-heading" className="text-center text-2xl sm:text-3xl">
+            Equations
+          </h2>
+          <div className="mx-auto mt-10 min-h-48 max-w-[70ch] rounded-sm border border-dashed border-white/25" />
+        </section>
+      </div>
     </>
   );
 }
