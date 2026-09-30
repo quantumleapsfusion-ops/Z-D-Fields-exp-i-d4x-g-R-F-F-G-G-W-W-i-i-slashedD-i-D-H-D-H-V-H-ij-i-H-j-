@@ -1,10 +1,9 @@
 "use client";
 
-import { Logo } from "@earth-one/ui";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 import type { PinPhase } from "@/features/codex/PinField";
 import { sendVoice } from "@/features/voice-id/pcm";
@@ -14,6 +13,21 @@ import { haptic } from "@/lib/device/haptics";
 import { requestTilt } from "@/lib/device/tilt";
 
 const PinField = dynamic(() => import("@/features/codex/PinField"), { ssr: false });
+
+const BUZZ_LEVEL = 0.35;
+const BUZZ_GAP_MS = 220;
+
+/** A short buzz on each loud moment of speech, so the phone answers the voice as the beads do. */
+function useVoiceBuzz(level: number) {
+  const last = useRef(0);
+  useEffect(() => {
+    if (level < BUZZ_LEVEL) return;
+    const now = performance.now();
+    if (now - last.current < BUZZ_GAP_MS) return;
+    last.current = now;
+    haptic("voice");
+  }, [level]);
+}
 
 /** Da Vinci's front door: one microphone over a field of liquid metal. Everything follows from the sound. */
 export function MicPortal({ signedIn }: { signedIn: boolean }) {
@@ -47,6 +61,7 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
   );
   const recording = recorder.state === "recording";
   const { stop } = recorder;
+  useVoiceBuzz(recording ? recorder.level : 0);
 
   useEffect(() => {
     if (!recording) return;
@@ -104,6 +119,7 @@ function Codex() {
   const { recorder, analysing, carrying, silent, failedUploads } = capture;
   const recording = recorder.state !== "idle";
   const docked = recording || carrying;
+  useVoiceBuzz(recorder.state === "recording" ? recorder.level : 0);
 
   const status = recorder.error
     ? recorder.error
@@ -184,7 +200,7 @@ function Frame({
   return (
     <main className="bg-blackboard relative flex h-dvh flex-col items-center justify-center overflow-hidden px-6">
       <div className="absolute inset-0">
-        <PinField {...pins} />
+        <PinField {...pins} logo />
       </div>
       <div className="absolute top-[max(1.25rem,env(safe-area-inset-top))] right-6 z-10">
         {corner}
@@ -252,6 +268,10 @@ function Centre({ docked, children }: { docked?: boolean; children: ReactNode })
   );
 }
 
+/**
+ * The logo itself is drawn in beads by the field behind, so the button over it is clear. Docked
+ * while listening, it becomes a small ring that breathes with the voice.
+ */
 function MicButton({
   onClick,
   label,
@@ -271,27 +291,19 @@ function MicButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className={`relative transition-all duration-700 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
-        small ? "h-24 w-24" : "h-44 w-44 sm:h-56 sm:w-56"
+      className={`relative rounded-full transition-all duration-700 disabled:cursor-not-allowed disabled:opacity-50 ${
+        small ? "h-20 w-20" : "h-64 w-48 sm:h-80 sm:w-60"
       }`}
     >
-      <span
-        aria-hidden="true"
-        className="absolute inset-0 rounded-[30%] bg-[#1f6bff]/30 blur-xl transition-transform duration-100"
-        style={{ transform: `scale(${1 + Math.min(level, 1) * 0.9})` }}
-      />
-      <E14Mark />
+      {small ? (
+        <span
+          aria-hidden="true"
+          className="absolute inset-3 rounded-full border border-white/50 shadow-[0_0_24px_rgba(56,189,248,0.35)] transition-transform duration-100"
+          style={{ transform: `scale(${1 + Math.min(level, 1) * 0.35})` }}
+        >
+          <span className="absolute inset-[38%] rounded-[3px] bg-white/80" />
+        </span>
+      ) : null}
     </button>
-  );
-}
-
-/** The e1-4 Ψπ mark, sized to its container. */
-function E14Mark() {
-  return (
-    <Logo
-      size={224}
-      title="e1-4"
-      className="relative !h-full !w-full drop-shadow-[0_0_40px_rgba(56,189,248,0.25)]"
-    />
   );
 }
