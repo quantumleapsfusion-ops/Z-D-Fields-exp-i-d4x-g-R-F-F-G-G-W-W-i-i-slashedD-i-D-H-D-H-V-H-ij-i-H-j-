@@ -33,31 +33,10 @@ Paste `apps/e1-4-com/.env.production.example` into **Settings -> Environment Var
 | Preview     | leave **unset** — the app falls back to the deployment URL |
 | Development | `http://localhost:3000` (from `.env.local`)                |
 
-> The app derives the OAuth callback as `${NEXT_PUBLIC_SITE_URL}/auth/callback`
-> (`apps/e1-4-com/src/lib/auth/actions.ts`). Supabase rejects callbacks that are not on its
-> Redirect URL allow-list, so the two lists below must stay in sync.
+## 3. Supabase Storage
 
-## 3. OAuth redirect URLs
-
-### Supabase -> Authentication -> URL Configuration
-
-- **Site URL**: `https://e1-4.com`
-- **Redirect URLs** (add every one):
-  - `https://e1-4.com/auth/callback`
-  - `https://www.e1-4.com/auth/callback`
-  - `https://*-<vercel-team-slug>.vercel.app/auth/callback` (wildcard for Preview deployments)
-  - `http://localhost:3000/auth/callback`
-
-### Providers (Google / Facebook / Microsoft consoles)
-
-The redirect URI registered with each identity provider is Supabase's, not ours, and does **not**
-change between environments:
-
-```
-https://<prod-project-ref>.supabase.co/auth/v1/callback
-```
-
-If you use a separate Supabase project for staging, register that project's callback too.
+Create the `avatars` bucket as public and the `voice` bucket as private. The app uses the
+service-role key only from server-side Storage code.
 
 ## 4. Database
 
@@ -66,22 +45,19 @@ once per Supabase project from a trusted machine with `DIRECT_URL` set:
 
 ```bash
 cd apps/e1-4-com
-npm run prisma:deploy                          # prisma/migrations (v1 then v2, in order)
-supabase link --project-ref <ref> && supabase db push   # supabase/migrations (RLS + buckets)
+npm run prisma:deploy
 ```
+
+The SQL files in `supabase/migrations/` are retained. Create Storage buckets in the dashboard;
+do not apply legacy Auth-trigger setup for voice identity.
 
 ## 5. Smoke check after the first deploy
 
 ```bash
-E2E_BASE_URL=https://e1-4.com npm run test:e2e   # public surfaces; add E2E_STORAGE_STATE for the signed-in flow
-npm run test:live                                # real Supabase: auth trigger, RLS, buckets, share, hardDeleteUser
+E2E_BASE_URL=https://e1-4.com npm run test:e2e
+npm run test:live
 ```
 
-`test:live` needs the Supabase env vars (service role included) and creates/destroys throwaway
-`devin-e2e-*@example.com` users. Set `LIVE_BASE_URL=http://localhost:3000` with a dev server running
-to also cover the logged-out share page. Note: deleting an auth user any other way (dashboard,
-`auth.admin.deleteUser`) leaves its `public.users` row behind — there is no FK to `auth.users`; only
-`hardDeleteUser` removes everything.
-
-Then by hand: sign in with each provider, upload an avatar, record a Voice Stream segment, create a
-share link and open it in a private window.
+`test:live` requires `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_SUPABASE_URL` and
+`SUPABASE_SERVICE_ROLE_KEY`. It creates disposable Prisma users and deletes their test data.
+Set `LIVE_APP_URL=http://localhost:3000` with an app running to include the public share-page test.

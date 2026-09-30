@@ -4,10 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getUserId } from "@/lib/auth/user";
+import { endSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { hardDeleteUser } from "@/lib/privacy/hard-delete";
 import { AVATARS_BUCKET, storage } from "@/lib/storage";
-import { createClient } from "@/lib/supabase/server";
 
 const AVATAR_TYPES: Record<string, string> = {
   "image/png": "png",
@@ -103,7 +103,6 @@ export async function deleteAccount(
     return { ok: false, message: "Type DELETE to confirm." };
   }
   await hardDeleteUser(userId);
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  await endSession();
   redirect("/?deleted=1");
 }

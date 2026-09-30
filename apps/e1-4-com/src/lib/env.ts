@@ -27,9 +27,8 @@ function readNumber(name: string, fallback: number): number {
 }
 
 /**
- * Origin used to build absolute URLs (OAuth callback). Explicit `NEXT_PUBLIC_SITE_URL` wins;
- * on Vercel, fall back to the production domain or the per-deployment URL so Preview
- * deployments get a callback on their own host.
+ * Explicit `NEXT_PUBLIC_SITE_URL` wins; on Vercel, fall back to the production
+ * domain or per-deployment URL.
  */
 function resolveSiteUrl(): string {
   const explicit = read("NEXT_PUBLIC_SITE_URL");
@@ -49,12 +48,6 @@ function resolveSiteUrl(): string {
 export const publicEnv = {
   get supabaseUrl(): string {
     return required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL);
-  },
-  get supabaseAnonKey(): string {
-    return required(
-      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    );
   },
   get siteUrl(): string {
     return resolveSiteUrl();
@@ -96,8 +89,11 @@ export const env = {
     provider: read("LLM_PROVIDER") as
       "davinci" | "anthropic" | "openai" | "none" | undefined,
     anthropicKey: read("ANTHROPIC_API_KEY"),
-    /** Vercel AI Gateway key; when set, Anthropic calls go through the gateway. */
-    gatewayKey: read("AI_GATEWAY_API_KEY"),
+    /**
+     * Vercel AI Gateway key; when set, Anthropic calls go through the gateway. On Vercel the
+     * deployment's OIDC token authenticates the gateway without a key.
+     */
+    gatewayKey: read("AI_GATEWAY_API_KEY") ?? read("VERCEL_OIDC_TOKEN"),
     gatewayUrl: read("AI_GATEWAY_BASE_URL"),
     /** Everyday Da Vinci work: summaries, labels, translation. */
     everydayModel: read("LLM_MODEL_EVERYDAY") ?? "claude-sonnet-5",

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import {
@@ -12,6 +13,7 @@ import { Avatar } from "@/components/Avatar";
 import { formatDay, formatDuration, formatTime } from "@/features/voice-stream/format";
 import { useRecorder, type CapturedSpan } from "@/features/voice-stream/useRecorder";
 import { usePlayback, type Playlist } from "@/lib/audio/store";
+import { DIMENSIONS, inTalk } from "@/lib/talk/dimensions";
 import { usePlaylist } from "@/lib/audio/usePlaylist";
 import type { MemberDTO, NoteDTO, ThreadDTO } from "@/lib/talk/conversations";
 import {
@@ -23,6 +25,8 @@ import {
   reconcileNotes,
   type ThreadItem,
 } from "@/lib/talk/presence";
+
+import { liveIdFor, type RecordingSession } from "./liveSpan";
 
 type Pending = {
   id: string;
@@ -61,7 +65,7 @@ export function TalkThread({
   const [pending, setPending] = useState<Pending[]>([]);
   const [mode, setMode] = useState<Mode>("note");
   const [currentLiveId, setCurrentLiveId] = useState<string | null>(null);
-  const liveIdRef = useRef<string | null>(null);
+  const sessions = useRef<RecordingSession[]>([]);
   const [following, setFollowing] = useState<string | null>(null);
   const lastHeard = useRef<string | null>(null);
   const notesRef = useRef(notes);
@@ -123,7 +127,11 @@ export function TalkThread({
 
   const onSpan = useCallback(
     (span: CapturedSpan) => {
-      const item = { id: crypto.randomUUID(), span, liveId: liveIdRef.current };
+      const item = {
+        id: crypto.randomUUID(),
+        span,
+        liveId: liveIdFor(span.startedAt, sessions.current),
+      };
       setPending((prev) => [...prev, item]);
       void upload(item);
     },
@@ -136,7 +144,10 @@ export function TalkThread({
 
   const start = async (next: Mode) => {
     const liveId = next === "live" ? crypto.randomUUID() : null;
-    liveIdRef.current = liveId;
+    sessions.current = [
+      ...sessions.current.slice(-20),
+      { liveId, startedAt: Date.now() },
+    ];
     setCurrentLiveId(liveId);
     setMode(next);
     await recorder.record();
@@ -297,6 +308,19 @@ export function TalkThread({
           </button>
         </div>
       </header>
+
+      <nav aria-label="Open in a dimension" className="mt-4 flex gap-2">
+        {DIMENSIONS.map((dim) => (
+          <Link
+            key={dim.d}
+            href={inTalk(dim.href, conversationId)}
+            aria-label={dim.label}
+            className="border-chalk/20 text-dust hover:border-ochre hover:text-chalk flex h-9 w-9 items-center justify-center rounded-full border font-mono text-xs transition-colors"
+          >
+            {dim.d}D
+          </Link>
+        ))}
+      </nav>
 
       {liveElsewhere.map((m) => (
         <div

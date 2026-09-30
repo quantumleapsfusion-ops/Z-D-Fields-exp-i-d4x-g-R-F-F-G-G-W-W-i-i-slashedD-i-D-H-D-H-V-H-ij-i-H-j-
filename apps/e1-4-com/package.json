@@ -2,7 +2,7 @@
   "name": "e1-4-com",
   "version": "0.1.0",
   "private": true,
-  "description": "e1-4.com — earth life-forms. Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board on Next.js + Supabase.",
+  "description": "e1-4.com — earth life-forms. Voice Stream, Da Vinci, Infinity Chalkboard and Gravity Board on Next.js, Prisma and Supabase Storage.",
   "engines": {
     "node": ">=22"
   },
@@ -23,13 +23,11 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@earth-one/liquid-metal": "*",
     "@earth-one/spacetime": "*",
     "@earth-one/ui": "*",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
-    "@simplewebauthn/browser": "^13.3.0",
-    "@simplewebauthn/server": "^13.3.3",
-    "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.1",
     "framer-motion": "13.4.0",
     "idb": "^8.0.3",

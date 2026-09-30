@@ -9,7 +9,7 @@ type RouteHandler<Req extends Request, Ctx> = (
 ) => Promise<Response> | Response;
 
 /**
- * Wraps a Route Handler so a blank required secret (Supabase, database, …)
+ * Wraps a Route Handler so a blank required service variable
  * becomes a clear 503 instead of a generic 500, as does an unreachable Da Vinci gateway.
  * Other errors are re-thrown.
  */
