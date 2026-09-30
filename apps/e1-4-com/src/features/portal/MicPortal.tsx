@@ -19,6 +19,21 @@ import { requestTilt } from "@/lib/device/tilt";
 
 const PinField = dynamic(() => import("@/features/codex/PinField"), { ssr: false });
 
+const BUZZ_LEVEL = 0.35;
+const BUZZ_GAP_MS = 220;
+
+/** A short buzz on each loud moment of speech, so the phone answers the voice as the beads do. */
+function useVoiceBuzz(level: number) {
+  const last = useRef(0);
+  useEffect(() => {
+    if (level < BUZZ_LEVEL) return;
+    const now = performance.now();
+    if (now - last.current < BUZZ_GAP_MS) return;
+    last.current = now;
+    haptic("voice");
+  }, [level]);
+}
+
 /** Da Vinci's front door: one microphone over a field of liquid metal. Everything follows from the sound. */
 export function MicPortal({ signedIn }: { signedIn: boolean }) {
   return signedIn ? <Codex /> : <VoiceGate />;
@@ -59,6 +74,7 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
     ),
   );
   const recording = recorder.state === "recording";
+  useVoiceBuzz(recorder.state === "recording" ? recorder.level : 0);
   const { stop } = recorder;
 
   useEffect(() => {
@@ -117,6 +133,7 @@ function Codex() {
   });
   const { recorder, analysing, silent, failedUploads } = capture;
   const recording = recorder.state !== "idle";
+  useVoiceBuzz(recorder.state === "recording" ? recorder.level : 0);
   const busy = talk.phase === "thinking" || talk.phase === "speaking";
 
   const start = async () => {
@@ -211,7 +228,7 @@ function Frame({
   return (
     <main className="bg-blackboard relative flex h-dvh flex-col items-center justify-center overflow-hidden px-6">
       <div className="absolute inset-0">
-        <PinField {...pins} />
+        <PinField {...pins} logo />
       </div>
       <div className="absolute top-[max(1.25rem,env(safe-area-inset-top))] right-6 z-10">
         {corner}
@@ -302,16 +319,20 @@ function MicButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className={`relative transition-all duration-700 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
-        small ? "h-24 w-24" : "h-44 w-44 sm:h-56 sm:w-56"
+      className={`relative rounded-full transition-all duration-700 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+        small ? "h-24 w-24" : "h-64 w-48 sm:h-80 sm:w-60"
       }`}
     >
-      <span
-        aria-hidden="true"
-        className="absolute inset-0 rounded-[30%] bg-[#1f6bff]/30 blur-xl transition-transform duration-100"
-        style={{ transform: `scale(${1 + Math.min(glow, 1) * 0.9})` }}
-      />
-      <E14Mark />
+      {small ? (
+        <>
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 rounded-full bg-[#1f6bff]/30 blur-xl transition-transform duration-100"
+            style={{ transform: `scale(${1 + Math.min(glow, 1) * 0.9})` }}
+          />
+          <E14Mark />
+        </>
+      ) : null}
     </button>
   );
 }

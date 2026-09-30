@@ -13,11 +13,19 @@ import { Fluid } from "./fluid";
  */
 export type ShapeFn = (x: number, y: number, t: number, u: number, v: number) => number;
 
+/**
+ * Colours a bead at world position (x, y): writes an sRGB colour (0..1) into `out` and returns how
+ * much of it to use, 0 leaving the bead plain metal and 1 fully coloured.
+ */
+export type TintFn = (x: number, y: number, out: [number, number, number]) => number;
+
 /** How the device leans, each axis in -1..1: `x` as the right edge dips, `y` as the top dips. */
 export type Tilt = { x: number; y: number };
 
 export type LiquidMetalProps = {
   shape: ShapeFn;
+  /** Colour some beads, e.g. so the metal draws a coloured mark. */
+  tint?: TintFn;
   /** Subscribe to device lean; the metal pools toward the low side and the field leans with it. */
   tilt?: (onTilt: (tilt: Tilt) => void) => () => void;
   /** Swap `cols`/`rows` when the element is taller than wide so the pool stays tall enough. */
@@ -59,6 +67,7 @@ const LEAN = 0.18;
  */
 export function LiquidMetal({
   shape,
+  tint,
   tilt: watchTilt,
   autoOrient = false,
   cover = false,
@@ -71,11 +80,11 @@ export function LiquidMetal({
   className,
 }: LiquidMetalProps) {
   const container = useRef<HTMLDivElement>(null);
-  const live = useRef({ shape, pulse, level });
+  const live = useRef({ shape, tint, pulse, level });
 
   useEffect(() => {
-    live.current = { shape, pulse, level };
-  }, [shape, pulse, level]);
+    live.current = { shape, tint, pulse, level };
+  }, [shape, tint, pulse, level]);
 
   useEffect(() => {
     const el = container.current;
@@ -139,7 +148,7 @@ export function LiquidMetal({
 
     const geometry = new THREE.IcosahedronGeometry(pitch * 0.34, 1);
     const material = new THREE.MeshStandardMaterial({
-      color: 0xa9aeb6,
+      color: 0xffffff,
       metalness: 1,
       roughness: 0.18,
     });
@@ -156,11 +165,38 @@ export function LiquidMetal({
     });
 
     const fluid = new Fluid(cols, rows);
+    // Waves and splashes are tuned in cells at the default pitch; keep them the same size in the world.
+    const cellsPerDefault = DEFAULT_PITCH / pitch;
+    fluid.waveSpeed *= cellsPerDefault;
     const matrix = new THREE.Matrix4();
     const position = new THREE.Vector3();
     const scale = new THREE.Vector3();
     const rotation = new THREE.Quaternion();
     const slope: [number, number] = [0, 0];
+
+    const plain = new THREE.Color(0xa9aeb6);
+    const color = new THREE.Color();
+    const mark = new THREE.Color();
+    const rgb: [number, number, number] = [0, 0, 0];
+    let painted: TintFn | undefined | null = null;
+    const paint = () => {
+      const fn = live.current.tint;
+      if (fn === painted) return;
+      painted = fn;
+      for (let row = 0; row < rows; row += 1) {
+        const y = (row - (rows - 1) / 2) * pitch;
+        for (let col = 0; col < cols; col += 1) {
+          const x = (col - (cols - 1) / 2) * pitch;
+          const amount = fn ? Math.max(0, Math.min(1, fn(x, y, rgb))) : 0;
+          color.copy(plain);
+          if (amount > 0) {
+            color.lerp(mark.setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace), amount);
+          }
+          beads.setColorAt(row * cols + col, color);
+        }
+      }
+      if (beads.instanceColor) beads.instanceColor.needsUpdate = true;
+    };
 
     const fillTarget = (t: number) => {
       const fn = live.current.shape;
@@ -185,6 +221,8 @@ export function LiquidMetal({
           const i = row * cols + col;
           const z = Math.max(-0.4, Math.min(MAX_HEIGHT * 1.3, h[i]));
           fluid.gradient(col, row, slope);
+          slope[0] *= cellsPerDefault;
+          slope[1] *= cellsPerDefault;
           // Beads run a little downhill and swell as they rise: a bulge, not a pin.
           const x = (col - (cols - 1) / 2) * pitch - slope[0] * pitch * 2.2;
           const s =
@@ -196,6 +234,7 @@ export function LiquidMetal({
         }
       }
       beads.instanceMatrix.needsUpdate = true;
+      paint();
       renderer.render(scene, camera);
     };
 
@@ -224,20 +263,25 @@ export function LiquidMetal({
       const { pulse: beat, level: lvl } = live.current;
       if (beat !== lastPulse) {
         lastPulse = beat;
-        fluid.splash((cols - 1) / 2, (rows - 1) / 2, 4, -9);
+        fluid.splash((cols - 1) / 2, (rows - 1) / 2, 4 * cellsPerDefault, -9);
       }
       if (lvl > 0.02) {
         // A voice keeps the pool trembling in proportion to its loudness.
         fluid.splash(
           (cols - 1) / 2 + (Math.random() - 0.5) * cols * 0.3,
           (rows - 1) / 2 + (Math.random() - 0.5) * rows * 0.3,
-          3,
+          3 * cellsPerDefault,
           -lvl * 6,
         );
       }
       if (now > nextDrop) {
         nextDrop = now + DROP_EVERY * (0.6 + Math.random());
-        fluid.splash(Math.random() * cols, Math.random() * rows, 2.5, -2.4);
+        fluid.splash(
+          Math.random() * cols,
+          Math.random() * rows,
+          2.5 * cellsPerDefault,
+          -2.4,
+        );
       }
       fluid.step(dt);
       place();
@@ -288,7 +332,12 @@ export function LiquidMetal({
       const moved = Number.isNaN(lastX) ? 1 : Math.hypot(cx - lastX, cy - lastY);
       lastX = cx;
       lastY = cy;
-      fluid.splash(cx, cy, 3.2, -force * Math.min(1, moved / 3 + 0.25));
+      fluid.splash(
+        cx,
+        cy,
+        3.2 * cellsPerDefault,
+        -force * Math.min(1, moved / 3 / cellsPerDefault + 0.25),
+      );
     };
     const onMove = (event: PointerEvent) => touch(event, 5);
     const onDown = (event: PointerEvent) => touch(event, 14);
