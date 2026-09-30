@@ -4,7 +4,8 @@ import Link from "next/link";
 
 import "./globals.css";
 import { Nav } from "@/components/Nav";
-import { MetalSystem } from "@/components/MetalSystem";
+import { SolarSystem } from "@/components/SolarSystem";
+import { Starfield } from "@/components/Starfield";
 import { site } from "@/lib/site";
 
 const michroma = Michroma({
@@ -64,7 +65,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${michroma.variable} ${spaceGrotesk.variable} ${garamond.variable}`}
     >
       <body className="flex min-h-svh flex-col bg-black font-sans text-white antialiased">
-        <MetalSystem />
+        <Starfield />
+        <SolarSystem />
         <header className="px-6 pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-10 sm:pt-8">
           <Link href="/" className="label transition-colors hover:text-white">
             {site.org}
