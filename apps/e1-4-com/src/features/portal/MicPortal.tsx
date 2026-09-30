@@ -4,9 +4,10 @@ import { Logo } from "@earth-one/ui";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 import type { PinPhase } from "@/features/codex/PinField";
+import { useDaVinciTalk } from "@/features/davinci/useDaVinciTalk";
 import { sendVoice } from "@/features/voice-id/pcm";
 import { type CapturedSpan, useRecorder } from "@/features/voice-stream/useRecorder";
 import { useVoiceCapture } from "@/features/voice-stream/useVoiceCapture";
@@ -98,29 +99,48 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
   );
 }
 
-/** Listens over the pin field; Stop keeps the original entry and carries it on through the dimensions. */
+/**
+ * Da Vinci over the pin field: tap the logo and speak, tap again and she answers out loud. Every
+ * turn is also kept in your Voice Stream.
+ */
 function Codex() {
-  const capture = useVoiceCapture();
-  const { recorder, analysing, carrying, silent, failedUploads } = capture;
+  const talk = useDaVinciTalk();
+  const said = useRef<Promise<string>>(Promise.resolve(""));
+  const capture = useVoiceCapture([], {
+    onSettled: () => void said.current.then(talk.answer),
+  });
+  const { recorder, analysing, silent, failedUploads } = capture;
   const recording = recorder.state !== "idle";
-  const docked = recording || carrying;
+  const busy = talk.phase === "thinking" || talk.phase === "speaking";
+
+  const start = async () => {
+    talk.listen();
+    await capture.record();
+  };
+  const stop = () => {
+    said.current = talk.stopListening();
+    capture.finish();
+  };
 
   const status = recorder.error
     ? recorder.error
     : recording
       ? "Listening. Tap when you are done."
-      : failedUploads
-        ? "Your entry did not save."
-        : analysing || carrying
-          ? "Listening back"
-          : silent
-            ? "No sound came through. Tap and try again."
-            : "Tap and speak";
+      : talk.phase === "speaking"
+        ? talk.reply
+        : talk.phase === "thinking" || analysing
+          ? "Da Vinci is thinking"
+          : failedUploads
+            ? "Your entry did not save."
+            : silent
+              ? "No sound came through. Tap and try again."
+              : "Tap and speak to Da Vinci";
 
   return (
     <Frame
-      phase={recording ? "listen" : "rest"}
+      phase={recording ? "listen" : talk.phase === "speaking" ? "line" : "rest"}
       level={recorder.state === "recording" ? recorder.level : 0}
+      pulse={talk.pulse}
       corner={
         <div className="flex items-center gap-2">
           <TalkLink />
@@ -128,22 +148,22 @@ function Codex() {
         </div>
       }
     >
-      <Centre docked={docked}>
+      <Centre>
         <MicButton
           onClick={() => {
-            if (recording) {
-              capture.finish();
-            } else {
+            if (recording) stop();
+            else if (busy) talk.silence();
+            else {
               void requestTilt();
-              void capture.record();
+              void start();
             }
           }}
-          label={recording ? "Stop" : "Speak to Da Vinci"}
-          small={docked}
+          label={recording ? "Stop" : busy ? "Quiet" : "Speak to Da Vinci"}
           level={recorder.state === "recording" ? recorder.level : 0}
-          disabled={!recorder.supported || (carrying && !recording)}
+          speaking={talk.phase === "speaking" ? talk.pulse : undefined}
+          disabled={!recorder.supported || talk.phase === "thinking"}
         />
-        <p role="status" className="sr-only">
+        <p role="status" aria-live="polite" className="sr-only">
           {status}
         </p>
         {failedUploads ? (
@@ -180,6 +200,7 @@ function Frame({
   children: ReactNode;
   phase: PinPhase;
   level?: number;
+  pulse?: number;
 }) {
   return (
     <main className="bg-blackboard relative flex h-dvh flex-col items-center justify-center overflow-hidden px-6">
@@ -257,14 +278,18 @@ function MicButton({
   label,
   small,
   level = 0,
+  speaking,
   disabled,
 }: {
   onClick: () => void;
   label: string;
   small?: boolean;
   level?: number;
+  /** Word count while Da Vinci speaks; each word makes the glow breathe. */
+  speaking?: number;
   disabled?: boolean;
 }) {
+  const glow = speaking === undefined ? level : 0.35 + (speaking % 2) * 0.35;
   return (
     <button
       type="button"
@@ -278,7 +303,7 @@ function MicButton({
       <span
         aria-hidden="true"
         className="absolute inset-0 rounded-[30%] bg-[#1f6bff]/30 blur-xl transition-transform duration-100"
-        style={{ transform: `scale(${1 + Math.min(level, 1) * 0.9})` }}
+        style={{ transform: `scale(${1 + Math.min(glow, 1) * 0.9})` }}
       />
       <E14Mark />
     </button>
