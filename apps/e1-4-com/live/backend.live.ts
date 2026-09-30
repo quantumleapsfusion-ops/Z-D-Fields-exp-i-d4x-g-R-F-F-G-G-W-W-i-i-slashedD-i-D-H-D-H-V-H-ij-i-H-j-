@@ -1,6 +1,6 @@
 /**
  * Live backend pass against the real Supabase project. Not part of `npm test`.
- * Run: npx vitest run -c live.vitest.config.ts
+ * Run: npm run test:live
  */
 import { randomUUID } from "node:crypto";
 

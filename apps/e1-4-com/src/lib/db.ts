@@ -12,9 +12,23 @@ function createPrismaClient() {
   return new PrismaClient({ adapter });
 }
 
-export const db = globalForPrisma.prisma ?? createPrismaClient();
+function getPrisma(): PrismaClient {
+  globalForPrisma.prisma ??= createPrismaClient();
+  return globalForPrisma.prisma;
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+/**
+ * Lazily constructed Prisma client. Nothing touches `DATABASE_URL` until the
+ * first query, so importing this module is safe during `next build`; a blank
+ * variable surfaces as `MissingEnvError` from the request that needs the DB.
+ */
+export const db: PrismaClient = new Proxy({} as PrismaClient, {
+  get(_target, prop, receiver) {
+    const client = getPrisma();
+    const value = Reflect.get(client, prop, receiver === _target ? client : receiver);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});
 
 /** Alias kept for feature code that reads more naturally as `prisma.*`. */
 export const prisma = db;

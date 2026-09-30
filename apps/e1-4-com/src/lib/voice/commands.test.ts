@@ -11,6 +11,7 @@ describe("voice navigation", () => {
     expect(parseVoiceCommand("open gravity board")).toBe("gravity");
     expect(parseVoiceCommand("Infinity chalkboard")).toBe("chalkboard");
     expect(parseVoiceCommand("home")).toBe("home");
+    expect(parseVoiceCommand("Talk")).toBe("talk");
   });
 
   it("does not treat arbitrary speech as a command", () => {

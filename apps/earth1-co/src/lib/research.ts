@@ -1,7 +1,6 @@
 export const research = [
   {
-    id: "mechanics",
-    number: "01",
+    id: "quantum-mechanics",
     title: "Quantum mechanics",
     question:
       "How do observation, superposition, and entanglement change the way we describe a system?",
@@ -12,8 +11,7 @@ export const research = [
     },
   },
   {
-    id: "computing",
-    number: "02",
+    id: "quantum-computing",
     title: "Quantum computing",
     question:
       "What can circuits built from qubits do, and where do noise and error correction limit them?",

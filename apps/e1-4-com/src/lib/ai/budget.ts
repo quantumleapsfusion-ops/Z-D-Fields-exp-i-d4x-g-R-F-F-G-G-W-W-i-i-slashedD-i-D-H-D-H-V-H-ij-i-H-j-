@@ -17,6 +17,9 @@ const DEFAULT_PRICES: Record<string, [number, number]> = {
   "claude-sonnet-5": [3, 15],
   "claude-fable-5-1": [15, 75],
   "gpt-4o": [2.5, 10],
+  // Self-hosted: no per-token invoice. Rate limits still apply.
+  davinci: [0, 0],
+  "davinci-heavy": [0, 0],
 };
 
 function priceTable(): Record<string, [number, number]> {
@@ -85,10 +88,10 @@ export async function assertAiAllowance(userId: string): Promise<void> {
   ]);
 
   if (lastMinute >= perUserPerMinute) {
-    throw new AiBudgetError(429, "Too many requests — wait a minute and try again.");
+    throw new AiBudgetError(429, "Too many requests. Wait a minute and try again.");
   }
   if (lastDay >= perUserPerDay) {
-    throw new AiBudgetError(429, "Daily AI limit reached — try again tomorrow.");
+    throw new AiBudgetError(429, "Daily limit reached. Try again tomorrow.");
   }
   if (spent >= monthlyCapUsd) {
     throw new AiBudgetError(402, "This month's AI budget is used up.");

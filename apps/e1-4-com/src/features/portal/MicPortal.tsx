@@ -1,0 +1,297 @@
+"use client";
+
+import { Logo } from "@earth-one/ui";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
+
+import type { PinPhase } from "@/features/codex/PinField";
+import { sendVoice } from "@/features/voice-id/pcm";
+import { type CapturedSpan, useRecorder } from "@/features/voice-stream/useRecorder";
+import { useVoiceCapture } from "@/features/voice-stream/useVoiceCapture";
+import { haptic } from "@/lib/device/haptics";
+import { requestTilt } from "@/lib/device/tilt";
+
+const PinField = dynamic(() => import("@/features/codex/PinField"), { ssr: false });
+
+/** Da Vinci's front door: one microphone over a field of liquid metal. Everything follows from the sound. */
+export function MicPortal({ signedIn }: { signedIn: boolean }) {
+  return signedIn ? <Codex /> : <VoiceGate />;
+}
+
+const VOICE_MAX_MS = 8000;
+
+/**
+ * The voice is the only key: speak, and the sound itself (measured on the device, matched on the
+ * server) opens that speaker's stream, or a new stream for a voice not heard before.
+ */
+export function VoiceGate({ next = "/" }: { next?: string }) {
+  const router = useRouter();
+  const [phase, setPhase] = useState<"idle" | "checking" | "rejected">("idle");
+  const recorder = useRecorder(
+    useCallback(
+      async (span: CapturedSpan) => {
+        setPhase("checking");
+        if (await sendVoice(span.blob)) {
+          haptic("accepted");
+          router.replace(next);
+          router.refresh();
+        } else {
+          haptic("rejected");
+          setPhase("rejected");
+        }
+      },
+      [next, router],
+    ),
+  );
+  const recording = recorder.state === "recording";
+  const { stop } = recorder;
+
+  useEffect(() => {
+    if (!recording) return;
+    const timer = setTimeout(stop, VOICE_MAX_MS);
+    return () => clearTimeout(timer);
+  }, [recording, stop]);
+
+  useEffect(() => {
+    if (phase !== "rejected") return;
+    const timer = setTimeout(() => setPhase("idle"), 1200);
+    return () => clearTimeout(timer);
+  }, [phase]);
+
+  return (
+    <Frame
+      phase={recording || phase === "checking" ? "listen" : "rest"}
+      level={recorder.level}
+    >
+      <Centre>
+        <div className={phase === "rejected" ? "animate-voice-shake" : undefined}>
+          <MicButton
+            onClick={() => {
+              if (recording) {
+                haptic("stop");
+                stop();
+              } else {
+                haptic("start");
+                void requestTilt();
+                void recorder.record();
+              }
+            }}
+            label={recording ? "Stop" : "Speak to enter"}
+            level={recording ? recorder.level : 0}
+            disabled={!recorder.supported || phase === "checking"}
+          />
+        </div>
+        <p role="status" className="sr-only">
+          {recorder.error ??
+            (recording
+              ? "Listening"
+              : phase === "checking"
+                ? "Recognising your voice"
+                : phase === "rejected"
+                  ? "Voice not recognised. Tap and speak again."
+                  : "Tap and speak to enter")}
+        </p>
+      </Centre>
+    </Frame>
+  );
+}
+
+/** Listens over the pin field; Stop keeps the original entry and carries it on through the dimensions. */
+function Codex() {
+  const capture = useVoiceCapture();
+  const { recorder, analysing, carrying, silent, failedUploads } = capture;
+  const recording = recorder.state !== "idle";
+  const docked = recording || carrying;
+
+  const status = recorder.error
+    ? recorder.error
+    : recording
+      ? "Listening. Tap when you are done."
+      : failedUploads
+        ? "Your entry did not save."
+        : analysing || carrying
+          ? "Listening back"
+          : silent
+            ? "No sound came through. Tap and try again."
+            : "Tap and speak";
+
+  return (
+    <Frame
+      phase={recording ? "listen" : "rest"}
+      level={recorder.state === "recording" ? recorder.level : 0}
+      corner={
+        <div className="flex items-center gap-2">
+          <TalkLink />
+          <StreamLink />
+        </div>
+      }
+    >
+      <Centre docked={docked}>
+        <MicButton
+          onClick={() => {
+            if (recording) {
+              capture.finish();
+            } else {
+              void requestTilt();
+              void capture.record();
+            }
+          }}
+          label={recording ? "Stop" : "Speak to Da Vinci"}
+          small={docked}
+          level={recorder.state === "recording" ? recorder.level : 0}
+          disabled={!recorder.supported || (carrying && !recording)}
+        />
+        <p role="status" className="sr-only">
+          {status}
+        </p>
+        {failedUploads ? (
+          <button
+            type="button"
+            onClick={capture.retryFailed}
+            aria-label="Retry"
+            className="text-ochre border-ochre/60 flex h-12 w-12 items-center justify-center rounded-full border"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              strokeLinecap="round"
+            >
+              <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" />
+            </svg>
+          </button>
+        ) : null}
+      </Centre>
+    </Frame>
+  );
+}
+
+function Frame({
+  corner,
+  children,
+  ...pins
+}: {
+  corner?: ReactNode;
+  children: ReactNode;
+  phase: PinPhase;
+  level?: number;
+}) {
+  return (
+    <main className="bg-blackboard relative flex h-dvh flex-col items-center justify-center overflow-hidden px-6">
+      <div className="absolute inset-0">
+        <PinField {...pins} />
+      </div>
+      <div className="absolute top-[max(1.25rem,env(safe-area-inset-top))] right-6 z-10">
+        {corner}
+      </div>
+      {children}
+    </main>
+  );
+}
+
+function TalkLink() {
+  return (
+    <Link
+      href="/talk"
+      aria-label="Talk"
+      className="text-dust hover:text-chalk flex h-10 w-10 items-center justify-center transition-colors"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className="h-6 w-6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M4 5.5h16v10H10l-4 3.5v-3.5H4z" />
+        <path d="M9 9.5v2M12 8v5M15 9.5v2" />
+      </svg>
+    </Link>
+  );
+}
+
+function StreamLink() {
+  return (
+    <Link
+      href="/stream"
+      aria-label="Your stream"
+      className="text-dust hover:text-chalk flex h-10 w-10 items-center justify-center transition-colors"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className="h-6 w-6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+      >
+        <path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2" />
+      </svg>
+    </Link>
+  );
+}
+
+function Centre({ docked, children }: { docked?: boolean; children: ReactNode }) {
+  return (
+    <div
+      className={`z-10 flex flex-col items-center gap-6 transition-all duration-700 ${
+        docked ? "absolute bottom-[max(2.5rem,env(safe-area-inset-bottom))]" : ""
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function MicButton({
+  onClick,
+  label,
+  small,
+  level = 0,
+  disabled,
+}: {
+  onClick: () => void;
+  label: string;
+  small?: boolean;
+  level?: number;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className={`relative transition-all duration-700 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+        small ? "h-24 w-24" : "h-44 w-44 sm:h-56 sm:w-56"
+      }`}
+    >
+      <span
+        aria-hidden="true"
+        className="absolute inset-0 rounded-[30%] bg-[#1f6bff]/30 blur-xl transition-transform duration-100"
+        style={{ transform: `scale(${1 + Math.min(level, 1) * 0.9})` }}
+      />
+      <E14Mark />
+    </button>
+  );
+}
+
+/** The e1-4 Ψπ mark, sized to its container. */
+function E14Mark() {
+  return (
+    <Logo
+      size={224}
+      title="e1-4"
+      className="relative !h-full !w-full drop-shadow-[0_0_40px_rgba(56,189,248,0.25)]"
+    />
+  );
+}

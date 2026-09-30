@@ -1,8 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { withRuntimeEnv } from "@/lib/api/handler";
 import { createClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 /** OAuth redirect target: exchanges the PKCE code for a session cookie. */
-export async function GET(request: NextRequest) {
+async function handleGET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get("code");
   const nextParam = searchParams.get("next") ?? "/profile";
@@ -31,3 +35,5 @@ export async function GET(request: NextRequest) {
     `${origin}/login?error=${encodeURIComponent(providerError ?? "missing_code")}`,
   );
 }
+
+export const GET = withRuntimeEnv(handleGET);

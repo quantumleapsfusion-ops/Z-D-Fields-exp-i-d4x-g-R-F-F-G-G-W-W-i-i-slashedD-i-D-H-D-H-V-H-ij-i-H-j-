@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-/** Da Vinci draws on a fixed virtual canvas; the client scales it to fit. */
 export const CANVAS = { width: 1000, height: 640 } as const;
 
 const coord = z.number().finite();
@@ -68,7 +67,7 @@ export const DRAW_SYSTEM_PROMPT = `You are Da Vinci, a live sketch artist. The u
 You receive the full transcript so far, the newest words, and a summary of what is already on the canvas.
 Add to the drawing so it keeps up with what they are describing. Never redraw what is already there.
 
-Canvas: ${CANVAS.width}x${CANVAS.height}, origin top-left. Background is a dark chalkboard (#0e1a13).
+Canvas: ${CANVAS.width}x${CANVAS.height}, origin top-left. Background is black (#000000).
 Prefer chalk colours: #f1ede1 (chalk), #93a294 (dust), #d3a34c (ochre), plus soft pastels.
 
 Reply with ONLY JSON matching:
@@ -91,8 +90,6 @@ export function summarizeOps(ops: DrawOp[]): string {
     .map(([k, v]) => `${v} ${k}`)
     .join(", ")}). Labels: ${labels.join(" | ") || "none"}.`;
 }
-
-// ---------- Stub renderer (no LLM key) ----------
 
 function hash(text: string): number {
   let h = 2166136261;
@@ -145,8 +142,8 @@ const MOTIFS: Record<string, Motif> = {
       x: x + 18,
       y: y - 10,
       r: 34,
-      color: "#0e1a13",
-      fill: "#0e1a13",
+      color: "#000000",
+      fill: "#000000",
       animate: "fade",
     },
   ],
@@ -407,10 +404,6 @@ const SYNONYMS: Record<string, string> = {
   then: "arrow",
 };
 
-/**
- * Keyword-driven sketch used when no LLM key is configured. Clearly a stub: it recognises a small
- * vocabulary of motifs and otherwise pins the key words to the board.
- */
 export function stubDraw(newText: string, existing: DrawOp[]): DrawResponse {
   const words = newText.toLowerCase().match(/[a-z']+/g) ?? [];
   const ops: DrawOp[] = [];

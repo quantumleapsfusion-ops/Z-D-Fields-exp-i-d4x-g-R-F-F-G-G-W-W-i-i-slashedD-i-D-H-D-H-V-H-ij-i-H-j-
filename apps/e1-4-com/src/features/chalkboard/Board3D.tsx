@@ -31,7 +31,7 @@ export default function Board3D({
     el.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#0e1a13");
+    scene.background = new THREE.Color("#000000");
     const camera = new THREE.PerspectiveCamera(
       50,
       el.clientWidth / el.clientHeight,

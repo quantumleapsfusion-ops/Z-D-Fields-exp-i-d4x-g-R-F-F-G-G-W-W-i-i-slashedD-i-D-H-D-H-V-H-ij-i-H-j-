@@ -9,7 +9,7 @@ const noopSubscribe = () => () => {};
 const hasSpeechRecognition = () =>
   Boolean(window.SpeechRecognition ?? window.webkitSpeechRecognition);
 
-const hint = "Say home, log in, profile, stream, Da Vinci, chalkboard, or gravity.";
+const hint = "Say home, log in, profile, stream, talk, Da Vinci, chalkboard, or gravity.";
 
 export function VoiceCommandOrb() {
   const router = useRouter();

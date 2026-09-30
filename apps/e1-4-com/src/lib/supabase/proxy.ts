@@ -2,7 +2,16 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { publicEnv } from "@/lib/env";
 
-const PROTECTED_PREFIXES = ["/profile", "/stream", "/davinci", "/chalkboard", "/gravity"];
+export const PROTECTED_PREFIXES = [
+  "/profile",
+  "/talk",
+  "/stream",
+  "/chalkboard",
+  "/gravity",
+  "/horizon",
+  "/superposition",
+  "/journey",
+];
 
 /**
  * Refreshes the Supabase session on every request and redirects anonymous

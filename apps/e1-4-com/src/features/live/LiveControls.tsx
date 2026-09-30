@@ -60,7 +60,7 @@ export function LiveControls({
               ? "Deepgram live"
               : "Browser speech recognition"
             : !live.supported
-              ? "No speech recognition in this browser — type instead"
+              ? "No speech recognition in this browser. Type instead."
               : ""}
       </p>
     </div>

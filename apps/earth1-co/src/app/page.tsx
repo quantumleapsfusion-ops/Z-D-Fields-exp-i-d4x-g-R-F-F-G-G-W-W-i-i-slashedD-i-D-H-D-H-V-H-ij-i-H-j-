@@ -1,41 +1,83 @@
-import { Logo } from "@earth-one/ui";
+import type { Metadata } from "next";
 
-import { DomainBridge } from "@/components/DomainBridge";
-import { GovernanceManifesto } from "@/components/GovernanceManifesto";
-import { HeroSection } from "@/components/HeroSection";
-import { ResearchHub } from "@/components/ResearchHub";
+import { CiceroPassage } from "@/components/CiceroPassage";
 import { site } from "@/lib/site";
 
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
 export default function HomePage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${site.url}/#org`,
+        name: site.org,
+        alternateName: site.name,
+        url: site.url,
+        logo: `${site.url}/icon.png`,
+        description: site.description,
+        knowsAbout: site.pillars.map((p) => p.title),
+        founder: {
+          "@type": "Person",
+          name: site.founder.name,
+          jobTitle: site.founder.role,
+          email: site.founder.email,
+        },
+        email: site.founder.email,
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${site.url}/#website`,
+        name: site.org,
+        url: site.url,
+        description: site.description,
+        inLanguage: "en",
+        publisher: { "@id": `${site.url}/#org` },
+      },
+    ],
+  };
+
   return (
-    <div className="chalk-surface min-h-screen">
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6 sm:px-8">
-        <div className="flex items-center gap-3">
-          <Logo size={26} brand="earth1" title={site.org} />
-          <span className="font-display text-lg tracking-tight">{site.name}</span>
-        </div>
-        <a
-          href={site.flagship.url}
-          className="label hover:text-ochre transition-colors"
-          rel="noreferrer"
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+
+      <h1 className="sr-only">
+        {site.org}: {site.focus}
+      </h1>
+      <figure>
+        <blockquote
+          lang="la"
+          className="font-display text-[1.2rem] leading-[1.5] tracking-[0.12em] uppercase sm:text-3xl lg:text-4xl"
         >
-          {site.flagship.domain}
-        </a>
-      </header>
-      <main>
-        <HeroSection />
-        <GovernanceManifesto />
-        <ResearchHub />
-        <DomainBridge />
-      </main>
-      <footer className="border-chalk/10 border-t">
-        <div className="text-dust mx-auto flex max-w-5xl flex-col gap-2 px-5 py-10 font-sans text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>
-            {site.org} / {site.domain}
-          </p>
-          <p className="label">est. earth</p>
-        </div>
-      </footer>
-    </div>
+          {site.quote.latin}
+        </blockquote>
+        <figcaption className="label mt-6">
+          {site.quote.english}
+          <span className="mt-3 block text-white/40">{site.quote.author}</span>
+        </figcaption>
+      </figure>
+
+      <div className="mt-[30svh] w-full text-left font-serif">
+        <CiceroPassage />
+
+        <section
+          aria-labelledby="equations-heading"
+          className="mx-auto mt-32 max-w-[92rem] pb-16"
+        >
+          <h2 id="equations-heading" className="text-center text-2xl sm:text-3xl">
+            Equations
+          </h2>
+          <div className="mx-auto mt-10 min-h-48 max-w-[70ch] rounded-sm border border-dashed border-white/25" />
+        </section>
+      </div>
+    </>
   );
 }

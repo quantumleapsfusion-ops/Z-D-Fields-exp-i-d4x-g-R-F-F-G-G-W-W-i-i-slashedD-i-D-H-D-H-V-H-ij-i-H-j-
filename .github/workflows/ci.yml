@@ -26,6 +26,25 @@ jobs:
       - run: npm run format:check
       - run: npx turbo run lint typecheck test build
 
+  davinci:
+    name: Da Vinci gateway (ruff, mypy, pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/davinci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: apps/davinci/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy davinci tests
+      - run: pytest -q
+
   e2e:
     name: Playwright smoke (e1-4.com against live Supabase test project)
     runs-on: ubuntu-latest

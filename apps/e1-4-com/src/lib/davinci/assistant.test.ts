@@ -25,6 +25,60 @@ describe("interpret", () => {
     if (action.kind === "navigate") expect(action.href).toBe("/chalkboard");
   });
 
+  it("routes to dimensions by their names", () => {
+    const action = interpret("open gravity chalkboard", null);
+    expect(action).toEqual({
+      kind: "navigate",
+      href: "/gravity",
+      label: "3D Gravity Chalkboard",
+    });
+    expect(interpret("open event horizon", null)).toMatchObject({
+      kind: "navigate",
+      href: "/horizon",
+    });
+    expect(interpret("open Ari", null)).toMatchObject({
+      kind: "navigate",
+      href: "/superposition",
+    });
+  });
+
+  it("moves up and down relative to the current surface", () => {
+    expect(interpret("lift", null, "/chalkboard")).toEqual({
+      kind: "navigate",
+      href: "/gravity",
+      label: "3D Gravity Chalkboard",
+    });
+    expect(interpret("collapse to 1D", null, "/superposition")).toEqual({
+      kind: "navigate",
+      href: "/stream",
+      label: "1D Voice Stream",
+    });
+    expect(interpret("lift", null, "/superposition")).toEqual({
+      kind: "answer",
+      text: "You're already in 5D.",
+    });
+    expect(interpret("collapse", null, "/profile")).toEqual({
+      kind: "answer",
+      text: "Open a dimension first.",
+    });
+    expect(interpret("go to 4D", null, "/horizon")).toEqual({
+      kind: "answer",
+      text: "You're already in 4D.",
+    });
+  });
+
+  it("navigates to an explicit dimension and keeps Da Vinci in the drawer", () => {
+    expect(interpret("lift to 4D", null, "/stream")).toEqual({
+      kind: "navigate",
+      href: "/horizon",
+      label: "4D Event Horizon",
+    });
+    expect(interpret("open Da Vinci", null, "/gravity")).toEqual({
+      kind: "answer",
+      text: "I'm here on every page. Press Ctrl+K.",
+    });
+  });
+
   it("solves arithmetic", () => {
     const action = interpret("what is 6 * 7", null);
     expect(action.kind).toBe("math");

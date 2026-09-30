@@ -1,11 +1,17 @@
-# e1-4 — earth life-forms
+# e1-4: earth life-forms
 
-Flagship of **Earth One Global Coalescent** (sibling: [earth1.co](https://earth1.co)).
+App by **Earth One Global Coalescent**.
+
+The app has five dimensions: Voice Stream, Infinity Chalkboard, Gravity Chalkboard, Event
+Horizon and Superposition. Voice Stream supplies text to the other surfaces. Da Vinci
+opens with Ctrl+K.
 
 > A social network with no typing. You speak; everything else follows.
 
 This repo is the Next.js + Supabase **app shell** that the four features plug into:
-Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (feature-flagged).
+Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (feature-flagged) — plus **Talk**
+(`/talk`), async voice conversations: send a voice note or go live instead of calling, reply
+whenever, and the whole conversation is kept as one playable thread.
 
 ## Stack
 
@@ -17,17 +23,17 @@ Voice Stream, Da Vinci, Infinity Chalkboard, Gravity Board (feature-flagged).
 | Storage   | Supabase Storage — `avatars` (public) and `voice` (private) buckets  |
 | Tooling   | ESLint, Prettier, GitHub Actions (lint + typecheck + build)          |
 
-Brand: chalkboard palette (`#0e1a13` board, `#f1ede1` chalk, `#93a294` dust, `#d3a34c` ochre),
-Fraunces (display) + Space Grotesk (body) via `next/font`, rainbow Ψπ `Logo` (`public/brand/e1-4.png`; earth1.co uses the cross-in-circle `brand="earth1"`).
+Palette: black (`#000`), chalk (`#f1ede1`), dust (`#93a294`) and ochre (`#d3a34c`).
+Fraunces and Space Grotesk are loaded with `next/font`. Brand marks live in `public/brand/` (`e1-4.png`; earth1.co uses `brand="earth1"`).
 
 ## Project layout
 
 ```
-prisma/schema.prisma             User, VoiceStream, VoiceSegment, Share
+prisma/schema.prisma             User, VoiceStream, VoiceSegment, Share, Conversation, VoiceNote
 prisma/migrations/               Prisma-managed table migrations
 prisma.config.ts                 Prisma CLI config (uses DIRECT_URL)
 supabase/migrations/*.sql        RLS policies, auth->profile trigger, storage buckets + policies
-src/proxy.ts                     Next 16 middleware: refreshes the Supabase session, guards /profile
+src/proxy.ts                     Refreshes the Supabase session and guards private routes
 src/lib/env.ts                   Typed env access (public vs server-only)
 src/lib/supabase/client.ts       Browser client (Client Components)
 src/lib/supabase/server.ts       Cookie-backed server client (RSC, Server Actions, Route Handlers)
@@ -37,9 +43,24 @@ src/lib/storage/                 StorageProvider interface + Supabase implementa
 src/lib/auth/                    OAuth provider list + sign-in/sign-out Server Actions
 src/lib/account/                 Profile actions (avatar upload) + hard-delete routine
 src/app/auth/callback/route.ts   OAuth code -> session exchange
-src/app/{page,login,profile}     Home, sign-in, profile
-src/components/                  Logo, SiteHeader, AvatarForm
+src/app/                         Home, auth, profile and dimension routes
+src/components/                  Navigation, page shell, audio dock and Da Vinci drawer
 ```
+
+## Dimensions
+
+| Dimension | Surface             | Route            |
+| --------- | ------------------- | ---------------- |
+| 1D        | Voice Stream        | `/stream`        |
+| 2D        | Infinity Chalkboard | `/chalkboard`    |
+| 3D        | Gravity Chalkboard  | `/gravity`       |
+| 4D        | Event Horizon       | `/horizon`       |
+| 5D        | Superposition       | `/superposition` |
+
+Voice Stream supplies transcript text to the other surfaces. The 3D, 4D and 5D routes
+can be disabled with `NEXT_PUBLIC_FEATURE_GRAVITY_CHALKBOARD`,
+`NEXT_PUBLIC_FEATURE_EVENT_HORIZON` and `NEXT_PUBLIC_FEATURE_SUPERPOSITION`. All default
+to `true`.
 
 ## Local setup
 
@@ -103,6 +124,27 @@ Bucket access model:
 - `avatars/<uid>/avatar.<ext>` — anyone can read, only the owner can write. Served via public URL.
 - `voice/<uid>/<streamId>/<n>.<ext>` — owner can read/write; recipients of a `USER` share can read;
   `LINK` shares are served by the server with signed URLs (`storage.getSignedUrl`).
+- `voice/<uid>/talk/<conversationId>/<noteId>.<ext>` — a Talk voice note, stored under the
+  sender's uid. Other members never read Storage directly: `/api/talk/notes/[id]/audio` checks
+  conversation membership and proxies the bytes.
+
+## Talk (async voice conversations)
+
+- Start a conversation on `/talk`, then share its invite link (`/talk/join/<token>`) any way you
+  like. Signed-in people who open it join; "Make a new link" rotates the token.
+- **Voice note**: record → Send. Transcribed in the background with the configured STT provider
+  (`SKIPPED` when none is set).
+- **Go live**: the recorder cuts a playable clip every 4 s (`LIVE_PART_MS`) and uploads each one
+  with a shared `liveId`; the member row carries a heartbeat (`liveAt`, stale after 15 s). Anyone
+  with the thread open sees "is live now" and can **Listen live**, which follows the clips as they
+  land. Anyone who wasn't around finds the stream as one item in the thread.
+- The whole thread is a single chronological AudioDock playlist. Unread counts come from
+  `conversation_members.last_read_at`.
+- Unsend deletes your own notes for everyone. Leaving keeps your notes for the others; the last
+  member out deletes the conversation and all its audio. Deleting your account removes every note
+  you sent.
+- Not a phone line: it needs data/Wi-Fi, can't reach phone numbers or emergency services, and
+  there are no push notifications yet (the thread polls while open).
 
 ## Scripts
 
@@ -118,16 +160,53 @@ Bucket access model:
 | `npm run prisma:deploy`  | Apply pending migrations (`migrate deploy`)           |
 | `npm run prisma:studio`  | Browse the database                                   |
 
+## Testing
+
+- **Unit (Vitest):** `src/**/*.test.ts`, pure logic only (LLM JSON extraction, Da Vinci ops,
+  Gravity superposition heuristics, duration formatting). No network, no database.
+- **E2E (Playwright):** `e2e/*.spec.ts` on desktop + mobile Chrome. Runs against a production
+  build (`npm run build` first; the config starts `next start` on port 3100) and only needs the
+  placeholder env from CI — it covers the public pages, the anonymous redirects, `/auth/callback`
+  error handling and the 401/404 guards on the API routes. Set `PLAYWRIGHT_BASE_URL` to run the
+  same suite against a deployed URL (e.g. a Vercel preview).
+
+Anything that needs a real session (OAuth, uploads, transcription, sharing, deletion) is exercised
+against the live Supabase project with `npm run test:live` — see `docs/live-e2e.md`.
+
+## Deploying to Vercel
+
+1. Import the repo in Vercel (framework preset: Next.js; Node 22 is picked up from `engines`).
+   `vercel.json` pins the region to `iad1` — change it to match your Supabase region.
+2. Add every variable from `.env.example` under **Settings → Environment Variables**:
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+   - `DATABASE_URL` (pooler, port 6543, `?pgbouncer=true`) and `DIRECT_URL` (port 5432)
+   - `NEXT_PUBLIC_SITE_URL=https://e1-4.com` (and the preview URL on the Preview environment)
+   - `ANTHROPIC_API_KEY`, `DEEPGRAM_API_KEY` or `OPENAI_API_KEY`, and the `AI_*` budget knobs
+   - Keep `NEXT_PUBLIC_FEATURE_GRAVITY_BOARD=false` in Production.
+3. The build runs `prisma generate && next build` (`postinstall` also generates the client).
+   Migrations are **not** run on deploy — apply them from a trusted machine with
+   `npm run prisma:deploy` (uses `DIRECT_URL`).
+4. In Supabase → **Authentication → URL Configuration**, set the Site URL to the production
+   domain and add `https://<your-domain>/auth/callback` plus
+   `https://*-<team>.vercel.app/auth/callback` to the redirect allow-list so previews can sign in.
+5. Route handlers that call the LLM/STT providers declare `runtime = "nodejs"`; `vercel.json`
+   raises their `maxDuration` so a slow model reply is not cut off at the default 10 s.
+
 ## Data model & deletion
 
 `User.id` equals the Supabase Auth user id. `VoiceStream` → `VoiceSegment` (audio blob path +
-transcript) and `Share` (scope `PRIVATE | LINK | USER`) all cascade-delete from the user.
+transcript) and `Share` (scope `PRIVATE | LINK | USER`) all cascade-delete from the user, as do
+their Talk memberships and sent `VoiceNote`s.
 
 `hardDeleteUser(userId)` in `src/lib/account/delete.ts` removes, in order: every object under
 `<uid>/` in the `voice` and `avatars` buckets, the Postgres rows, then the Supabase Auth user.
 It is exposed to the signed-in user as **Delete account** on `/profile`.
 
-## Later: Da Vinci keys
+## AI keys
 
-`.env.example` reserves `OPENAI_API_KEY`, `DEEPGRAM_API_KEY` and `ANTHROPIC_API_KEY` for the
-speech-to-text and LLM steps. They are unused by the shell.
+`DEEPGRAM_API_KEY` / `OPENAI_API_KEY` drive speech-to-text. The LLM tiers (`LLM_MODEL_EVERYDAY`,
+`LLM_MODEL_HEAVY`) go through [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) when
+`AI_GATEWAY_API_KEY` is set (models are sent as `anthropic/<id>`, e.g. `anthropic/claude-fable-5.1`;
+the gateway needs paid credits for Claude models), otherwise straight to Anthropic via
+`ANTHROPIC_API_KEY`. Without either key each feature falls back to a
+clearly-labelled stub (`source: "stub"` / `transcriptionStatus: "SKIPPED"`) instead of failing.

@@ -1,5 +1,7 @@
 import { after, NextResponse } from "next/server";
 
+import { withRuntimeEnv } from "@/lib/api/handler";
+
 import { getUserId } from "@/lib/auth/user";
 import {
   appendSegment,
@@ -10,14 +12,15 @@ import {
 } from "@/lib/voice/stream";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export async function GET() {
+async function handleGET() {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   return NextResponse.json({ segments: await listSegments(userId) });
 }
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -58,3 +61,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ segment: toSegmentDTO(segment) }, { status: 201 });
 }
+
+export const GET = withRuntimeEnv(handleGET);
+export const POST = withRuntimeEnv(handlePOST);

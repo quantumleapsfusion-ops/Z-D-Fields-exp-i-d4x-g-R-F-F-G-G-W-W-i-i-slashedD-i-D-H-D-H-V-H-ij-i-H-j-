@@ -1,40 +1,45 @@
-# Voice authentication path for e1-4
+# Voice identity and navigation on e1-4
 
-The microphone control on every e1-4 app surface recognizes a small set of navigation
-commands (home, log in, profile, stream, Da Vinci, chalkboard, gravity). Speech
-recognition does **not** prove who spoke or create a session. The existing account flow creates the
-profile, and its share links remain revocable.
+## Navigation
 
-## Recommended managed verifier: Veridas das-Peak
+`VoiceCommandOrb` (every route except `/`, `/login`, and public shares, whose own mic
+handles voice) listens for one utterance and matches whole-phrase commands in
+`src/lib/voice/commands.ts`: home, log in, profile, stream / share, talk, Da Vinci,
+chalkboard, gravity. Speech-to-text only routes; it never proves identity.
 
-[das-Peak](https://veridas.com/en/apis/) is a cloud REST voice comparison service;
-the [vendor's performance report](https://docs.veridas.com/das-peak/cloud/v2.23/resources/performance-report/)
-documents text-independent verification, configurable similarity thresholds, and
-voice authenticity checks for replay and injection attacks. It fits a browser microphone
-flow better than Pindrop's contact-center-focused integrations. [ID R&D
-IDVoice](https://docs.idrnd.net/voice/) is an alternative when hosting the biometric
-service ourselves is preferable. Vendor documentation describes capabilities, not a
-security guarantee for our users; thresholds need validation with our own microphone
-samples, languages, and threat model before use in production.
+## Identity today
 
-## Integration prerequisites
+`/api/voice-id` and `src/lib/voiceprint` sign people in by voice alone: the device
+computes a spectral voiceprint, the server signs in the closest stored print within
+`MATCH_DISTANCE`, and an unmatched voice self-enrolls a new voice-only account. Existing
+accounts are refined only from their own signed-in session.
 
-1. Obtain Veridas service access and API documentation/credentials through its
-   [product site](https://veridas.com/en/apis/). Keep credentials server-side.
-2. Enrollment policy: self-enrollment creates **new** voice-only profiles; it never
-   attaches a voice to an existing profile. Existing profiles enroll only from an
-   already-authenticated session. Obtain explicit consent, record several samples,
-   bind the template to the profile, and delete it with the account.
-3. For sign-in, first identify the account, issue a short-lived random challenge,
-   record a fresh microphone sample, and send it to a server endpoint. The server
-   applies rate limits, size limits, liveness and calibrated match checks. A transcript
-   or client-side comparison must never be accepted as authentication.
-4. Integrate the verified result with a supported Supabase session issuance mechanism
-   (no email or password is shown to voice-only users). Keep a recovery path, such as
-   a recovery phrase issued at enrollment, for users whose voice is rejected. Require additional
-   verification for account recovery, template changes, and destructive operations.
-5. Test replay, synthetic audio, noise, browsers without microphone access, false
-   accepts/rejects, and deletion before enabling voice login.
+Known limits of this in-house voiceprint:
 
-Voice-only login remains disabled until the vendor and server-side session integration
-are available. The voice command and profile/share features work without the vendor.
+- No liveness or anti-spoofing: a recording or synthetic clone of a voice is accepted.
+- One-to-many matching across all users; false accepts grow with the user count and have
+  not been measured.
+- A successful match blends the new sample into the matched account's print.
+- Rate limiting is per server instance only.
+- There is no recovery path if a voice changes or is rejected.
+
+## Recommended upgrade: a managed verifier (Veridas das-Peak)
+
+[das-Peak](https://veridas.com/en/apis/) is a cloud REST voice comparison service; its
+[performance report](https://docs.veridas.com/das-peak/cloud/v2.23/resources/performance-report/)
+documents text-independent verification, configurable thresholds with published
+false-accept / false-reject rates, and authenticity checks for replay and injection
+attacks. [ID R&D IDVoice](https://docs.idrnd.net/voice/) is an alternative if we prefer
+to host the engine. Vendor figures are not a guarantee for our microphones and users;
+thresholds must be validated on our own samples.
+
+Integration outline, behind `identifyVoice` so the client flow is unchanged:
+
+1. Obtain vendor access (via the product site); keep credentials server-only.
+2. Keep self-enrollment for new voice-only profiles; enroll several samples with
+   explicit consent; delete templates with the account.
+3. On sign-in, require the vendor's authenticity check to pass before any match, and
+   prefer a one-to-one check against a device-held account hint over a global search.
+4. Stop blending unverified samples into stored templates.
+5. Add a durable (not per-instance) rate limit and a recovery credential issued at
+   enrollment, such as a passkey (already supported in `src/lib/auth/passkeys.ts`).
