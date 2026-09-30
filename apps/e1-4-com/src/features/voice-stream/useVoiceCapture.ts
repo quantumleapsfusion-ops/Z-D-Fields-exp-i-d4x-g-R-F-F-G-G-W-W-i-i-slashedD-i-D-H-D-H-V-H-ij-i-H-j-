@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { decodeSound } from "@/features/sound/decode";
 import { useCarry } from "@/lib/carry";
+import { haptic } from "@/lib/device/haptics";
 import type { SoundPrint } from "@/lib/sound/analyse";
 import type { SegmentDTO } from "@/lib/voice/stream";
 
@@ -57,7 +58,8 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
   const recorder = useRecorder(onSpan);
 
   const failedUploads = pending.some((p) => p.failed);
-  const settled = finished && !awaitingSpan && pending.length === 0;
+  const uploading = pending.some((p) => !p.failed);
+  const settled = finished && !awaitingSpan && !uploading;
   const analysing = settled && print === undefined;
   const heard = Boolean(print && print.voicedRatio > 0);
   const silent = settled && print !== undefined && !heard;
@@ -69,11 +71,13 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
       analysed.current = false;
     }
     setFinished(false);
+    haptic("start");
     await recorder.record();
   };
   const pause = () => recorder.pause();
   const finish = () => {
     setAwaitingSpan(recorder.state === "recording");
+    haptic("stop");
     recorder.stop();
     setFinished(true);
   };
@@ -99,6 +103,7 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
 
   useEffect(() => {
     if (!settled || !print || !heard) return;
+    haptic("saved");
     setSound(print);
     router.push("/journey");
   }, [settled, print, heard, setSound, router]);
@@ -109,7 +114,7 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
     setSegments,
     pending,
     failedUploads,
-    carrying: finished && !silent && !failedUploads,
+    carrying: finished && !silent,
     analysing,
     silent,
     record,
