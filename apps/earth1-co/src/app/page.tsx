@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-import { Logo } from "@earth-one/ui";
 
-import { DomainBridge } from "@/components/DomainBridge";
-import { GovernanceManifesto } from "@/components/GovernanceManifesto";
-import { HeroSection } from "@/components/HeroSection";
+import { CiceroPassage } from "@/components/CiceroPassage";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -22,14 +19,14 @@ export default function HomePage() {
         url: site.url,
         logo: `${site.url}/icon.png`,
         description: site.description,
-        knowsAbout: ["Global citizenship", "Data sovereignty", "Free speech", "Privacy"],
-        sameAs: [site.flagship.url],
-        contactPoint: {
-          "@type": "ContactPoint",
-          contactType: "human resources",
-          email: site.contact.email,
-          availableLanguage: "en",
+        knowsAbout: site.pillars.map((p) => p.title),
+        founder: {
+          "@type": "Person",
+          name: site.founder.name,
+          jobTitle: site.founder.role,
+          email: site.founder.email,
         },
+        email: site.founder.email,
       },
       {
         "@type": "WebSite",
@@ -44,57 +41,43 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-clip">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
         }}
       />
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6 sm:px-8">
-        <div className="flex items-center gap-3">
-          <Logo size={26} brand="earth1" title={site.org} />
-          <span className="font-display text-lg tracking-tight">{site.name}</span>
-        </div>
-        <a
-          href={site.flagship.url}
-          className="label hover:text-ochre transition-colors"
-          rel="noreferrer"
+
+      <h1 className="sr-only">
+        {site.org}: {site.focus}
+      </h1>
+      <figure>
+        <blockquote
+          lang="la"
+          className="font-display text-[1.2rem] leading-[1.5] tracking-[0.12em] uppercase sm:text-3xl lg:text-4xl"
         >
-          {site.flagship.domain}
-        </a>
-      </header>
-      <main>
-        <HeroSection />
-        <GovernanceManifesto />
-        <DomainBridge />
-        <section id="contact" className="mx-auto max-w-5xl px-5 pb-28 sm:px-8">
-          <p className="label mb-4">Reach us</p>
-          <a
-            href={`mailto:${site.contact.email}`}
-            className="font-display hover:text-ochre text-3xl tracking-tight transition-colors sm:text-5xl"
-          >
-            {site.contact.email}
-          </a>
-          <p className="text-dust mt-4 max-w-xl font-sans text-lg">
-            {site.contact.purpose}
-          </p>
+          {site.quote.latin}
+        </blockquote>
+        <figcaption className="label mt-6">
+          {site.quote.english}
+          <span className="mt-3 block text-white/40">{site.quote.author}</span>
+        </figcaption>
+      </figure>
+
+      <div className="mt-[30svh] w-full text-left font-serif">
+        <CiceroPassage />
+
+        <section
+          aria-labelledby="equations-heading"
+          className="mx-auto mt-32 max-w-[92rem] pb-16"
+        >
+          <h2 id="equations-heading" className="text-center text-2xl sm:text-3xl">
+            Equations
+          </h2>
+          <div className="mx-auto mt-10 min-h-48 max-w-[70ch] rounded-sm border border-dashed border-white/25" />
         </section>
-      </main>
-      <footer className="border-chalk/10 border-t">
-        <div className="text-dust mx-auto flex max-w-5xl flex-col gap-2 px-5 py-10 font-sans text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>
-            {site.org} / {site.domain}
-          </p>
-          <a
-            href={`mailto:${site.contact.email}`}
-            className="hover:text-ochre transition-colors"
-          >
-            {site.contact.email}
-          </a>
-          <p className="label">est. earth</p>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </>
   );
 }
