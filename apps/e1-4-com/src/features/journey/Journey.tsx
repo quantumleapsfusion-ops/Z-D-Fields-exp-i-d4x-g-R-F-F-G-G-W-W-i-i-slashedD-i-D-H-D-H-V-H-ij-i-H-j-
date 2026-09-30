@@ -9,6 +9,7 @@ import { readLastEntry, rememberEntry } from "@/features/codex/entries";
 import type { PinPhase } from "@/features/codex/PinField";
 import { speak } from "@/features/codex/voice";
 import { useCarry } from "@/lib/carry";
+import { haptic } from "@/lib/device/haptics";
 import type { Form } from "@/lib/gravity/superposition";
 import { STAGES, type StageId, nextStage, stageDuration } from "@/lib/journey";
 import { narrate, summarise } from "@/lib/sound/commentary";
@@ -69,6 +70,10 @@ export function Journey() {
       timers.forEach(clearTimeout);
     };
   }, [print, previous, index, stage.id]);
+
+  useEffect(() => {
+    if (print && index > 0) haptic("stage");
+  }, [print, index]);
 
   useEffect(() => {
     if (stage.id !== "superposition") return;
