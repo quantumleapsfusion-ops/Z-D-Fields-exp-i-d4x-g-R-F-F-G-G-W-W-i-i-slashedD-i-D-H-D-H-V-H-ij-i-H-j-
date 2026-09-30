@@ -23,6 +23,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@earth-one/liquid-metal": "*",
     "@earth-one/spacetime": "*",
     "@earth-one/ui": "*",
     "@prisma/adapter-pg": "^7.10.0",
