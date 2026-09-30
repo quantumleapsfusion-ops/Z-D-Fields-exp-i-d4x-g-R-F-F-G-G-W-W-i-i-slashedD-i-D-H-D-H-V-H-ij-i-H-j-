@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Michroma, Space_Grotesk } from "next/font/google";
+import { EB_Garamond, Michroma, Space_Grotesk } from "next/font/google";
 import Link from "next/link";
 
 import "./globals.css";
@@ -19,6 +19,13 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-space-grotesk",
+});
+
+const garamond = EB_Garamond({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  display: "swap",
+  variable: "--font-eb-garamond",
 });
 
 export const metadata: Metadata = {
@@ -53,7 +60,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${michroma.variable} ${spaceGrotesk.variable}`}>
+    <html
+      lang="en"
+      className={`${michroma.variable} ${spaceGrotesk.variable} ${garamond.variable}`}
+    >
       <body className="flex min-h-svh flex-col bg-black font-sans text-white antialiased">
         <Starfield />
         <SolarSystem />
