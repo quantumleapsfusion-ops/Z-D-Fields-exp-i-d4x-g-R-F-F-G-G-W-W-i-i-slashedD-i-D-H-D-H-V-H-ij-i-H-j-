@@ -18,6 +18,8 @@ model User {
   id          String   @id @db.Uuid
   email       String?  @unique
   displayName String?  @map("display_name")
+  /// Public, lowercase `@handle` ([a-z0-9_]{3,20}) people use to find and add each other.
+  handle      String?  @unique
   /// Object path inside the `avatars` bucket (e.g. "<uid>/avatar.png").
   avatarPath  String?  @map("avatar_path")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
@@ -31,6 +33,10 @@ model User {
   conversationsStarted Conversation[]       @relation("ConversationCreator")
   memberships          ConversationMember[]
   voiceNotes           VoiceNote[]
+
+  contacts  Contact[] @relation("ContactOwner")
+  contactOf Contact[] @relation("ContactTarget")
+  passkeys  Passkey[]
 
   @@map("users")
 }
@@ -108,6 +114,8 @@ model Conversation {
   id          String    @id @default(uuid()) @db.Uuid
   title       String?
   inviteToken String    @unique @map("invite_token")
+  /// Set for one-to-one conversations opened from contacts: the two user ids, sorted, joined by ":".
+  directKey   String?   @unique @map("direct_key")
   createdById String?   @map("created_by_id") @db.Uuid
   /// Bumped on every new note so the inbox can sort by recent activity.
   lastNoteAt  DateTime? @map("last_note_at") @db.Timestamptz
@@ -218,4 +226,50 @@ model AiBudgetAlert {
 
   @@id([month, thresholdPercent])
   @@map("ai_budget_alerts")
+}
+
+/// Someone in your address book. One-directional: adding someone doesn't add you to theirs.
+model Contact {
+  ownerId   String   @map("owner_id") @db.Uuid
+  contactId String   @map("contact_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  owner   User @relation("ContactOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  contact User @relation("ContactTarget", fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@id([ownerId, contactId])
+  @@index([contactId])
+  @@map("contacts")
+}
+
+/// A WebAuthn credential (passkey). `id` is the base64url credential id.
+model Passkey {
+  id         String    @id
+  userId     String    @map("user_id") @db.Uuid
+  publicKey  Bytes     @map("public_key")
+  counter    Int       @default(0)
+  transports String[]
+  deviceType String    @map("device_type")
+  backedUp   Boolean   @map("backed_up")
+  name       String?
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("passkeys")
+}
+
+/// Single-use WebAuthn challenge (registration or sign-in), valid for a few minutes.
+model AuthChallenge {
+  id        String   @id @default(uuid()) @db.Uuid
+  purpose   String
+  challenge String
+  userId    String?  @map("user_id") @db.Uuid
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([expiresAt])
+  @@map("auth_challenges")
 }
