@@ -24,6 +24,8 @@ import {
   type ThreadItem,
 } from "@/lib/talk/presence";
 
+import { liveIdFor, type RecordingSession } from "./liveSpan";
+
 type Pending = {
   id: string;
   span: CapturedSpan;
@@ -61,7 +63,7 @@ export function TalkThread({
   const [pending, setPending] = useState<Pending[]>([]);
   const [mode, setMode] = useState<Mode>("note");
   const [currentLiveId, setCurrentLiveId] = useState<string | null>(null);
-  const liveIdRef = useRef<string | null>(null);
+  const sessions = useRef<RecordingSession[]>([]);
   const [following, setFollowing] = useState<string | null>(null);
   const lastHeard = useRef<string | null>(null);
   const notesRef = useRef(notes);
@@ -123,7 +125,11 @@ export function TalkThread({
 
   const onSpan = useCallback(
     (span: CapturedSpan) => {
-      const item = { id: crypto.randomUUID(), span, liveId: liveIdRef.current };
+      const item = {
+        id: crypto.randomUUID(),
+        span,
+        liveId: liveIdFor(span.startedAt, sessions.current),
+      };
       setPending((prev) => [...prev, item]);
       void upload(item);
     },
@@ -136,7 +142,10 @@ export function TalkThread({
 
   const start = async (next: Mode) => {
     const liveId = next === "live" ? crypto.randomUUID() : null;
-    liveIdRef.current = liveId;
+    sessions.current = [
+      ...sessions.current.slice(-20),
+      { liveId, startedAt: Date.now() },
+    ];
     setCurrentLiveId(liveId);
     setMode(next);
     await recorder.record();
