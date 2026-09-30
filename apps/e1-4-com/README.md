@@ -43,6 +43,8 @@ src/components/                  Navigation, page shell, audio dock and Da Vinci
 | 4D        | Event Horizon       | `/horizon`       |
 | 5D        | Superposition       | `/superposition` |
 
+Every Voice Stream entry, including the one spoken to sign in, is appended to the speaker's
+single stream and checked against their voiceprint (`voice_segments.speaker_verified`).
 Voice Stream supplies transcript text to the other surfaces. The 3D, 4D and 5D routes
 can be disabled with `NEXT_PUBLIC_FEATURE_GRAVITY_CHALKBOARD`,
 `NEXT_PUBLIC_FEATURE_EVENT_HORIZON` and `NEXT_PUBLIC_FEATURE_SUPERPOSITION`. All default
@@ -106,6 +108,11 @@ Bucket access model:
 - Unsend deletes your own notes for everyone. Leaving keeps your notes for the others; the last
   member out deletes the conversation and all its audio. Deleting your account removes every note
   you sent.
+- **No text on screen**: the note being heard climbs the 1D→5D spacetime field (line, board,
+  gravity, horizon, superposition, observed) above the thread; notes show as avatars and
+  waveforms, and transcripts are kept for search, export and screen readers only. See
+  [`docs/architecture.md`](docs/architecture.md) and the
+  [phone-number replacement plan](docs/replace-phone-numbers.md).
 - Not a phone line: it needs data/Wi-Fi, can't reach phone numbers or emergency services, and
   there are no push notifications yet (the thread polls while open).
 

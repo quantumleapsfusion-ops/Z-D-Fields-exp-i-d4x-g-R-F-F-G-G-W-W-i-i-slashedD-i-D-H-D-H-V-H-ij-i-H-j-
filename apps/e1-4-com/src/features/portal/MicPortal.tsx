@@ -8,9 +8,12 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 
 import type { PinPhase } from "@/features/codex/PinField";
 import { useDaVinciTalk } from "@/features/davinci/useDaVinciTalk";
+import { decodeSound } from "@/features/sound/decode";
 import { sendVoice } from "@/features/voice-id/pcm";
+import { uploadSpan } from "@/features/voice-stream/upload";
 import { type CapturedSpan, useRecorder } from "@/features/voice-stream/useRecorder";
 import { useVoiceCapture } from "@/features/voice-stream/useVoiceCapture";
+import { useCarry } from "@/lib/carry";
 import { haptic } from "@/lib/device/haptics";
 import { requestTilt } from "@/lib/device/tilt";
 
@@ -21,39 +24,42 @@ export function MicPortal({ signedIn }: { signedIn: boolean }) {
   return signedIn ? <Codex /> : <VoiceGate />;
 }
 
-const VOICE_MAX_MS = 8000;
-
 /**
  * The voice is the only key: speak, and the sound itself (measured on the device, matched on the
- * server) opens that speaker's stream, or a new stream for a voice not heard before.
+ * server) opens that speaker's stream, or a new stream for a voice not heard before. What was said
+ * to get in is kept whole as the first entry of that stream and, from the front door, carried on
+ * through the dimensions.
  */
 export function VoiceGate({ next = "/" }: { next?: string }) {
   const router = useRouter();
+  const setSound = useCarry((state) => state.setSound);
   const [phase, setPhase] = useState<"idle" | "checking" | "rejected">("idle");
   const recorder = useRecorder(
     useCallback(
       async (span: CapturedSpan) => {
         setPhase("checking");
-        if (await sendVoice(span.blob)) {
-          haptic("accepted");
-          router.replace(next);
-          router.refresh();
-        } else {
+        if (!(await sendVoice(span.blob))) {
           haptic("rejected");
           setPhase("rejected");
+          return;
         }
+        haptic("accepted");
+        await uploadSpan(span).catch(() => null);
+        const print =
+          next === "/" ? await decodeSound([span.blob]).catch(() => null) : null;
+        if (print && print.voicedRatio > 0) {
+          setSound(print);
+          router.replace("/journey");
+        } else {
+          router.replace(next);
+        }
+        router.refresh();
       },
-      [next, router],
+      [next, router, setSound],
     ),
   );
   const recording = recorder.state === "recording";
   const { stop } = recorder;
-
-  useEffect(() => {
-    if (!recording) return;
-    const timer = setTimeout(stop, VOICE_MAX_MS);
-    return () => clearTimeout(timer);
-  }, [recording, stop]);
 
   useEffect(() => {
     if (phase !== "rejected") return;

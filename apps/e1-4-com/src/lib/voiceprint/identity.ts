@@ -49,15 +49,42 @@ async function recordLogin(userId: string, context: LoginContext) {
   });
 }
 
+/**
+ * Whether `sample` is the voice of `userId`. A match refines the stored print; a different voice
+ * leaves it untouched. A user with no print yet claims this voice as theirs.
+ */
+export async function verifySpeaker(
+  userId: string,
+  sample: Voiceprint,
+): Promise<boolean> {
+  const stored = await prisma.voiceprint.findUnique({
+    where: { userId },
+    select: { print: true },
+  });
+  if (
+    stored &&
+    isVoiceprint(stored.print) &&
+    distance(stored.print, sample) > MATCH_DISTANCE
+  ) {
+    return false;
+  }
+  await remember(userId, sample);
+  return true;
+}
+
+/**
+ * The voice is the key: signed in, it is checked against the speaker's print; signed out, the
+ * closest matching speaker is signed in, and an unheard voice is given a stream of its own.
+ */
 export async function identifyVoice(
   sample: Voiceprint,
   currentUserId: string | null,
   context: LoginContext,
 ) {
   if (currentUserId) {
-    await remember(currentUserId, sample);
+    const matched = await verifySpeaker(currentUserId, sample);
     await recordLogin(currentUserId, context);
-    return { userId: currentUserId, enrolled: false };
+    return { userId: currentUserId, enrolled: false, matched };
   }
 
   const prints = await prisma.voiceprint.findMany({
@@ -80,7 +107,7 @@ export async function identifyVoice(
     await remember(closest.userId, sample);
     await createSession(closest.userId);
     await recordLogin(closest.userId, context);
-    return { userId: closest.userId, enrolled: false };
+    return { userId: closest.userId, enrolled: false, matched: true };
   }
 
   const user = await prisma.user.create({
@@ -97,5 +124,5 @@ export async function identifyVoice(
   });
   await createSession(user.id);
   await recordLogin(user.id, context);
-  return { userId: user.id, enrolled: true };
+  return { userId: user.id, enrolled: true, matched: true };
 }

@@ -139,6 +139,7 @@ function SegmentCard({
             <span className="text-dust font-mono text-xs">
               {formatDuration(segment.durationMs)}
             </span>
+            <SpeakerMark verified={segment.speakerVerified} />
           </div>
           {actions ? <div className="flex items-center gap-4">{actions}</div> : null}
         </header>
@@ -146,6 +147,34 @@ function SegmentCard({
         {detail}
       </article>
     </li>
+  );
+}
+
+/** Whether the entry was spoken in the stream owner's voice. Nothing is shown when unchecked. */
+function SpeakerMark({ verified }: { verified: boolean | null }) {
+  if (verified === null) return null;
+  const label = verified ? "Spoken in your voice" : "Another voice";
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      title={label}
+      className={verified ? "text-dust" : "text-ochre"}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M4 12h2M8 8v8M12 5v14M16 9v6" />
+        {verified ? <path d="M18 15l2 2 3-4" /> : <path d="M19 13l4 4M23 13l-4 4" />}
+      </svg>
+    </span>
   );
 }
 

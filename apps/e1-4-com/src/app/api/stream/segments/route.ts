@@ -3,6 +3,12 @@ import { after, NextResponse } from "next/server";
 import { withRuntimeEnv } from "@/lib/api/handler";
 
 import { getUserId } from "@/lib/auth/user";
+import { verifySpeaker } from "@/lib/voiceprint/identity";
+import {
+  VOICEPRINT_SAMPLE_RATE,
+  pcm16ToFloat,
+  voiceprint,
+} from "@/lib/voiceprint/voiceprint";
 import {
   appendSegment,
   listSegments,
@@ -13,6 +19,27 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const MAX_VOICE_BYTES = VOICEPRINT_SAMPLE_RATE * 2 * 15;
+
+/**
+ * Optional `voice` part: mono 16 kHz 16-bit PCM of the same span, used to check that the entry
+ * was spoken by the stream's owner. `null` when there is no usable sample or the check fails.
+ */
+async function speakerCheck(userId: string, voice: FormDataEntryValue | null) {
+  if (!(voice instanceof Blob) || voice.size === 0 || voice.size > MAX_VOICE_BYTES) {
+    return null;
+  }
+  const print = voiceprint(
+    pcm16ToFloat(await voice.arrayBuffer()),
+    VOICEPRINT_SAMPLE_RATE,
+  );
+  if (!print) return null;
+  return verifySpeaker(userId, print).catch((error: unknown) => {
+    console.error("[voice] speaker check failed", error);
+    return null;
+  });
+}
 
 async function handleGET() {
   const userId = await getUserId();
@@ -47,6 +74,7 @@ async function handlePOST(request: Request) {
     return NextResponse.json({ error: "Invalid duration" }, { status: 400 });
   }
 
+  const speakerVerified = await speakerCheck(userId, form.get("voice"));
   const segment = await appendSegment({
     userId,
     audio: new Uint8Array(await audio.arrayBuffer()),
@@ -54,6 +82,7 @@ async function handlePOST(request: Request) {
     durationMs,
     startedAt,
     endedAt,
+    speakerVerified,
   });
 
   if (segment.transcriptionStatus === "PENDING")

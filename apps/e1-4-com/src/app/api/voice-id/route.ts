@@ -76,11 +76,11 @@ export async function POST(request: Request) {
   let currentUserId: string | null = null;
   try {
     currentUserId = await getUserId();
-    const { enrolled } = await identifyVoice(print, currentUserId, {
+    const { enrolled, matched } = await identifyVoice(print, currentUserId, {
       clientHash: hash,
       device,
     });
-    return NextResponse.json({ ok: true, enrolled });
+    return NextResponse.json({ ok: true, enrolled, matched });
   } catch (err) {
     await recordLogin(hash, false, device, currentUserId ?? undefined);
     console.error("voice-id failed", err);
