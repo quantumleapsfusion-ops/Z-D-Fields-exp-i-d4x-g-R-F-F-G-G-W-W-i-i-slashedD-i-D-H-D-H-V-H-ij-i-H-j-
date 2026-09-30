@@ -1,4 +1,4 @@
-const VERSION = "e1-4-v3";
+const VERSION = "e1-4-v4";
 const SHELL = [
   "/icon.png",
   "/icons/icon-192.png",

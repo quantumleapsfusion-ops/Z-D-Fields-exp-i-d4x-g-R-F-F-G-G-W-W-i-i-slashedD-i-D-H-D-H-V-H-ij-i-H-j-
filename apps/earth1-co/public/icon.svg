@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style>
+    .bar { fill: #0b1530; }
+    @media (prefers-color-scheme: dark) { .bar { fill: #f1f4fb; } }
+  </style>
+  <circle cx="256" cy="256" r="173" fill="none" stroke="#5fa8e8" stroke-width="26"/>
+  <rect class="bar" x="234" y="36" width="44" height="440" rx="8"/>
+  <rect class="bar" x="146" y="160" width="220" height="32" rx="8"/>
+</svg>
