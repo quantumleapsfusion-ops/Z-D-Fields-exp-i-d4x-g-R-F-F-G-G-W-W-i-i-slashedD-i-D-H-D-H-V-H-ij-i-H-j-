@@ -21,7 +21,15 @@ const SPAN_GRACE_MS = 4000;
  * session's sound on the device and carries it into `/journey`. A session with no sound in it
  * stays put and reports `silent`.
  */
-export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
+export function useVoiceCapture(
+  initialSegments: SegmentDTO[] = [],
+  {
+    onSettled,
+  }: {
+    /** Called instead of carrying into `/journey` once a heard session has settled. */
+    onSettled?: (print: SoundPrint) => void;
+  } = {},
+) {
   const router = useRouter();
   const setSound = useCarry((state) => state.setSound);
   const [segments, setSegments] = useState(initialSegments);
@@ -101,11 +109,19 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
       .catch(() => setPrint(null));
   }, [settled, blobs]);
 
+  const onSettledRef = useRef(onSettled);
   useEffect(() => {
-    if (!settled || !print || !heard) return;
+    onSettledRef.current = onSettled;
+  }, [onSettled]);
+  const handed = useRef<SoundPrint | null>(null);
+
+  useEffect(() => {
+    if (!settled || !print || !heard || handed.current === print) return;
+    handed.current = print;
     haptic("saved");
     setSound(print);
-    router.push("/journey");
+    if (onSettledRef.current) onSettledRef.current(print);
+    else router.push("/journey");
   }, [settled, print, heard, setSound, router]);
 
   return {
@@ -114,7 +130,8 @@ export function useVoiceCapture(initialSegments: SegmentDTO[] = []) {
     setSegments,
     pending,
     failedUploads,
-    carrying: finished && !silent,
+    carrying: finished && !silent && !onSettled,
+    settled,
     analysing,
     silent,
     record,

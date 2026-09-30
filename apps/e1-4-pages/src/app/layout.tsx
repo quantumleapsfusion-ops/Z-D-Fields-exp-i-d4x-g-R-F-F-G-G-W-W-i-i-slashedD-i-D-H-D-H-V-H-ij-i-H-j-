@@ -16,7 +16,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 const description =
-  "Greetings Earthling. Four ways to speak: Voice Stream, Da Vinci, Infinity Chalkboard, and Gravity Board. Built by Earth One Global Coalescent.";
+  "Greetings Earthling. Four ways to speak: Voice Stream, Da Vinci, Infinity Chalkboard, and Gravity Board. Built by Earth 1 Coalescent.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://e1-4.com"),

@@ -105,6 +105,7 @@ model Share {
   segment VoiceSegment? @relation(fields: [segmentId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([segmentId])
   @@map("shares")
 }
 
@@ -128,6 +129,7 @@ model Conversation {
   notes     VoiceNote[]
 
   @@index([lastNoteAt])
+  @@index([createdById])
   @@map("conversations")
 }
 

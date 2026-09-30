@@ -11,6 +11,7 @@ const LLM_VARS = [
   "OPENAI_MODEL",
   "DAVINCI_URL",
   "DAVINCI_SECRET",
+  "VERCEL_OIDC_TOKEN",
 ];
 
 async function load(vars: Record<string, string>) {
@@ -27,6 +28,13 @@ describe("getLanguageModel", () => {
     const { getLanguageModel } = await load({});
     expect(getLanguageModel()).toBeNull();
     expect(getLanguageModel("heavy")).toBeNull();
+  });
+
+  it("reaches the AI Gateway with the Vercel OIDC token when no key is set", async () => {
+    const { getLanguageModel } = await load({ VERCEL_OIDC_TOKEN: "oidc" });
+    expect(getLanguageModel()).toMatchObject({
+      name: expect.stringMatching(/^anthropic-gateway:anthropic\//),
+    });
   });
 
   it("prefers Anthropic and picks the model by tier", async () => {

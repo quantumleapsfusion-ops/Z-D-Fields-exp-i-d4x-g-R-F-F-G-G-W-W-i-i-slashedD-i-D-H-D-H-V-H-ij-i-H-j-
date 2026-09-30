@@ -1,0 +1,33 @@
+{
+  "name": "@earth-one/liquid-metal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared liquid-metal bead field (Three.js, damped wave equation) for earth1.co and e1-4.com.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "react": "^19",
+    "react-dom": "^19",
+    "three": "^0.186.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "0.186.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "eslint-config-prettier": "^10.1.8",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "three": "0.186.0",
+    "typescript": "^5",
+    "vitest": "^4.1.11"
+  }
+}
