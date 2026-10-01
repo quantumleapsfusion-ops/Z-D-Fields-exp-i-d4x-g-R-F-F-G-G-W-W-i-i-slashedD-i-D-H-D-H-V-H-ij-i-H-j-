@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { EB_Garamond, Michroma, Space_Grotesk } from "next/font/google";
 import Link from "next/link";
+import { Earth1Mark } from "@earth-one/ui";
 
 import "./globals.css";
 import { Nav } from "@/components/Nav";
@@ -53,7 +54,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   icons: {
     icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/icon.png", type: "image/png", sizes: "512x512" },
     ],
     apple: "/apple-icon.png",
@@ -74,7 +75,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Starfield />
         <SolarSystem />
         <header className="px-6 pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-10 sm:pt-8">
-          <Link href="/" className="label transition-colors hover:text-white">
+          <Link
+            href="/"
+            className="label inline-flex items-center gap-3 text-white/60 transition-colors hover:text-white"
+          >
+            <Earth1Mark size={28} className="shrink-0" />
             {site.org}
           </Link>
         </header>
