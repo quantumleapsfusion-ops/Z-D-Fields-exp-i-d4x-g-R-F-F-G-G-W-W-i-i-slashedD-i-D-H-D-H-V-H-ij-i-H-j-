@@ -6,7 +6,10 @@ import { usePathname } from "next/navigation";
 import { site } from "@/lib/site";
 
 const links = [
+  { href: "/quantum-mechanics", title: "Quantum Mechanics" },
+  { href: "/quantum-computing", title: "Quantum Computing" },
   ...site.pillars.map((p) => ({ href: `/${p.slug}`, title: p.title })),
+  { href: "/equations", title: "Equations" },
   { href: "/founder", title: "Founder" },
 ];
 
@@ -19,7 +22,9 @@ export function Nav() {
           <li key={l.href}>
             <Link
               href={l.href}
-              aria-current={path === l.href ? "page" : undefined}
+              aria-current={
+                path === l.href || path.startsWith(`${l.href}/`) ? "page" : undefined
+              }
               className="label transition-colors hover:text-white aria-[current=page]:text-white"
             >
               {l.title}

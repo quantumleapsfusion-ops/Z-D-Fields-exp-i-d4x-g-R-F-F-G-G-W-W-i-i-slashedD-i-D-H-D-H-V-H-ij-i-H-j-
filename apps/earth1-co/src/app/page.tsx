@@ -1,11 +1,23 @@
 import type { Metadata } from "next";
 
+import Link from "next/link";
+
 import { CiceroPassage } from "@/components/CiceroPassage";
+import { equations } from "@/lib/library/equations";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
+
+const FEATURED = [
+  "planck-relation",
+  "schrodinger",
+  "uncertainty",
+  "bell-state",
+  "qubit",
+  "shor",
+];
 
 export default function HomePage() {
   const jsonLd = {
@@ -75,7 +87,30 @@ export default function HomePage() {
           <h2 id="equations-heading" className="text-center text-2xl sm:text-3xl">
             Equations
           </h2>
-          <div className="mx-auto mt-10 min-h-48 max-w-[70ch] rounded-sm border border-dashed border-white/25" />
+          <ul className="mx-auto mt-10 grid max-w-[70ch] gap-px sm:grid-cols-2">
+            {FEATURED.map((id) => {
+              const e = equations.find((q) => q.id === id)!;
+              return (
+                <li key={id}>
+                  <Link
+                    href={`/equations#${id}`}
+                    className="block h-full border border-white/15 px-5 py-6 transition-colors hover:border-white/60"
+                  >
+                    <span className="block text-2xl italic sm:text-3xl">{e.formula}</span>
+                    <span className="label mt-3 block">{e.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mt-8 text-center">
+            <Link
+              href="/equations"
+              className="label border-b border-white/30 pb-1 hover:text-white"
+            >
+              All equations, explained
+            </Link>
+          </p>
         </section>
       </div>
     </>
