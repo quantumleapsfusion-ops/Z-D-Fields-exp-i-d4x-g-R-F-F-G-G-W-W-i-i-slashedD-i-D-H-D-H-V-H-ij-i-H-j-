@@ -45,31 +45,41 @@ jobs:
       - run: pytest -q
 
   e2e:
-    name: Playwright smoke (e1-4.com against test project)
+    name: Playwright smoke (e1-4.com on a throwaway database and storage fake)
     runs-on: ubuntu-latest
     needs: check
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       CI: true
       TURBO_TELEMETRY_DISABLED: 1
       NEXT_TELEMETRY_DISABLED: 1
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      # The browser suite needs no secrets: the database is the service container above and
+      # storage is the in-process fake in apps/e1-4-com/e2e/helpers/fake-storage.ts.
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      SUPABASE_SERVICE_ROLE_KEY: e2e-fake-service-role-key
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      NEXT_PUBLIC_SITE_URL: http://localhost:3100
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
-      - name: Check e2e secrets are configured
-        run: |
-          for v in NEXT_PUBLIC_SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY DATABASE_URL DIRECT_URL; do
-            if [ -z "${!v}" ]; then echo "::error::Repository secret $v is not set; the Playwright job cannot run."; missing=1; fi
-          done
-          [ -z "$missing" ]
       - run: npm ci
+      - run: npx prisma migrate deploy
+        working-directory: apps/e1-4-com
       - run: npx playwright install --with-deps chromium
         working-directory: apps/e1-4-com
       - run: npx turbo run build --filter=e1-4-com
