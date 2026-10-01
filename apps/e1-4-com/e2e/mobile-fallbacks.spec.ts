@@ -13,6 +13,13 @@ runFakeStorage();
 
 const speakButton = "Speak to Da Vinci";
 
+/** The mic button wakes only once React owns the page; wait for that before tapping it. */
+async function tapSpeak(page: import("@playwright/test").Page) {
+  const speak = page.getByRole("button", { name: speakButton });
+  await expect(speak).toBeEnabled();
+  await speak.click({ force: true });
+}
+
 test.describe("mobile microphone fallbacks", () => {
   // Same slow-runner headroom as the smoke suite: software WebGL behind the microphone.
   test.slow();
@@ -47,7 +54,7 @@ test.describe("mobile microphone fallbacks", () => {
     const upload = page.waitForResponse(
       (r) => r.url().endsWith("/api/stream/segments") && r.request().method() === "POST",
     );
-    await page.getByRole("button", { name: speakButton }).click({ force: true });
+    await tapSpeak(page);
     await expect(page.getByRole("status")).toContainText("Listening");
     await page.waitForTimeout(1500);
     await page.getByRole("button", { name: "Stop" }).click({ force: true });
@@ -69,7 +76,7 @@ test.describe("mobile microphone fallbacks", () => {
         Promise.reject(new DOMException("Permission denied", "NotAllowedError"));
     });
     await page.goto("/");
-    await page.getByRole("button", { name: speakButton }).click({ force: true });
+    await tapSpeak(page);
 
     const status = page.getByRole("status");
     await expect(status).toContainText(/blocked/i);
@@ -98,11 +105,11 @@ test.describe("mobile microphone fallbacks", () => {
           : real(c);
     });
     await page.goto("/");
-    await page.getByRole("button", { name: speakButton }).click({ force: true });
+    await tapSpeak(page);
     await expect(page.getByRole("status")).toContainText(/busy/i);
 
     // Second attempt (mic released) succeeds and clears the message.
-    await page.getByRole("button", { name: speakButton }).click({ force: true });
+    await tapSpeak(page);
     await expect(page.getByRole("button", { name: "Stop" })).toBeVisible();
     await expect(page.getByRole("status")).toContainText("Listening");
     await page.getByRole("button", { name: "Stop" }).click({ force: true });
@@ -129,7 +136,7 @@ test.describe("mobile microphone fallbacks", () => {
     const upload = page.waitForResponse(
       (r) => r.url().endsWith("/api/stream/segments") && r.request().method() === "POST",
     );
-    await page.getByRole("button", { name: speakButton }).click({ force: true });
+    await tapSpeak(page);
     await expect(page.getByRole("button", { name: "Stop" })).toBeVisible();
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
