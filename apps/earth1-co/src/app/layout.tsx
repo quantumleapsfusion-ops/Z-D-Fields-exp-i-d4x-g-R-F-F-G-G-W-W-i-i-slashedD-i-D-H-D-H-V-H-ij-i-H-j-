@@ -5,6 +5,7 @@ import { Earth1Mark } from "@earth-one/ui";
 
 import "katex/dist/katex.min.css";
 import "./globals.css";
+import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { SolarSystem } from "@/components/SolarSystem";
 import { Starfield } from "@/components/Starfield";
@@ -88,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Nav />
+        <Footer />
       </body>
     </html>
   );
