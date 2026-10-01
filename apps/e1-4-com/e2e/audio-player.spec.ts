@@ -8,9 +8,13 @@ import { makeWav, startFakeStorage, type FakeStorage } from "./helpers/fake-stor
 /**
  * Real WAV audio goes through the app into a storage fake that stores and serves it, then the
  * bead player (StreamField) is driven in the browser: tap, switch, replay, share, shared inbox.
- * Needs NEXT_PUBLIC_SUPABASE_URL to point at E2E_FAKE_STORAGE_PORT (default 54321).
+ * Point NEXT_PUBLIC_SUPABASE_URL at 127.0.0.1:E2E_FAKE_STORAGE_PORT (default 54321) to use the
+ * fake; against a real Supabase project (CI) the same flow runs through real storage.
  */
 const STORAGE_PORT = Number(process.env.E2E_FAKE_STORAGE_PORT ?? 54321);
+const USING_FAKE = /^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+);
 const SHORT = makeWav(1.2);
 const LONG = makeWav(2.4);
 
@@ -19,13 +23,13 @@ const LONG = makeWav(2.4);
 test.use({ viewport: { width: 360, height: 360 } });
 test.setTimeout(180_000);
 
-let storage: FakeStorage;
+let storage: FakeStorage | null = null;
 
 test.beforeAll(async () => {
-  storage = await startFakeStorage(STORAGE_PORT);
+  if (USING_FAKE) storage = await startFakeStorage(STORAGE_PORT);
 });
 test.afterAll(async () => {
-  await storage.close();
+  await storage?.close();
 });
 test.afterEach(async () => {
   await cleanupE2eUsers();
@@ -93,12 +97,14 @@ test("own stream: stored WAV is served back and plays on tap, one entry at a tim
   await upload(page, LONG, 2400);
 
   // The storage fake really holds both files, byte for byte.
-  const stored = [...storage.objects.values()].filter(
-    (o) => o.contentType === "audio/wav",
-  );
-  expect(stored.map((o) => o.body.length).sort()).toEqual(
-    [SHORT.length, LONG.length].sort(),
-  );
+  if (storage) {
+    const stored = [...storage.objects.values()].filter(
+      (o) => o.contentType === "audio/wav",
+    );
+    expect(stored.map((o) => o.body.length).sort()).toEqual(
+      [SHORT.length, LONG.length].sort(),
+    );
+  }
   const served = await page.request.get(
     `/api/stream/segments/${first.segment!.id}/audio`,
   );
