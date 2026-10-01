@@ -7,6 +7,8 @@ export type Quote = {
   source: string;
   /** Translation or wording caveats. */
   caveat?: string;
+  /** Checked against `source`. Unverified quotes are never rendered. */
+  verified: boolean;
 };
 
 export type Person = {

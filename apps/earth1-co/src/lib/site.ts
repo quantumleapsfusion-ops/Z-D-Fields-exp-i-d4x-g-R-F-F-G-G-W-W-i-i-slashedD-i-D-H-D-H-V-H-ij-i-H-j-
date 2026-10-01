@@ -37,6 +37,16 @@ export const site = {
       line: "The same laws hold on every shore.",
     },
     {
+      slug: "chemistry",
+      title: "Chemistry",
+      line: "Everything you can touch, rearranged.",
+    },
+    {
+      slug: "biology",
+      title: "Biology",
+      line: "One family tree, four billion years deep.",
+    },
+    {
       slug: "research",
       title: "Research",
       line: "Open questions, answered in the open, for everyone.",
