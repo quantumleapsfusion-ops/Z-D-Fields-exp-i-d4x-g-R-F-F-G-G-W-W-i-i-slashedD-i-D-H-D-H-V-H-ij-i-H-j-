@@ -45,6 +45,20 @@ describe("content shape", () => {
   });
 });
 
+describe("global citizenship", () => {
+  it("covers the brief's philosophers and the science-fiction sub-section", () => {
+    const gc = sections.find((s) => s.slug === "global-citizenship");
+    const names = gc?.figures.map((f) => f.name.split(" ").at(-1)) ?? [];
+    for (const n of ["Kant", "Hume", "Rousseau", "Locke", "Hippo", "Hegel", "Foucault"]) {
+      expect(names).toContain(n);
+    }
+    expect(gc?.sub?.figures.map((f) => f.name)).toEqual([
+      "Isaac Asimov",
+      "Douglas Adams",
+    ]);
+  });
+});
+
 describe("lifespan", () => {
   it("formats dates for the dead and the living", () => {
     expect(lifespan({ born: "1643", died: "1727" })).toBe("1643 – 1727");
