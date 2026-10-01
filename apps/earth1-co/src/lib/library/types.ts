@@ -36,6 +36,8 @@ export type Equation = {
   name: string;
   /** Plain Unicode so it reads everywhere without a maths renderer. */
   formula: string;
+  /** LaTeX for KaTeX rendering; `formula` stays the accessible text. */
+  tex?: string;
   year: string;
   explain: string;
   /** What each symbol means. */

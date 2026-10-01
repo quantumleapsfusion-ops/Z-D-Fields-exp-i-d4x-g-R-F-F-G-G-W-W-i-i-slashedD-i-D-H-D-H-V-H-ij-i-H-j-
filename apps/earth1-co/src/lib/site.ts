@@ -4,6 +4,7 @@ export const site = {
   url: "https://earth1.co",
   org: "Earth 1 Coalescent",
   focus: "Global citizenship for all.",
+  motto: "Global Citizenship For All",
   description:
     "Earth 1 Coalescent is a home for global citizenship: every person on Earth is a citizen of it, owns their own voice and data, and speaks freely across borders.",
   keywords: [
