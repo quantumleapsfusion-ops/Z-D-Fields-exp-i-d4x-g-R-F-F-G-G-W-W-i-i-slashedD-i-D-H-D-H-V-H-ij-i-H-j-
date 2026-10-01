@@ -24,7 +24,24 @@ export type Figure = {
   quotes: Quote[];
 };
 
-export type FieldSlug = "chemistry" | "physics" | "biology" | "mathematics";
+export type FieldSlug =
+  "chemistry" | "physics" | "biology" | "biochemistry" | "mathematics";
+
+/** A displayed equation. `tex` is KaTeX source; `label` is what a screen reader hears. */
+export type TopicEquation = {
+  tex: string;
+  label: string;
+  /** One sentence on what the symbols mean. */
+  note?: string;
+};
+
+/** A subject section of a field page: a few paragraphs and the equations they lean on. */
+export type Topic = {
+  id: string;
+  title: string;
+  paragraphs: string[];
+  equations?: TopicEquation[];
+};
 
 export type FieldSection = {
   slug: FieldSlug | "global-citizenship";
@@ -32,6 +49,8 @@ export type FieldSection = {
   /** One line under the title; also the meta description lead. */
   line: string;
   intro: string[];
+  /** The subject itself, before the people. */
+  topics?: Topic[];
   figures: Figure[];
   /** Optional sub-section, e.g. science fiction under global citizenship. */
   sub?: { id: string; title: string; intro: string[]; figures: Figure[] };

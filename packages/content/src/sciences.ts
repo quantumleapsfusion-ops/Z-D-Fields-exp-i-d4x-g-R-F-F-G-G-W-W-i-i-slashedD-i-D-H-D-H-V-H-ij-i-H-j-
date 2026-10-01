@@ -1,3 +1,4 @@
+import { mathematicsTopics, physicsTopics } from "./topics";
 import type { FieldSection } from "./types";
 
 export const physics: FieldSection = {
@@ -7,6 +8,7 @@ export const physics: FieldSection = {
   intro: [
     "Physics asks what the world is made of and how it moves, and answers in rules that work the same in Lagos, Lima and on the Moon. Its two deepest chapters on this site have pages of their own: quantum mechanics and quantum computing. This page holds the people who built the classical ground those chapters stand on.",
   ],
+  topics: physicsTopics,
   figures: [
     {
       slug: "galileo-galilei",
@@ -334,7 +336,20 @@ export const mathematics: FieldSection = {
   intro: [
     "A proof written in Kolkata is checked in Göttingen and stays true forever. Mathematics is the most international thing people have made, and the language every other science on this site is written in.",
   ],
+  topics: mathematicsTopics,
   figures: [
+    {
+      slug: "gottfried-wilhelm-leibniz",
+      name: "Gottfried Wilhelm Leibniz",
+      born: "1646",
+      died: "1716",
+      field: ["Mathematics", "Philosophy"],
+      contributions: [
+        "Developed the differential and integral calculus independently of Newton and published it first, in 1684 and 1686, with the dy/dx and integral-sign notation still used today.",
+        "Described binary arithmetic in 1703 and built the stepped reckoner, a calculating machine that could multiply and divide.",
+      ],
+      quotes: [],
+    },
     {
       slug: "leonhard-euler",
       name: "Leonhard Euler",
