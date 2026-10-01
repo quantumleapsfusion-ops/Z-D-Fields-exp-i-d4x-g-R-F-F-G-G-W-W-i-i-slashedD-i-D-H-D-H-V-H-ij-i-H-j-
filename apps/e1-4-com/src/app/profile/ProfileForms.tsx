@@ -9,6 +9,7 @@ import {
   type ActionState,
 } from "@/app/actions/profile";
 import { revokeShareAction } from "@/app/actions/stream";
+import { resizeImage } from "@/features/profile/resizeImage";
 
 const input =
   "w-full rounded-full border border-chalk/20 bg-transparent px-4 py-2 font-sans text-chalk placeholder:text-dust/60 focus:border-ochre focus:outline-none";
@@ -26,8 +27,22 @@ function Status({ state }: { state: ActionState }) {
 
 export function AvatarForm() {
   const [state, action, pending] = useActionState(uploadAvatar, null);
+  const [, start] = useTransition();
   return (
-    <form action={action}>
+    <form
+      action={action}
+      onSubmit={(event) => {
+        // Shrink the picture on the device first; the server still checks what arrives.
+        event.preventDefault();
+        const form = event.currentTarget;
+        const chosen = new FormData(form).get("avatar");
+        start(async () => {
+          const data = new FormData();
+          data.set("avatar", chosen instanceof File ? await resizeImage(chosen) : "");
+          action(data);
+        });
+      }}
+    >
       <input
         type="file"
         name="avatar"

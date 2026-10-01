@@ -7,14 +7,9 @@ import { getUserId } from "@/lib/auth/user";
 import { endSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { hardDeleteUser } from "@/lib/privacy/hard-delete";
+import { IMAGE_EXTENSIONS, sniffImageType } from "@/lib/images/sniff";
 import { AVATARS_BUCKET, storage } from "@/lib/storage";
 
-const AVATAR_TYPES: Record<string, string> = {
-  "image/png": "png",
-  "image/jpeg": "jpg",
-  "image/webp": "webp",
-  "image/gif": "gif",
-};
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 
 export type ActionState = { ok: boolean; message: string } | null;
@@ -49,9 +44,12 @@ export async function uploadAvatar(
   const file = form.get("avatar");
   if (!(file instanceof File) || file.size === 0)
     return { ok: false, message: "Choose an image." };
-  const ext = AVATAR_TYPES[file.type];
-  if (!ext) return { ok: false, message: "Use PNG, JPEG, WebP or GIF." };
   if (file.size > MAX_AVATAR_BYTES) return { ok: false, message: "Max 4 MB." };
+  // Trust the bytes, not the declared type: a renamed script or an SVG is refused here.
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const type = sniffImageType(bytes);
+  if (!type) return { ok: false, message: "Use PNG, JPEG, WebP or GIF." };
+  const ext = IMAGE_EXTENSIONS[type];
 
   // Storage RLS: first path segment must be the owner's uid.
   const path = `${userId}/avatar-${Date.now()}.${ext}`;
@@ -63,8 +61,8 @@ export async function uploadAvatar(
   await storage.upload({
     bucket: AVATARS_BUCKET,
     path,
-    body: file,
-    contentType: file.type,
+    body: bytes,
+    contentType: type,
     upsert: true,
   });
   await prisma.user.update({ where: { id: userId }, data: { avatarPath: path } });
