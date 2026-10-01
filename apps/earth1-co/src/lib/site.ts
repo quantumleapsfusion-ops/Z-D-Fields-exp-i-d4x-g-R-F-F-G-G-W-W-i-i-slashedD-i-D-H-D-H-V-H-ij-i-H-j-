@@ -62,6 +62,13 @@ export const site = {
       line: "Every person on Earth is a citizen of it.",
     },
   ],
+  /** The product site. e1-4 is short for "earth life-forms". */
+  e14: {
+    name: "e1-4",
+    tagline: "earth life-forms",
+    url: "https://e1-4.com",
+    line: "e1-4 stands for earth life-forms: a voice-only social network by Earth 1 Coalescent.",
+  },
   founder: {
     name: "Zachariah Robertson",
     role: "Founder & Chief Executive",
