@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# e1-4 local storage provider (STORAGE_PROVIDER=local)
+.e14-storage/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

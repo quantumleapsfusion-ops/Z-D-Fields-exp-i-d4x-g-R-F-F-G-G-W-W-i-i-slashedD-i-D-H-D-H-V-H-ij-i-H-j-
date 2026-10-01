@@ -130,6 +130,15 @@ Bucket access model:
 | `npm run prisma:deploy`  | Apply pending migrations (`migrate deploy`)           |
 | `npm run prisma:studio`  | Browse the database                                   |
 
+## Running without Supabase
+
+Set `STORAGE_PROVIDER=local` in `.env.local` and the app keeps audio and avatars as files under
+`.e14-storage/` (change it with `LOCAL_STORAGE_DIR`), served from `/api/local-storage`. Only
+Postgres is needed then: `DATABASE_URL` and `DIRECT_URL` can point at any local database once
+`npm run prisma:deploy` has run against it. `NEXT_PUBLIC_SUPABASE_URL` and
+`SUPABASE_SERVICE_ROLE_KEY` may stay blank. Production always uses Supabase; a serverless
+deployment has no disk to keep files on.
+
 ## Testing
 
 - **Unit (Vitest):** `src/**/*.test.ts`, pure logic only (LLM JSON extraction, Da Vinci ops,
