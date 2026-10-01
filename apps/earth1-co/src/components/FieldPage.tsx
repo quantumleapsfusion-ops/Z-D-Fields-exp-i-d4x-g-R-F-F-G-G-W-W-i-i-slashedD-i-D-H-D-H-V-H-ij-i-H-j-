@@ -1,8 +1,9 @@
-import type { FieldSection, Figure } from "@earth-one/content";
+import type { FieldSection, Figure, Topic } from "@earth-one/content";
 import { citableQuotes, lifespan } from "@earth-one/content";
 import Link from "next/link";
 
 import { H2, Heading, Page, Prose } from "@/components/library/parts";
+import { Tex } from "@/components/Tex";
 import { site } from "@/lib/site";
 
 function FigureEntry({ figure }: { figure: Figure }) {
@@ -41,7 +42,28 @@ function FigureEntry({ figure }: { figure: Figure }) {
   );
 }
 
-/** A content-backed section page (chemistry, physics, biology, mathematics, global citizenship). */
+function TopicSection({ topic }: { topic: Topic }) {
+  return (
+    <section aria-labelledby={topic.id}>
+      <H2 id={topic.id}>{topic.title}</H2>
+      <Prose>
+        {topic.paragraphs.map((p) => (
+          <p key={p.slice(0, 24)}>{p}</p>
+        ))}
+      </Prose>
+      {topic.equations?.map((eq) => (
+        <div key={eq.tex} className="my-6 border-l border-white/40 pl-5">
+          <p className="overflow-x-auto py-1 text-xl sm:text-2xl">
+            <Tex tex={eq.tex} label={eq.label} display />
+          </p>
+          {eq.note ? <p className="source mt-2">{eq.note}</p> : null}
+        </div>
+      ))}
+    </section>
+  );
+}
+
+/** A content-backed section page (chemistry, physics, biology, biochemistry, mathematics, global citizenship). */
 export function FieldPage({ section }: { section: FieldSection }) {
   const figures = [...section.figures, ...(section.sub?.figures ?? [])];
   const jsonLd = {
@@ -91,6 +113,35 @@ export function FieldPage({ section }: { section: FieldSection }) {
           .
         </p>
       ) : null}
+
+      {section.topics?.length ? (
+        <nav aria-label="On this page" className="mt-8">
+          <ul className="flex flex-wrap gap-2">
+            {section.topics.map((t) => (
+              <li key={t.id}>
+                <a
+                  href={`#${t.id}`}
+                  className="inline-block rounded-full border border-white/25 px-3 py-1 font-sans text-xs tracking-[0.08em] text-white/75 hover:border-white hover:text-white"
+                >
+                  {t.title}
+                </a>
+              </li>
+            ))}
+            <li>
+              <a
+                href="#people"
+                className="inline-block rounded-full border border-white/25 px-3 py-1 font-sans text-xs tracking-[0.08em] text-white/75 hover:border-white hover:text-white"
+              >
+                The people
+              </a>
+            </li>
+          </ul>
+        </nav>
+      ) : null}
+
+      {section.topics?.map((t) => (
+        <TopicSection key={t.id} topic={t} />
+      ))}
 
       <H2 id="people">The people</H2>
       {section.figures.map((f) => (

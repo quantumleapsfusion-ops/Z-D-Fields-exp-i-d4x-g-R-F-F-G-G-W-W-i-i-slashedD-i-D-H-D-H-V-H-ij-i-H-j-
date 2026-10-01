@@ -65,3 +65,50 @@ describe("lifespan", () => {
     expect(lifespan({ born: "1936", died: "" })).toBe("born 1936");
   });
 });
+
+describe("subject topics", () => {
+  it("fills mathematics, physics and biochemistry with topics", () => {
+    const ids = (slug: string) =>
+      sections.find((s) => s.slug === slug)?.topics?.map((t) => t.id) ?? [];
+    expect(ids("mathematics")).toEqual(
+      expect.arrayContaining([
+        "euclid",
+        "calculus",
+        "leibniz",
+        "differential-equations",
+        "linear-algebra",
+        "parametric-curves",
+      ]),
+    );
+    expect(ids("physics")).toEqual(
+      expect.arrayContaining([
+        "classical-mechanics",
+        "lagrangian",
+        "relativity",
+        "lorentz",
+        "quantum",
+        "thermodynamics",
+      ]),
+    );
+    expect(ids("biochemistry")).toEqual(
+      expect.arrayContaining([
+        "molecules-of-life",
+        "enzymes",
+        "metabolism",
+        "central-dogma",
+        "atp",
+      ]),
+    );
+  });
+
+  it("gives every topic prose and unique ids within its page", () => {
+    for (const s of sections) {
+      const topics = s.topics ?? [];
+      expect(new Set(topics.map((t) => t.id)).size, s.slug).toBe(topics.length);
+      for (const t of topics) {
+        expect(t.paragraphs.length, t.id).toBeGreaterThan(0);
+        for (const e of t.equations ?? []) expect(e.label.trim(), t.id).not.toBe("");
+      }
+    }
+  });
+});

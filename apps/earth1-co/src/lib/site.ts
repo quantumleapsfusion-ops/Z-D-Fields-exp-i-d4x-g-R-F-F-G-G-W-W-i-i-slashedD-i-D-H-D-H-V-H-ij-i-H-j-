@@ -47,6 +47,11 @@ export const site = {
       line: "One family tree, four billion years deep.",
     },
     {
+      slug: "biochemistry",
+      title: "Biochemistry",
+      line: "The chemistry that keeps every cell alive.",
+    },
+    {
       slug: "research",
       title: "Research",
       line: "Open questions, answered in the open, for everyone.",
