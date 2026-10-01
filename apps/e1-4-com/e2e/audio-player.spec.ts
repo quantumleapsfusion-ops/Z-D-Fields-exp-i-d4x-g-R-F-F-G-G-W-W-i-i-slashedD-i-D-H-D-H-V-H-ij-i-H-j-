@@ -43,6 +43,7 @@ async function watchAudio(page: Page) {
     // The metal field redraws every frame in software GL and starves the page; slow it right down.
     window.requestAnimationFrame = (cb) =>
       window.setTimeout(() => cb(performance.now()), 200);
+    window.cancelAnimationFrame = (id) => window.clearTimeout(id);
     const log: Probe[] = [];
     (window as unknown as { __audio: Probe[] }).__audio = log;
     const note = (el: HTMLMediaElement, event: string) =>
