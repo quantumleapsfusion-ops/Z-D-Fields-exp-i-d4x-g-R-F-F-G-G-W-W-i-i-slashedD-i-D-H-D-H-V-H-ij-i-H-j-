@@ -86,8 +86,9 @@ npx prisma migrate status   # lists pending migrations
 npx prisma migrate deploy   # applies them; never use `migrate dev` or `db push` here
 ```
 
-Then run any matching SQL in `apps/e1-4-com/supabase/migrations/` (row-level security)
-in the Supabase SQL editor, and open `/api/health` on the deployment: it should
+Row-level security for new tables is part of the Prisma migration itself; the SQL in
+`apps/e1-4-com/supabase/migrations/` only covers older tables. Then open `/api/health`
+on the deployment: it should
 return `{"ok":true}`. If it names a missing table or variable, do not merge or promote.
 Take a database backup first when a migration drops or rewrites data.
 

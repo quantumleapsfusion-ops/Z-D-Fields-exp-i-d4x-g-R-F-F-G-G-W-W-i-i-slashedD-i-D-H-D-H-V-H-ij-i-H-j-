@@ -44,18 +44,20 @@ export type VoiceResult = { ok: true } | { ok: false; reason: VoiceRefusal };
 /**
  * Sends a voice sample to be recognised. Signed out, a match opens that speaker's stream and a
  * new voice opens a new one. `span.pcm` (tapped live from the microphone) is used when present;
- * decoding the recorded file is only the fallback. `challenge` is the liveness id whose digits the
+ * decoding the recorded file is only the fallback. The server checks the spoken digits in this same
+ * audio. `enrol` asks for a new stream if no known voice matches. `challenge` is the liveness id whose digits the
  * person just spoke back.
  */
 export async function sendVoice(
   span: { blob: Blob; pcm?: ArrayBuffer },
   challenge: string | null,
+  enrol = false,
 ): Promise<VoiceResult> {
   const pcm = span.pcm ?? (await blobToPcm16(span.blob));
   if (!pcm) return { ok: false, reason: "voice" };
   const form = new FormData();
   form.append("voice", new Blob([pcm], { type: "application/octet-stream" }));
-  form.append("audio", span.blob);
+  if (enrol) form.append("enrol", "1");
   if (challenge) form.append("challenge", challenge);
   try {
     const res = await fetch("/api/voice-id", { method: "POST", body: form });

@@ -59,7 +59,8 @@ const MAX_ANSWER_MS = 8000;
  * The sound itself (measured on the device, matched on the server) opens that speaker's stream,
  * or a new stream for a voice not heard before; the digits prove a live person is speaking, not
  * a recording. Nothing is ever written on screen: a refusal is a shake, a glyph and a vibration,
- * and after two misses a key appears to sign in with the phone's passkey instead. What was said
+ * a voice nobody knows is refused, and a key appears to sign in with the phone's passkey instead,
+ * next to a plus that deliberately opens a new stream for that voice. What was said
  * is kept whole as the first entry of that stream and, from the front door, carried on through
  * the dimensions.
  */
@@ -69,6 +70,8 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
   const [phase, setPhase] = useState<"idle" | "prompt" | "checking">("idle");
   const [refusal, setRefusal] = useState<VoiceRefusal | null>(null);
   const [misses, setMisses] = useState(0);
+  const [unknown, setUnknown] = useState(false);
+  const enrol = useRef(false);
   const [pulse, setPulse] = useState(0);
   const challenge = useRef<string | null>(null);
   const answerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -77,6 +80,7 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
     haptic(reason === "voice" ? "rejected" : reason);
     setRefusal(reason);
     setMisses((n) => n + 1);
+    if (reason === "voice") setUnknown(true);
     setPhase("idle");
   }, []);
 
@@ -85,8 +89,9 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
       async (span: CapturedSpan) => {
         if (answerTimer.current) clearTimeout(answerTimer.current);
         setPhase("checking");
-        const result = await sendVoice(span, challenge.current);
+        const result = await sendVoice(span, challenge.current, enrol.current);
         challenge.current = null;
+        enrol.current = false;
         if (!result.ok) return refuse(result.reason);
         haptic("accepted");
         // Kept for later if the upload fails; never lost, never blocks the way in.
@@ -172,6 +177,7 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
                 haptic("stop");
                 stop();
               } else {
+                enrol.current = false;
                 void begin();
               }
             }}
@@ -182,7 +188,33 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
         </div>
         <div className="flex h-12 items-center gap-4">
           {refusal ? <RefusalGlyph reason={refusal} /> : null}
-          {misses >= 2 || !recorder.supported ? <PasskeyLogin next={next} /> : null}
+          {unknown || misses >= 2 || !recorder.supported ? (
+            <PasskeyLogin next={next} />
+          ) : null}
+          {unknown && recorder.supported ? (
+            <button
+              type="button"
+              aria-label="New stream"
+              disabled={phase !== "idle" || recording}
+              onClick={() => {
+                enrol.current = true;
+                void begin();
+              }}
+              className="text-dust hover:text-chalk border-chalk/20 flex h-12 w-12 items-center justify-center rounded-full border transition-colors disabled:opacity-40"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
+          ) : null}
         </div>
         <p role="status" className="sr-only">
           {recorder.error ??

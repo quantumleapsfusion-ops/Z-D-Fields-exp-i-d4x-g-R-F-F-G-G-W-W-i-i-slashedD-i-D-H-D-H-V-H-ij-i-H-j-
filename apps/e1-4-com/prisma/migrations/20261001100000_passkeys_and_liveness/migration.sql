@@ -33,3 +33,20 @@ CREATE INDEX "auth_challenges_expires_at_idx" ON "auth_challenges"("expires_at")
 
 -- AddForeignKey
 ALTER TABLE "passkeys" ADD CONSTRAINT "passkeys_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Passkeys and sign-in challenges are read and written only by the app (the database owner).
+-- RLS is enabled here, in the same migration as the tables, so there is no window in which the
+-- public anon key can read or write them. Nothing here is for the anon or authenticated keys.
+ALTER TABLE "passkeys" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "auth_challenges" ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    REVOKE ALL ON TABLE "passkeys", "auth_challenges" FROM anon;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+    REVOKE ALL ON TABLE "passkeys", "auth_challenges" FROM authenticated;
+  END IF;
+END
+$$;

@@ -71,6 +71,17 @@ export const currentSessionUserId = cache(async (): Promise<string | null> => {
   return session.userId;
 });
 
+/** Ends every session of `userId` except the one making this request. */
+export async function revokeOtherSessions(userId: string): Promise<void> {
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  await prisma.session.deleteMany({
+    where: {
+      userId,
+      ...(token ? { NOT: { tokenHash: hashToken(token) } } : {}),
+    },
+  });
+}
+
 export async function endSession(): Promise<void> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;

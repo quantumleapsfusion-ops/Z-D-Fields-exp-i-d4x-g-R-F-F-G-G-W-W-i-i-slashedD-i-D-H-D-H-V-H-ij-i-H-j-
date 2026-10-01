@@ -36,5 +36,19 @@ re-sent on the next visit or when the network returns; a retry glyph shows while
 
 `GET /api/health` lists what is missing by name (tables, env variables, speech-to-text for
 liveness). Migrations are **not** run by the Vercel build: after merging, run
-`npx prisma migrate deploy` against the production database and apply
-`supabase/migrations/*` for row-level security.
+`npx prisma migrate deploy` against the production database. Row-level security for the
+passkey and challenge tables is part of that migration; `supabase/migrations/*` covers the
+older tables.
+
+## Passkeys
+
+A passkey outlives the session cookie, so adding one needs a voice sign-in (with its spoken
+digits) within the last three minutes, and a stream can hold one passkey from a voice-only
+session. Adding one ends every other session of that user. Passkey sign-ins are logged to
+`login_events` with method `passkey`.
+
+## Unknown voices
+
+Signed out, a voice that matches nobody is refused; the key (passkey) and a plus appear. The
+plus deliberately opens a new stream for that voice, so a known person in a noisy room is not
+dropped into an empty account.

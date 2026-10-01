@@ -13,6 +13,7 @@ import {
 } from "@simplewebauthn/server";
 
 import { prisma } from "@/lib/db";
+import { revokeOtherSessions } from "@/lib/auth/session";
 import { publicEnv } from "@/lib/env";
 
 /**
@@ -64,9 +65,30 @@ export class PasskeyError extends Error {
   }
 }
 
+/** How recently the voice (with its spoken digits) must have been checked to add a passkey. */
+const STEP_UP_MS = 3 * 60_000;
+
+/**
+ * A passkey outlives the session, so adding one needs a fresh voice check, not just a session
+ * cookie. A user who already has a passkey cannot add another from a voice-only session.
+ */
+export async function canAddPasskey(userId: string): Promise<boolean> {
+  if ((await prisma.passkey.count({ where: { userId } })) > 0) return false;
+  const recent = await prisma.loginEvent.count({
+    where: {
+      userId,
+      method: "voice",
+      success: true,
+      at: { gte: new Date(Date.now() - STEP_UP_MS) },
+    },
+  });
+  return recent > 0;
+}
+
 export async function registrationOptions(
   userId: string,
 ): Promise<{ challengeId: string; options: PublicKeyCredentialCreationOptionsJSON }> {
+  if (!(await canAddPasskey(userId))) throw new PasskeyError("step-up");
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     select: {
@@ -100,6 +122,7 @@ export async function verifyRegistration(
   challengeId: string,
   response: RegistrationResponseJSON,
 ): Promise<void> {
+  if (!(await canAddPasskey(userId))) throw new PasskeyError("step-up");
   const challenge = await consumeChallenge(challengeId, "register", userId);
   if (!challenge) throw new PasskeyError("expired");
   const rp = relyingParty();
@@ -123,6 +146,8 @@ export async function verifyRegistration(
       backedUp: credentialBackedUp,
     },
   });
+  // Other devices signed in by an earlier voice must prove themselves again.
+  await revokeOtherSessions(userId);
 }
 
 export async function authenticationOptions(): Promise<{

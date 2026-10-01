@@ -1,5 +1,7 @@
 "use server";
 
+import { createHash } from "node:crypto";
+import { headers } from "next/headers";
 import type {
   AuthenticationResponseJSON,
   RegistrationResponseJSON,
@@ -64,7 +66,20 @@ export async function passkeyLoginVerifyAction(
   response: AuthenticationResponseJSON,
 ): Promise<PasskeyResult> {
   try {
-    await createSession(await verifyAuthentication(challengeId, response));
+    const userId = await verifyAuthentication(challengeId, response);
+    await createSession(userId);
+    const h = await headers();
+    await prisma.loginEvent.create({
+      data: {
+        userId,
+        method: "passkey",
+        success: true,
+        clientHash: createHash("sha256")
+          .update(h.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown")
+          .digest("hex"),
+        device: h.get("user-agent")?.slice(0, 200) || null,
+      },
+    });
     return { ok: true };
   } catch (error) {
     return failed(error);
