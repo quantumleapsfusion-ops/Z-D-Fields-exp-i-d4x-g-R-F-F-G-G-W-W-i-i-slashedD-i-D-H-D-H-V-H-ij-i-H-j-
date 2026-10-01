@@ -84,6 +84,12 @@ jobs:
         working-directory: apps/e1-4-com
       - run: npx turbo run build --filter=e1-4-com
       - run: npm run test:e2e
+      - name: Deletion proof (nothing of a destroyed account remains in the database or storage)
+        working-directory: apps/e1-4-com
+        run: |
+          node e2e/helpers/fake-storage-server.mts &
+          sleep 1
+          npx vitest run --config live/vitest.config.ts live/delete-all.live.test.ts
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

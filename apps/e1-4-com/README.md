@@ -142,7 +142,10 @@ Bucket access model:
   suite runs its own small Storage fake (`e2e/helpers/fake-storage.ts`) instead of a Supabase
   project; any Postgres works for `DATABASE_URL`. That is how CI runs it, with no secrets.
 
-Live database and Storage checks run with `npm run test:live`; see `docs/live-e2e.md`.
+Live database and Storage checks run with `npm run test:live`; see `docs/live-e2e.md`. CI runs the
+deletion proof from that set on every push (`live/delete-all.live.test.ts`): after
+`DELETE /api/account`, or the hold gesture on the profile page that calls it, not one row or stored
+file of that person remains.
 
 ## Deploying to Vercel
 

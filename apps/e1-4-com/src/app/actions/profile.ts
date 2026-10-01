@@ -1,12 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 import { getUserId } from "@/lib/auth/user";
-import { endSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { hardDeleteUser } from "@/lib/privacy/hard-delete";
 import { AVATARS_BUCKET, storage } from "@/lib/storage";
 
 const AVATAR_TYPES: Record<string, string> = {
@@ -87,22 +84,4 @@ export async function removeAvatar(): Promise<void> {
     await prisma.user.update({ where: { id: userId }, data: { avatarPath: null } });
   }
   revalidatePath("/", "layout");
-}
-
-/** Permanently deletes the account, all audio, transcripts, boards, shares and stored blobs. */
-export async function deleteAccount(
-  _prev: ActionState,
-  form: FormData,
-): Promise<ActionState> {
-  const userId = await authed();
-  if (
-    String(form.get("confirm") ?? "")
-      .trim()
-      .toUpperCase() !== "DELETE"
-  ) {
-    return { ok: false, message: "Type DELETE to confirm." };
-  }
-  await hardDeleteUser(userId);
-  await endSession();
-  redirect("/?deleted=1");
 }
