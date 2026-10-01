@@ -2,12 +2,7 @@
 
 import { useActionState, useTransition } from "react";
 
-import {
-  deleteAccount,
-  updateName,
-  uploadAvatar,
-  type ActionState,
-} from "@/app/actions/profile";
+import { updateName, uploadAvatar, type ActionState } from "@/app/actions/profile";
 import { revokeShareAction } from "@/app/actions/stream";
 
 const input =
@@ -50,23 +45,6 @@ export function NameForm({ defaultName }: { defaultName: string }) {
       <input name="name" defaultValue={defaultName} maxLength={80} className={input} />
       <button type="submit" disabled={pending} className={`${button} self-start`}>
         Save
-      </button>
-      <Status state={state} />
-    </form>
-  );
-}
-
-export function DeleteAccountForm() {
-  const [state, action, pending] = useActionState(deleteAccount, null);
-  return (
-    <form action={action} className="flex max-w-md flex-col gap-3">
-      <input name="confirm" placeholder="Type DELETE to confirm" className={input} />
-      <button
-        type="submit"
-        disabled={pending}
-        className="border-ochre/60 text-ochre hover:bg-ochre hover:text-blackboard self-start rounded-full border px-4 py-2 text-sm transition-colors disabled:opacity-50"
-      >
-        {pending ? "Deleting…" : "Delete everything"}
       </button>
       <Status state={state} />
     </form>
