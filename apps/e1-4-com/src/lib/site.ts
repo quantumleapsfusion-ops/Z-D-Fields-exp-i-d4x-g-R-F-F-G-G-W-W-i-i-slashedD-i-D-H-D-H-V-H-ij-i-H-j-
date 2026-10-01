@@ -7,9 +7,16 @@ export const site = {
   motto: "Think.",
   subhead: "one voice, five dimensions",
   tagline: "earth life-forms",
+  /** What the name stands for, spelled out for search engines, link previews and screen readers. */
+  expansion: "e1-4 stands for earth life-forms",
   pitch: "A social network with no typing. You speak; everything else follows.",
-  seoTitle: "Think out loud with your voice",
+  seoTitle: "earth life-forms. Think out loud with your voice",
+  /** The spoken introduction, played once per device on the first gesture at the front door. */
+  spokenIntro: ["e one four.", "Earth life-forms.", "Think."],
   keywords: [
+    "earth life-forms",
+    "earth life forms",
+    "e1-4 meaning",
     "think out loud",
     "thinking",
     "voice",
@@ -25,7 +32,7 @@ export const site = {
   philosophyUrl: "https://earth1.co",
   philosophyLabel: "earth1.co",
   description:
-    "e1-4 is a place to think out loud. A voice-first social network with no typing: speak, and your voice becomes transcripts, translations, drawings and an infinite chalkboard for working ideas through. Built by Earth 1 Coalescent.",
+    "e1-4 stands for earth life-forms: a place to think out loud. A voice-first social network with no typing: speak, and your voice becomes transcripts, translations, drawings and an infinite chalkboard for working ideas through. Built by Earth 1 Coalescent.",
 } as const;
 
 export type FeatureStatus = "ready" | "early" | "experimental";
