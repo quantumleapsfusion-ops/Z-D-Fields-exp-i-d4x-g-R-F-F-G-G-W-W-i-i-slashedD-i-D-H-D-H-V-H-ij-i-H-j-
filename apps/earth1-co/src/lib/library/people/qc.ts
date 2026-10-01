@@ -44,7 +44,7 @@ export const qcPeople: Person[] = [
     sections: ["quantum-computing"],
     who: "A physicist at Oxford who has spent his career on the foundations of quantum theory, and who is among the most committed supporters of the many-worlds view of Everett.",
     work: [
-      "His 1985 paper 'Quantum theory, the Church–Turing principle and the universal quantum computer' defined what a quantum computer is in general, and showed that it could do something no classical computer could, in a restricted sense: simulate any physical process. Along with Richard Jozsa he published in 1992 the Deutsch–Jozsa algorithm, the first example of a problem a quantum computer solves with exponentially fewer steps than a deterministic classical one. The problem was artificial, but the principle that interference between computational paths can answer a global question at once was real.",
+      "His 1985 paper 'Quantum theory, the Church–Turing principle and the universal quantum computer' defined what a quantum computer is in general, and showed that such a machine could in principle simulate any physical process. Along with Richard Jozsa he published in 1992 the Deutsch–Jozsa algorithm, the first example of a problem a quantum computer solves with exponentially fewer steps than a deterministic classical one. The problem was artificial, but the principle that interference between computational paths can answer a global question at once was real.",
       "He also developed the idea of the quantum circuit with gates, the language of nearly all quantum algorithms, and later, with Chiara Marletto, constructor theory.",
     ],
     mattered: [
@@ -98,7 +98,7 @@ export const qcPeople: Person[] = [
   {
     slug: "benjamin-schumacher",
     name: "Benjamin Schumacher",
-    lived: "born 1951, United States",
+    lived: "United States",
     country: "United States",
     known: "Coined the word 'qubit' and founded quantum information theory.",
     sections: ["quantum-computing"],
@@ -124,7 +124,7 @@ export const qcPeople: Person[] = [
     who: "A mathematician at Bell Labs and then MIT, whose 1994 result brought quantum computing from a curiosity to a matter of national security.",
     work: [
       "In 1994 he presented an algorithm that factors an integer in a number of steps that grows only polynomially with its size. The best classical methods grow far faster. Since the security of RSA encryption depends on factoring being hard, a large enough quantum computer would break it. The heart of the method is finding the period of a repeating function by quantum interference.",
-      "Many experts then argued that quantum computers could never work because errors would swamp them. In 1995 Shor answered with the first quantum error-correcting code, which stores one qubit across nine, and in 1996 he helped show that computations can be carried out reliably on noisy hardware, which became the threshold theorem. In 2001 a team led by Lieven Vandersypen and Isaac Chuang at IBM ran Shor's algorithm on a 7-qubit molecule and factored 15.",
+      "Many experts then argued that quantum computers could never work because errors would swamp them. In 1995 Shor answered with the first quantum error-correcting code, which stores one qubit across nine, and in 1996 he showed how computations can be carried out reliably on noisy hardware, a step toward the threshold theorem that several groups proved in 1996–98. In 2001 a team led by Lieven Vandersypen and Isaac Chuang at IBM ran Shor's algorithm on a 7-qubit molecule and factored 15.",
     ],
     mattered: [
       "Shor's algorithm created the field's urgency, and his error-correction work showed it could be more than a dream. It also set off the work on post-quantum cryptography: in August 2024 the United States NIST published its first standards (FIPS 203, 204 and 205) for encryption designed to resist quantum attack. He shared the 2023 Breakthrough Prize in Fundamental Physics.",

@@ -129,7 +129,7 @@ export const equations: Equation[] = [
     formula: "|Φ⁺⟩ = (|00⟩ + |11⟩) / √2",
     year: "1935 / 1964",
     explain:
-      "Two qubits that are each undecided, but whose answers are locked together: measure one and get 0, and the other will give 0; get 1, and it gives 1. No message passes between them. Neither answer existed beforehand as a hidden fact, and that is exactly what Bell's theorem tests.",
+      "Two qubits that are each undecided, but whose answers are locked together: measure one and get 0, and the other will give 0; get 1, and it gives 1. No message passes between them. Bell's theorem shows that no scheme of answers fixed in advance, with nothing acting at a distance, can reproduce these results, and experiments confirm it.",
     people: ["albert-einstein", "erwin-schrodinger", "john-bell"],
     sections: ["quantum-mechanics", "quantum-computing"],
   },
@@ -171,7 +171,7 @@ export const equations: Equation[] = [
     formula: "H|0⟩ = (|0⟩ + |1⟩) / √2",
     year: "—",
     explain:
-      "The gate that turns a definite 0 into an even blend of 0 and 1. Almost every quantum algorithm starts by applying it to every qubit so that all possible inputs are tried at once.",
+      "The gate that turns a definite 0 into an even blend of 0 and 1. Almost every quantum algorithm starts by applying it to every qubit so that the circuit works on an equal blend of all possible inputs, which interference then sorts out.",
     people: ["david-deutsch"],
     sections: ["quantum-computing"],
   },
@@ -225,7 +225,7 @@ export const equations: Equation[] = [
     year: "1996–1998",
     explain:
       "If each operation is wrong less often than a critical rate, then spending more qubits on error correction makes the encoded result more reliable, without limit. Whether real hardware sits below that line is the central engineering question of the field.",
-    people: ["peter-shor", "alexei-kitaev", "andrew-steane"],
+    people: ["peter-shor", "alexei-kitaev"],
     sections: ["quantum-computing"],
   },
 ];

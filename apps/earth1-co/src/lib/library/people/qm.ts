@@ -42,7 +42,7 @@ export const qmPeople: Person[] = [
     ],
     quotes: [
       {
-        text: "Quantum mechanics is very impressive. But an inner voice tells me that it is not yet the real thing. The theory says a lot, but does not really bring us any closer to the secret of the 'old one'. I, at any rate, am convinced that He is not playing at dice.",
+        text: "Quantum mechanics is certainly imposing. But an inner voice tells me that it is not yet the real thing. The theory says a lot, but does not really bring us any closer to the secret of the 'old one'. I, at any rate, am convinced that He does not throw dice.",
         source: "Letter to Max Born, 4 December 1926, in The Born–Einstein Letters",
         caveat: "Translations of this letter vary slightly in wording.",
       },

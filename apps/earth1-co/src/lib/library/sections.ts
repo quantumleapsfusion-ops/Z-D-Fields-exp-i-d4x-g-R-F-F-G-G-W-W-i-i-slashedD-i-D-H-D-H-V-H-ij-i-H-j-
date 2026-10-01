@@ -278,7 +278,7 @@ export const quantumComputing: SectionContent & {
       id: "error-correction",
       title: "Error correction: the real bottleneck",
       body: [
-        "Qubits are fragile. Today's best physical gates fail roughly once in a few hundred to a few thousand operations; useful algorithms need billions without a mistake. In classical computing we copy bits and vote, but the no-cloning theorem forbids copying a quantum state.",
+        "Qubits are fragile. Today's best physical gates fail roughly once in a thousand operations, with the best systems somewhat better; useful algorithms need billions without a mistake. In classical computing we copy bits and vote, but the no-cloning theorem forbids copying a quantum state.",
         "In 1995–96 Shor and Steane, with Calderbank, showed that you can spread one logical qubit over many physical ones and check for errors indirectly. The threshold theorem says that if physical error rates are below a critical value, adding more qubits makes the logical qubit more reliable without limit. In 2024 Google reported the first experiment where a surface code got better as it grew larger. The cost is steep: a useful machine likely needs hundreds to thousands of physical qubits for each logical one.",
       ],
       equation: "threshold",
