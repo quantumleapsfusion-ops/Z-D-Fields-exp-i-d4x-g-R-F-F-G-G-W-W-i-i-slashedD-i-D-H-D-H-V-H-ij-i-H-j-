@@ -34,6 +34,7 @@ model User {
   contacts    Contact[]    @relation("ContactOwner")
   contactOf   Contact[]    @relation("ContactTarget")
   sessions    Session[]
+  passkeys    Passkey[]
   voiceprint  Voiceprint?
   loginEvents LoginEvent[]
 
@@ -286,4 +287,37 @@ model LoginEvent {
   @@index([clientHash, at])
   @@index([userId, at])
   @@map("login_events")
+}
+
+/// Silent backup sign-in for when the voice cannot be matched (noisy room, sore throat). Only the
+/// public key is stored; the device verifies the person (Face ID, fingerprint, PIN).
+model Passkey {
+  id         String    @id
+  userId     String    @map("user_id") @db.Uuid
+  publicKey  Bytes     @map("public_key")
+  counter    Int       @default(0)
+  transports String[]
+  deviceType String    @map("device_type")
+  backedUp   Boolean   @map("backed_up")
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("passkeys")
+}
+
+/// Single-use challenge, valid for a few minutes: a WebAuthn challenge (`register`, `login`) or
+/// the digits a person must speak back to prove they are live (`liveness`).
+model AuthChallenge {
+  id        String   @id @default(uuid()) @db.Uuid
+  purpose   String
+  challenge String
+  userId    String?  @map("user_id") @db.Uuid
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([expiresAt])
+  @@map("auth_challenges")
 }

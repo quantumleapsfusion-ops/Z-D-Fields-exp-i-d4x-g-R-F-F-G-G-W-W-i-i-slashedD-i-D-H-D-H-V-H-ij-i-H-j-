@@ -9,6 +9,8 @@ import { haptic } from "@/lib/device/haptics";
 import type { SoundPrint } from "@/lib/sound/analyse";
 import type { SegmentDTO } from "@/lib/voice/stream";
 
+import { dequeue, enqueue } from "@/lib/pending/queue";
+
 import { uploadSpan } from "./upload";
 import { useRecorder, type CapturedSpan } from "./useRecorder";
 
@@ -45,7 +47,10 @@ export function useVoiceCapture(
       const segment = await uploadSpan(item.span);
       setSegments((prev) => [...prev, segment].sort((a, b) => a.index - b.index));
       setPending((prev) => prev.filter((p) => p.id !== item.id));
+      void dequeue(item.id);
     } catch {
+      // Kept on the device too, so closing the tab does not lose it.
+      void enqueue(item.id, item.span);
       setPending((prev) =>
         prev.map((p) => (p.id === item.id ? { ...p, failed: true } : p)),
       );

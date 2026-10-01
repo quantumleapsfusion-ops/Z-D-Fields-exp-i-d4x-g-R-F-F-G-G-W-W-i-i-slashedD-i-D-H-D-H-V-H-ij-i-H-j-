@@ -7,10 +7,13 @@ import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 import type { PinPhase } from "@/features/codex/PinField";
+import { speak } from "@/features/codex/voice";
 import { useDaVinciTalk } from "@/features/davinci/useDaVinciTalk";
+import { PasskeyAdd, PasskeyLogin } from "@/features/portal/Passkey";
 import { decodeSound } from "@/features/sound/decode";
-import { sendVoice } from "@/features/voice-id/pcm";
-import { uploadSpan } from "@/features/voice-stream/upload";
+import { sendVoice, type VoiceRefusal } from "@/features/voice-id/pcm";
+import { saveSpan } from "@/features/voice-stream/saveSpan";
+import { usePendingFlush } from "@/features/voice-stream/usePendingFlush";
 import { type CapturedSpan, useRecorder } from "@/features/voice-stream/useRecorder";
 import { useVoiceCapture } from "@/features/voice-stream/useVoiceCapture";
 import { useCarry } from "@/lib/carry";
@@ -40,26 +43,54 @@ export function MicPortal({ signedIn }: { signedIn: boolean }) {
 }
 
 /**
- * The voice is the only key: speak, and the sound itself (measured on the device, matched on the
- * server) opens that speaker's stream, or a new stream for a voice not heard before. What was said
- * to get in is kept whole as the first entry of that stream and, from the front door, carried on
- * through the dimensions.
+ * Says each digit aloud with the device's own voice and resolves when the last one is done. The
+ * recording only starts afterwards, so the prompt can never be inside it.
+ */
+function sayDigits(digits: string, onWord: () => void): Promise<void> {
+  return new Promise((resolve) => {
+    speak(digits.split(""), { onLine: () => {}, onWord, onEnd: resolve });
+  });
+}
+
+const MAX_ANSWER_MS = 8000;
+
+/**
+ * The voice is the only key. Tap, listen: the phone says four digits out loud. Say them back.
+ * The sound itself (measured on the device, matched on the server) opens that speaker's stream,
+ * or a new stream for a voice not heard before; the digits prove a live person is speaking, not
+ * a recording. Nothing is ever written on screen: a refusal is a shake, a glyph and a vibration,
+ * and after two misses a key appears to sign in with the phone's passkey instead. What was said
+ * is kept whole as the first entry of that stream and, from the front door, carried on through
+ * the dimensions.
  */
 export function VoiceGate({ next = "/" }: { next?: string }) {
   const router = useRouter();
   const setSound = useCarry((state) => state.setSound);
-  const [phase, setPhase] = useState<"idle" | "checking" | "rejected">("idle");
+  const [phase, setPhase] = useState<"idle" | "prompt" | "checking">("idle");
+  const [refusal, setRefusal] = useState<VoiceRefusal | null>(null);
+  const [misses, setMisses] = useState(0);
+  const [pulse, setPulse] = useState(0);
+  const challenge = useRef<string | null>(null);
+  const answerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const refuse = useCallback((reason: VoiceRefusal) => {
+    haptic(reason === "voice" ? "rejected" : reason);
+    setRefusal(reason);
+    setMisses((n) => n + 1);
+    setPhase("idle");
+  }, []);
+
   const recorder = useRecorder(
     useCallback(
       async (span: CapturedSpan) => {
+        if (answerTimer.current) clearTimeout(answerTimer.current);
         setPhase("checking");
-        if (!(await sendVoice(span.blob))) {
-          haptic("rejected");
-          setPhase("rejected");
-          return;
-        }
+        const result = await sendVoice(span, challenge.current);
+        challenge.current = null;
+        if (!result.ok) return refuse(result.reason);
         haptic("accepted");
-        await uploadSpan(span).catch(() => null);
+        // Kept for later if the upload fails; never lost, never blocks the way in.
+        await saveSpan(span);
         const print =
           next === "/" ? await decodeSound([span.blob]).catch(() => null) : null;
         if (print && print.voicedRatio > 0) {
@@ -70,54 +101,127 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
         }
         router.refresh();
       },
-      [next, router, setSound],
+      [next, refuse, router, setSound],
     ),
   );
   const recording = recorder.state === "recording";
-  useVoiceBuzz(recorder.state === "recording" ? recorder.level : 0);
-  const { stop } = recorder;
+  useVoiceBuzz(recording ? recorder.level : 0);
+  const { stop, arm, record } = recorder;
 
   useEffect(() => {
-    if (phase !== "rejected") return;
-    const timer = setTimeout(() => setPhase("idle"), 1200);
+    if (!refusal) return;
+    const timer = setTimeout(() => setRefusal(null), 1600);
     return () => clearTimeout(timer);
-  }, [phase]);
+  }, [refusal]);
+
+  useEffect(
+    () => () => void (answerTimer.current && clearTimeout(answerTimer.current)),
+    [],
+  );
+
+  const begin = async () => {
+    // Everything that needs a tap happens here, before the first await.
+    haptic("start");
+    void requestTilt();
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+    }
+    setRefusal(null);
+    if (!(await arm())) return refuse("setup");
+
+    const res = await fetch("/api/voice-id/challenge", { method: "POST" }).catch(
+      () => null,
+    );
+    const body = res?.ok
+      ? ((await res.json().catch(() => null)) as {
+          challenge: { id: string; digits: string } | null;
+        } | null)
+      : null;
+    if (!body) return refuse("setup");
+
+    challenge.current = null;
+    if (body.challenge) {
+      if (!("speechSynthesis" in window)) return refuse("setup");
+      challenge.current = body.challenge.id;
+      setPhase("prompt");
+      await sayDigits(body.challenge.digits, () => setPulse((n) => n + 1));
+      await new Promise((done) => setTimeout(done, 350));
+    }
+    setPhase("idle");
+    if (!(await record())) return;
+    answerTimer.current = setTimeout(stop, MAX_ANSWER_MS);
+  };
 
   return (
     <Frame
-      phase={recording || phase === "checking" ? "listen" : "rest"}
+      phase={
+        recording || phase === "checking"
+          ? "listen"
+          : phase === "prompt"
+            ? "line"
+            : "rest"
+      }
       level={recorder.level}
+      pulse={pulse}
     >
       <Centre>
-        <div className={phase === "rejected" ? "animate-voice-shake" : undefined}>
+        <div className={refusal ? "animate-voice-shake" : undefined}>
           <MicButton
             onClick={() => {
               if (recording) {
                 haptic("stop");
                 stop();
               } else {
-                haptic("start");
-                void requestTilt();
-                void recorder.record();
+                void begin();
               }
             }}
             label={recording ? "Stop" : "Speak to enter"}
             level={recording ? recorder.level : 0}
-            disabled={!recorder.supported || phase === "checking"}
+            disabled={!recorder.supported || phase !== "idle"}
           />
+        </div>
+        <div className="flex h-12 items-center gap-4">
+          {refusal ? <RefusalGlyph reason={refusal} /> : null}
+          {misses >= 2 || !recorder.supported ? <PasskeyLogin next={next} /> : null}
         </div>
         <p role="status" className="sr-only">
           {recorder.error ??
             (recording
-              ? "Listening"
-              : phase === "checking"
-                ? "Recognising your voice"
-                : phase === "rejected"
-                  ? "Voice not recognised. Tap and speak again."
-                  : "Tap and speak to enter")}
+              ? "Listening. Say the four digits you heard."
+              : phase === "prompt"
+                ? "Listen to four digits"
+                : phase === "checking"
+                  ? "Recognising your voice"
+                  : refusal
+                    ? "Not recognised. Tap and speak again."
+                    : "Tap, listen, then say the digits back to enter")}
         </p>
       </Centre>
     </Frame>
+  );
+}
+
+/** What went wrong, as a picture: a repeat arrow, an hourglass, or a broken link. */
+function RefusalGlyph({ reason }: { reason: VoiceRefusal }) {
+  const path =
+    reason === "busy"
+      ? "M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"
+      : reason === "setup"
+        ? "M9 15l-2 2a3 3 0 0 1-4-4l3-3M15 9l2-2a3 3 0 0 1 4 4l-3 3M9 9l6 6"
+        : "M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5";
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="text-ochre h-6 w-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d={path} />
+    </svg>
   );
 }
 
@@ -132,6 +236,7 @@ function Codex() {
     onSettled: () => void said.current.then(talk.answer),
   });
   const { recorder, analysing, silent, failedUploads } = capture;
+  const queued = usePendingFlush();
   const recording = recorder.state !== "idle";
   useVoiceBuzz(recorder.state === "recording" ? recorder.level : 0);
   const busy = talk.phase === "thinking" || talk.phase === "speaking";
@@ -166,6 +271,7 @@ function Codex() {
       pulse={talk.pulse}
       corner={
         <div className="flex items-center gap-2">
+          <PasskeyAdd />
           <TalkLink />
           <StreamLink />
         </div>
@@ -189,10 +295,13 @@ function Codex() {
         <p role="status" aria-live="polite" className="sr-only">
           {status}
         </p>
-        {failedUploads ? (
+        {failedUploads || queued.waiting ? (
           <button
             type="button"
-            onClick={capture.retryFailed}
+            onClick={() => {
+              capture.retryFailed();
+              void queued.retry();
+            }}
             aria-label="Retry"
             className="text-ochre border-ochre/60 flex h-12 w-12 items-center justify-center rounded-full border"
           >
