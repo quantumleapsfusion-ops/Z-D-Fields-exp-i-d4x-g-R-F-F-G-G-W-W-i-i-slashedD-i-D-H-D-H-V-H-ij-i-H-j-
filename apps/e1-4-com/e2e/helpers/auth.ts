@@ -1,10 +1,9 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 import type { BrowserContext, Page } from "@playwright/test";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { createClient } from "@supabase/supabase-js";
 
-import { PrismaClient } from "../../src/generated/prisma/client";
+import { Pool } from "pg";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -12,9 +11,9 @@ function requireEnv(name: string): string {
   return v;
 }
 
-const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: requireEnv("DATABASE_URL") }),
-});
+// Plain `pg` rather than the generated Prisma client: Playwright loads specs as CommonJS, which
+// cannot evaluate the generated client's `import.meta`.
+export const db = new Pool({ connectionString: requireEnv("DATABASE_URL") });
 const testUsers = new Set<string>();
 let storageClient: ReturnType<typeof createClient> | null = null;
 
@@ -57,24 +56,27 @@ async function removePrefix(bucket: "voice" | "avatars", prefix: string) {
   }
 }
 
-export async function loginAs(context: BrowserContext, baseURL: string): Promise<void> {
+export async function loginAs(context: BrowserContext, baseURL: string): Promise<string> {
   const { hostname, protocol } = new URL(baseURL);
-  const user = await prisma.user.create({
-    data: { displayName: `E2E ${randomUUID()}` },
-    select: { id: true },
-  });
+  const {
+    rows: [user],
+  } = await db.query<{ id: string }>(
+    "insert into users (id, display_name, updated_at) values (gen_random_uuid(), $1, now()) returning id",
+    [`E2E ${randomUUID()}`],
+  );
   testUsers.add(user.id);
 
   const token = randomBytes(32).toString("base64url");
   const now = new Date();
-  await prisma.session.create({
-    data: {
-      tokenHash: createHash("sha256").update(token).digest("hex"),
-      userId: user.id,
-      expiresAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
-      lastSeenAt: now,
-    },
-  });
+  await db.query(
+    "insert into sessions (id, token_hash, user_id, expires_at, last_seen_at) values (gen_random_uuid(), $1, $2, $3, $4)",
+    [
+      createHash("sha256").update(token).digest("hex"),
+      user.id,
+      new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+      now,
+    ],
+  );
   await context.addCookies([
     {
       name: "e14_session",
@@ -86,6 +88,7 @@ export async function loginAs(context: BrowserContext, baseURL: string): Promise
       sameSite: "Lax",
     },
   ]);
+  return user.id;
 }
 
 export async function expectLoggedOut(page: Page): Promise<void> {
@@ -97,8 +100,7 @@ export async function cleanupE2eUsers(): Promise<void> {
   for (const userId of testUsers) {
     await removePrefix("voice", userId);
     await removePrefix("avatars", userId);
-    await prisma.user.deleteMany({ where: { id: userId } });
+    await db.query("delete from users where id = $1", [userId]);
     testUsers.delete(userId);
   }
-  await prisma.$disconnect();
 }
