@@ -1,0 +1,346 @@
+import type { Person } from "../types";
+
+export const qcPeople: Person[] = [
+  {
+    slug: "yuri-manin",
+    name: "Yuri Manin",
+    lived: "1937 Simferopol – 2023 Bonn",
+    country: "Soviet Union, later Germany",
+    known: "Raised the idea of quantum computing in 1980, a year before Feynman's talk.",
+    sections: ["quantum-computing"],
+    who: "A Soviet-born mathematician of the first rank, working in number theory and algebraic geometry, who spent his later career at the Max Planck Institute for Mathematics in Bonn. He was also a writer of unusual breadth on language and thought.",
+    work: [
+      "In a short passage of his 1980 book Vychislimoe i nevychislimoe ('Computable and Non-computable'), published in Moscow, Manin pointed out that a quantum system has far more states than a classical system of the same size, and suggested that this might be exploited to compute, or at least that simulating it classically would be hard.",
+    ],
+    mattered: [
+      "The book was in Russian, short on detail and little read in the West, so Manin's name is often missing from the story. But the logic is the same as Feynman's: the exponential size of quantum state space is both the obstacle to simulating nature and the opportunity for a new kind of computer.",
+    ],
+    ideas: ["Exponential state space", "The origin of the idea"],
+    related: ["richard-feynman", "paul-benioff"],
+  },
+  {
+    slug: "paul-benioff",
+    name: "Paul Benioff",
+    lived: "1930 Pasadena – 2022",
+    country: "United States",
+    known: "Showed that a computer can be described entirely by quantum mechanics.",
+    sections: ["quantum-computing"],
+    who: "A physicist at Argonne National Laboratory who became interested in what it would mean for a computer to be a physical system obeying quantum laws.",
+    work: [
+      "In 1980 he published a model in which a Turing machine, the standard abstract computer, is written as a quantum Hamiltonian, with its steps carried out by unitary evolution. It was not yet a computer that could do something faster than a classical one, but it was the first proof that quantum mechanics does not forbid computation.",
+    ],
+    mattered: [
+      "Before Benioff, one could fairly ask whether quantum mechanics could even support a computer that does its own bookkeeping. His model answered yes, and paved the way for Feynman's and Deutsch's more ambitious ideas.",
+    ],
+    ideas: ["Quantum Turing machine", "Reversible computation"],
+    related: ["richard-feynman", "david-deutsch", "yuri-manin"],
+  },
+  {
+    slug: "david-deutsch",
+    name: "David Deutsch",
+    lived: "born 1953, Haifa",
+    country: "Israel, working in the United Kingdom",
+    known: "Defined the universal quantum computer and the first quantum algorithms.",
+    sections: ["quantum-computing"],
+    who: "A physicist at Oxford who has spent his career on the foundations of quantum theory, and who is among the most committed supporters of the many-worlds view of Everett.",
+    work: [
+      "His 1985 paper 'Quantum theory, the Church–Turing principle and the universal quantum computer' defined what a quantum computer is in general, and showed that it could do something no classical computer could, in a restricted sense: simulate any physical process. Along with Richard Jozsa he published in 1992 the Deutsch–Jozsa algorithm, the first example of a problem a quantum computer solves with exponentially fewer steps than a deterministic classical one. The problem was artificial, but the principle that interference between computational paths can answer a global question at once was real.",
+      "He also developed the idea of the quantum circuit with gates, the language of nearly all quantum algorithms, and later, with Chiara Marletto, constructor theory.",
+    ],
+    mattered: [
+      "Deutsch moved the subject from 'can it be done' to 'what is it for', giving later algorithms their frame. He shared the 2023 Breakthrough Prize in Fundamental Physics with Bennett, Brassard and Shor. His book The Fabric of Reality (1997) argues that a quantum computer is itself evidence of the many-worlds picture, a claim that physicists dispute.",
+    ],
+    equations: ["hadamard", "cnot"],
+    ideas: ["The universal quantum computer", "Quantum parallelism", "Deutsch–Jozsa"],
+    related: ["richard-feynman", "hugh-everett", "peter-shor", "paul-benioff"],
+  },
+  {
+    slug: "charles-bennett-gilles-brassard",
+    name: "Charles Bennett and Gilles Brassard",
+    lived: "Bennett b. 1943, New York · Brassard b. 1955, Montréal",
+    country: "United States and Canada",
+    known: "Invented quantum cryptography and quantum teleportation.",
+    sections: ["quantum-computing"],
+    who: "Bennett is a physicist at IBM Research; Brassard, a computer scientist at the Université de Montréal. They met by chance on a beach in Puerto Rico in 1979 and began a collaboration that lasted decades.",
+    work: [
+      "Building on Stephen Wiesner's unpublished idea of quantum money from the late 1960s, in 1984 they presented BB84, a method for two people to agree on a secret key by sending single photons in randomly chosen polarisations. Because an unknown quantum state cannot be copied, any eavesdropper disturbs the photons and is detected.",
+      "In 1993, with Claude Crépeau, Richard Jozsa, Asher Peres and William Wootters, they showed that an unknown quantum state can be transferred from one place to another using a shared entangled pair and two ordinary bits of communication. Nothing is sent faster than light and the original is destroyed. Bennett also worked on the thermodynamics of computation, showing that computing can in principle be done with no energy cost if it is reversible.",
+    ],
+    mattered: [
+      "Quantum key distribution is already in commercial use, and teleportation is the standard way of moving quantum information in a quantum network. They received the 2023 ACM A. M. Turing Award, and shared the 2023 Breakthrough Prize with Deutsch and Shor.",
+    ],
+    equations: ["no-cloning", "bell-state"],
+    ideas: ["Quantum key distribution", "Teleportation", "Reversible computing"],
+    related: [
+      "artur-ekert",
+      "wojciech-zurek",
+      "alain-aspect-john-clauser-anton-zeilinger",
+    ],
+  },
+  {
+    slug: "artur-ekert",
+    name: "Artur Ekert",
+    lived: "born 1961, Wrocław",
+    country: "Poland, working in the United Kingdom and Singapore",
+    known: "Based quantum cryptography on entanglement and Bell's theorem.",
+    sections: ["quantum-computing"],
+    who: "A physicist who, as a doctoral student at Oxford, was struck by a connection between Bell's theorem and secret keys.",
+    work: [
+      "In 1991 he proposed a protocol (E91) in which two people share entangled pairs and test them with Bell's inequality. If the test is passed, no eavesdropper can have known the outcomes in advance, and the results give a secure key. Security rests on the laws of physics themselves rather than on the assumption that an attacker has limited computing power.",
+    ],
+    mattered: [
+      "E91 tied the foundation question of whether the world is locally real to a practical technology. It also leads to device-independent cryptography, in which even a distrusted device can be checked by the statistics it produces.",
+    ],
+    equations: ["chsh"],
+    ideas: ["Entanglement-based key distribution", "Device-independent security"],
+    related: ["charles-bennett-gilles-brassard", "john-bell"],
+  },
+  {
+    slug: "benjamin-schumacher",
+    name: "Benjamin Schumacher",
+    lived: "born 1951, United States",
+    country: "United States",
+    known: "Coined the word 'qubit' and founded quantum information theory.",
+    sections: ["quantum-computing"],
+    who: "A physicist at Kenyon College in Ohio, and a gifted popular teacher of physics.",
+    work: [
+      "In 1995 he proved that quantum information can be compressed, down to a limit set by the von Neumann entropy, just as Shannon showed for classical bits. In the same paper he introduced the term 'qubit', a word he has credited to a conversation with William Wootters, for the basic unit of quantum information.",
+    ],
+    mattered: [
+      "Schumacher put quantum information on the same footing as Shannon's theory, with its own measure of quantity and its own coding theorems. The word 'qubit' now fills the field.",
+    ],
+    equations: ["qubit", "von-neumann-entropy"],
+    ideas: ["The qubit", "Quantum data compression"],
+    related: ["john-von-neumann", "wojciech-zurek"],
+  },
+  {
+    slug: "peter-shor",
+    name: "Peter Shor",
+    lived: "born 1959, New York",
+    country: "United States",
+    known:
+      "Showed that a quantum computer could break widely used encryption, and that quantum errors can be corrected.",
+    sections: ["quantum-computing"],
+    who: "A mathematician at Bell Labs and then MIT, whose 1994 result brought quantum computing from a curiosity to a matter of national security.",
+    work: [
+      "In 1994 he presented an algorithm that factors an integer in a number of steps that grows only polynomially with its size. The best classical methods grow far faster. Since the security of RSA encryption depends on factoring being hard, a large enough quantum computer would break it. The heart of the method is finding the period of a repeating function by quantum interference.",
+      "Many experts then argued that quantum computers could never work because errors would swamp them. In 1995 Shor answered with the first quantum error-correcting code, which stores one qubit across nine, and in 1996 he helped show that computations can be carried out reliably on noisy hardware, which became the threshold theorem. In 2001 a team led by Lieven Vandersypen and Isaac Chuang at IBM ran Shor's algorithm on a 7-qubit molecule and factored 15.",
+    ],
+    mattered: [
+      "Shor's algorithm created the field's urgency, and his error-correction work showed it could be more than a dream. It also set off the work on post-quantum cryptography: in August 2024 the United States NIST published its first standards (FIPS 203, 204 and 205) for encryption designed to resist quantum attack. He shared the 2023 Breakthrough Prize in Fundamental Physics.",
+    ],
+    equations: ["shor", "threshold"],
+    ideas: [
+      "Factoring",
+      "Period finding",
+      "Quantum error correction",
+      "Post-quantum cryptography",
+    ],
+    related: ["david-deutsch", "lov-grover", "andrew-steane", "alexei-kitaev"],
+  },
+  {
+    slug: "lov-grover",
+    name: "Lov Grover",
+    lived: "born 1961, India",
+    country: "India, working in the United States",
+    known: "Found the quantum search algorithm.",
+    sections: ["quantum-computing"],
+    who: "An Indian-born computer scientist at Bell Labs.",
+    work: [
+      "In 1996 he showed that a quantum computer can find one marked item among N unsorted items in about the square root of N steps, where a classical computer needs about N/2. The method starts with all items in equal superposition and then repeatedly flips the sign of the right answer and reflects all amplitudes about their average, which nudges more and more weight onto the target.",
+    ],
+    mattered: [
+      "Grover's speed-up is quadratic, not exponential, and later work proved that no quantum algorithm can do better for this problem. It is a lasting and honest lesson: quantum computers are not magic search engines, and their advantages depend on the structure of the problem. The algorithm is nonetheless used as a building block in many others.",
+    ],
+    equations: ["grover"],
+    ideas: ["Amplitude amplification", "Quadratic speed-up"],
+    related: ["peter-shor", "david-deutsch"],
+  },
+  {
+    slug: "andrew-steane",
+    name: "Andrew Steane",
+    lived: "active from the 1990s",
+    country: "United Kingdom",
+    known: "Co-discovered quantum error-correcting codes.",
+    sections: ["quantum-computing"],
+    who: "A physicist at Oxford who works on trapped ions and the theory of quantum information.",
+    work: [
+      "In 1996, at the same time as Robert Calderbank and Peter Shor, he showed how to build quantum error-correcting codes from classical ones. The Steane code protects one qubit with seven. The key trick is that you can detect which error occurred without measuring, and so destroying, the encoded state.",
+    ],
+    mattered: [
+      "Before 1996 many physicists believed that errors made quantum computing impossible in practice. These codes, together with the threshold theorem, answered the objection and shaped all later work on fault tolerance.",
+    ],
+    equations: ["threshold"],
+    ideas: ["Stabiliser codes", "Syndrome measurement", "Fault tolerance"],
+    related: ["peter-shor", "alexei-kitaev", "david-wineland"],
+  },
+  {
+    slug: "alexei-kitaev",
+    name: "Alexei Kitaev",
+    lived: "born 1963, Moscow",
+    country: "Soviet Union, working in the United States",
+    known: "Proposed topological quantum computing and the toric code.",
+    sections: ["quantum-computing"],
+    who: "A physicist at Caltech, originally from the Landau Institute in Moscow, with an unusual gift for finding structure where others see complexity.",
+    work: [
+      "In 1997 he proposed storing information in global, topological properties of a system of exotic particles called anyons, so that local noise cannot disturb it. The surface code that grew out of his toric code is the leading error-correcting scheme for hardware because it uses only neighbouring qubits on a flat chip. He also proposed in 2001 a wire that should host Majorana zero modes, the basis of Microsoft's long topological qubit programme, whose results remain contested.",
+    ],
+    mattered: [
+      "Kitaev's surface code gave experimentalists a concrete target, with a relatively forgiving error threshold of about one percent. It is the code that Google's 2024 experiment (see below) used to show errors falling as it was made larger.",
+    ],
+    equations: ["threshold"],
+    ideas: ["Anyons", "The toric and surface codes", "Topological protection"],
+    related: ["peter-shor", "andrew-steane", "clarke-devoret-martinis"],
+  },
+  {
+    slug: "john-preskill",
+    name: "John Preskill",
+    lived: "born 1953, United States",
+    country: "United States",
+    known:
+      "Named the NISQ era and the idea of quantum supremacy; champion of fault tolerance.",
+    sections: ["quantum-computing"],
+    who: "A theoretical physicist at Caltech who began in particle physics and cosmology and became the most influential teacher and commentator in quantum information.",
+    work: [
+      "In 2012 he proposed the term 'quantum supremacy' for the moment a quantum device does something no classical computer can. In 2018 he described the present as the era of 'noisy intermediate-scale quantum' (NISQ) technology: machines with tens to hundreds of qubits, too noisy for error correction, whose practical value is an open question.",
+    ],
+    mattered: [
+      "Preskill is the field's clearest voice for honest expectations. His framing explains why today's machines are scientifically important but not yet practically decisive, and why error correction, not more raw qubits, is the real goal.",
+    ],
+    ideas: ["Quantum supremacy", "NISQ", "Fault tolerance"],
+    related: ["peter-shor", "clarke-devoret-martinis", "alexei-kitaev"],
+  },
+  {
+    slug: "ignacio-cirac-peter-zoller",
+    name: "Ignacio Cirac and Peter Zoller",
+    lived: "Cirac b. 1965, Manresa · Zoller b. 1952, Innsbruck",
+    country: "Spain and Austria",
+    known: "Proposed the trapped-ion quantum computer in 1995.",
+    sections: ["quantum-computing"],
+    who: "Two theorists working in Innsbruck who, in the mid-1990s, translated the abstract quantum computer into a concrete laboratory design.",
+    work: [
+      "Their 1995 paper 'Quantum computations with cold trapped ions' proposed holding a row of ions in an electromagnetic trap, using each ion's internal states as a qubit, and using the shared vibration of the chain as a bus so that laser pulses could entangle any two ions. Within months the first ion gate was demonstrated by David Wineland's group at NIST.",
+    ],
+    mattered: [
+      "Trapped ions remain among the most accurate qubits in existence, and the scheme is the template for the whole class. Cirac later led work on using atoms and ions as quantum simulators, closing the circle with Feynman.",
+    ],
+    ideas: ["Trapped ions", "Laser-driven gates"],
+    related: ["david-wineland", "richard-feynman"],
+  },
+  {
+    slug: "david-wineland",
+    name: "David Wineland",
+    lived: "born 1944, Wauwatosa, Wisconsin",
+    country: "United States",
+    known: "Trapped and controlled single ions; first ion-based logic gate.",
+    sections: ["quantum-computing"],
+    who: "A physicist at the National Institute of Standards and Technology in Boulder, Colorado, who spent decades learning to hold single atoms still and talk to them with light.",
+    work: [
+      "His group developed laser cooling of trapped ions to their lowest motional states and, in 1995, with Chris Monroe and colleagues, demonstrated the first quantum logic gate on trapped ions, a CNOT following the Cirac–Zoller proposal. The same precision made possible the best atomic clocks in the world.",
+    ],
+    mattered: [
+      "He shared the 2012 Nobel Prize in Physics with Serge Haroche for methods of measuring and manipulating individual quantum systems. Today's trapped-ion computers, built by companies such as Quantinuum and IonQ, descend from this laboratory craft; they offer the highest gate fidelities of any platform, at the cost of slower speeds and harder scaling.",
+    ],
+    equations: ["cnot"],
+    ideas: ["Laser cooling", "Ion-trap logic gates"],
+    related: ["ignacio-cirac-peter-zoller", "andrew-steane"],
+  },
+  {
+    slug: "yasunobu-nakamura",
+    name: "Yasunobu Nakamura",
+    lived: "born 1968, Japan",
+    country: "Japan",
+    known: "Built the first superconducting qubit.",
+    sections: ["quantum-computing"],
+    who: "A physicist at NEC and later the University of Tokyo and RIKEN.",
+    work: [
+      "In 1999 Nakamura, Yuri Pashkin and Jaw-Shen Tsai created and controlled a superposition of two charge states in a tiny superconducting circuit, the 'Cooper-pair box'. It was the first time a coherent quantum state had been engineered in a chip made with ordinary electronics fabrication. It lasted only nanoseconds, but it worked.",
+    ],
+    mattered: [
+      "It showed that qubits could be built, lithographed and wired like integrated circuits, which opened the path that IBM, Google, Rigetti and many others now follow. Superconducting qubits operate in nanoseconds and are easy to link on a chip, but they must be cooled close to absolute zero.",
+    ],
+    ideas: ["Superconducting qubits", "Cooper-pair box"],
+    related: ["clarke-devoret-martinis", "david-wineland"],
+  },
+  {
+    slug: "clarke-devoret-martinis",
+    name: "John Clarke, Michel Devoret and John Martinis",
+    lived:
+      "Clarke b. 1942, Cambridge · Devoret b. 1953, Paris · Martinis b. 1958, United States",
+    country: "United Kingdom, France and the United States",
+    known:
+      "Showed quantum behaviour in a circuit big enough to hold in the hand; Nobel Prize in Physics 2025.",
+    sections: ["quantum-computing", "quantum-mechanics"],
+    who: "Three physicists who in 1984–85 at the University of California, Berkeley asked whether quantum mechanics holds for something macroscopic, a superconducting circuit containing billions of electrons.",
+    work: [
+      "They found that the whole circuit could tunnel out of a stable state through a barrier, like a single particle, and that its energies were quantised. The result is the scientific foundation of superconducting qubits. Martinis later led the group at Google that in 2019 reported 'quantum supremacy' with the 53-qubit Sycamore chip, a random-circuit task they estimated would take a supercomputer thousands of years; other researchers argued that classical methods could do it much faster. Devoret and others at Google Quantum AI continued the work, and in 2024 the 105-qubit Willow chip showed logical error rates falling as the error-correcting code (a surface code) grew, the first clear sign of operating below the threshold.",
+    ],
+    mattered: [
+      "They received the 2025 Nobel Prize in Physics for the discovery of macroscopic quantum tunnelling and energy quantisation in an electric circuit. It is both a milestone of the quantum story and a reminder that Schrödinger's cat was a challenge to ask where the quantum world ends. These experiments suggest that, at least for circuits, it does not.",
+    ],
+    ideas: [
+      "Macroscopic quantum tunnelling",
+      "Superconducting circuits",
+      "Quantum supremacy claim",
+      "Below-threshold error correction",
+    ],
+    related: ["yasunobu-nakamura", "john-preskill", "alexei-kitaev", "erwin-schrodinger"],
+  },
+  {
+    slug: "knill-laflamme-milburn",
+    name: "Emanuel Knill, Raymond Laflamme and Gerard Milburn",
+    lived: "active from the 1990s",
+    country: "working in the United States, Canada and Australia",
+    known:
+      "Showed that ordinary optics and photon detectors suffice for quantum computing.",
+    sections: ["quantum-computing"],
+    who: "Three theorists who worked on different aspects of quantum information. Knill and Laflamme had worked at Los Alamos National Laboratory on error correction; Milburn at the University of Queensland on quantum optics.",
+    work: [
+      "Photons barely interact, which makes them excellent carriers of quantum information and poor for logic. In 2001 their 'KLM' scheme showed that beam splitters, phase shifters, single-photon sources and detectors, together with measurement and feed-forward, could in principle perform universal quantum computation without any direct photon–photon interaction.",
+    ],
+    mattered: [
+      "KLM is the theoretical basis of photonic quantum computing, pursued today by companies including PsiQuantum and Xanadu. Photons work at room temperature and travel through ordinary optical fibre, but losses, and the need to generate and detect many single photons reliably, remain the central engineering problem.",
+    ],
+    ideas: [
+      "Linear optical quantum computing",
+      "Photonic qubits",
+      "Measurement-based computing",
+    ],
+    related: ["jian-wei-pan", "andrew-steane"],
+  },
+  {
+    slug: "jian-wei-pan",
+    name: "Jian-Wei Pan",
+    lived: "born 1970, China",
+    country: "China",
+    known:
+      "Led experiments in quantum teleportation, satellite quantum communication and photonic quantum advantage.",
+    sections: ["quantum-computing"],
+    who: "A physicist at the University of Science and Technology of China, who trained in Vienna under Anton Zeilinger.",
+    work: [
+      "His group demonstrated multi-photon entanglement and, in 2017, using the Micius satellite, entanglement distribution over more than 1,200 kilometres, and teleportation from the ground up to the satellite. In 2020 the Jiuzhang photonic machine did a task called Gaussian boson sampling with 76 detected photons, which the team estimated to be far beyond classical simulation at the time; classical algorithms have since reduced the gap.",
+    ],
+    mattered: [
+      "These experiments show that photonic and satellite-based quantum technologies can work outside the laboratory, and they make quantum communication a worldwide effort rather than a regional one.",
+    ],
+    ideas: ["Quantum satellites", "Boson sampling", "Photonic advantage"],
+    related: ["knill-laflamme-milburn", "alain-aspect-john-clauser-anton-zeilinger"],
+  },
+  {
+    slug: "mikhail-lukin",
+    name: "Mikhail Lukin",
+    lived: "active from the 1990s",
+    country: "Russia, working in the United States",
+    known: "A leader of neutral-atom quantum computing and quantum simulation.",
+    sections: ["quantum-computing"],
+    who: "A physicist at Harvard whose group, with collaborators at MIT, QuEra and elsewhere, works with arrays of individual neutral atoms held by focused laser beams, known as optical tweezers.",
+    work: [
+      "In a neutral-atom machine each atom is a qubit. Exciting an atom to a highly energised 'Rydberg' state makes it strongly interact with its neighbours, which gives entangling gates, and the tweezers can be rearranged during a computation. Lukin's group has built programmable arrays of hundreds of atoms for simulating quantum matter and, in 2023, demonstrated a processor with dozens of error-detected and error-corrected 'logical' qubits.",
+    ],
+    mattered: [
+      "Neutral atoms offer large numbers of identical qubits and flexible connectivity, and have become, alongside superconducting circuits, trapped ions and photons, one of the four main hardware routes. Which will win, or whether a mixture will, is not yet known.",
+    ],
+    ideas: ["Optical tweezers", "Rydberg gates", "Logical qubits"],
+    related: ["david-wineland", "ignacio-cirac-peter-zoller", "richard-feynman"],
+  },
+];
