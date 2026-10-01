@@ -19,10 +19,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { pillar } = await params;
   const page = site.pillars.find((p) => p.slug === pillar);
   if (!page) return {};
+  const section = sectionBySlug.get(page.slug);
+  const description = section
+    ? `${page.line} ${section.figures.map((f) => f.name).join(", ")}: who they were, what they found, and what they said, with sources.`
+    : page.line;
   return {
     title: page.title,
-    description: page.line,
+    description,
     alternates: { canonical: `/${page.slug}` },
+    openGraph: {
+      type: section ? "article" : "website",
+      title: `${page.title} — ${site.name}`,
+      description,
+      url: `/${page.slug}`,
+    },
   };
 }
 
