@@ -18,20 +18,27 @@ against `main`; nothing was merged, pushed to `main`, deployed, or run against a
 
 ## Other PRs in this takeover
 
-| PR                                                                                                                                                                                   | State  | Notes                                                                                                             |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------- |
-| [#61](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/61) earth1 quantum mechanics and computing library    | Merged | 37 profiles, equations, double-slit and qubit demos.                                                              |
-| [#62](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/62) e1-4 voice sign-in and saving                     | Open   | Security fixes pushed; waits on production migrations and four GitHub secrets. Owned by the voice sign-in thread. |
-| [#63](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/63) e2e test for the bead audio player                | Merged |                                                                                                                   |
-| [#64](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/64) unit tests for earth1-co and the spacetime signal | Open   | From another thread.                                                                                              |
+| PR                                                                                                                                                                                                   | State  | Notes                                                                                                             |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------- |
+| [#61](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/61) earth1 quantum mechanics and computing library                    | Merged | 37 profiles, equations, double-slit and qubit demos.                                                              |
+| [#62](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/62) e1-4 voice sign-in and saving                                     | Open   | Security fixes pushed; waits on production migrations and four GitHub secrets. Owned by the voice sign-in thread. |
+| [#63](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/63) e2e test for the bead audio player                                | Merged |                                                                                                                   |
+| [#64](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/64) unit tests for earth1-co and the spacetime signal                 | Open   | From another thread.                                                                                              |
+| [#76](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/76) e2e for the voice front door, browser suite in CI without secrets | Open   | e1-4 thread. Merges first; #77 to #80 are stacked on it and retarget to `main` after.                             |
+| [#77](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/77) e1-4 data deletion (task 9)                                       | Open   | One held press destroys everything; CI proves nothing remains. Edits `ci.yml`, as do #67 and #78.                 |
+| [#78](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/78) e1-4 local storage for audio and avatars (task 6)                 | Open   | `STORAGE_PROVIDER=local` keeps files on disk in dev. Edits `ci.yml`.                                              |
+| [#79](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/79) e1-4 profile and avatar (task 10)                                 | Open   | Avatars shrink on the device; the server checks type and bytes.                                                   |
+| [#80](https://github.com/quantumleapsfusion-ops/Z-D-Fields-exp-i-d4x-g-R-F-F-G-G-W-W-i-i-slashedD-i-D-H-D-H-V-H-ij-i-H-j-/pull/80) e1-4 2D to 5D package scaffolds (task 12)                         | Open   | Typed contracts and a README per package, no implementation.                                                      |
 
 The e1-4 thread owns tasks 6 (voice stream), 9 (data deletion), 10 (profile) and 12 (dimension
-package scaffolds); it had not opened a PR when this file was written.
+package scaffolds): PRs #76 to #80 above. Its three open decisions are in `QUESTIONS.md` under
+"PR #76 to #80".
 
 ## Skipped or blocked
 
 - **Playwright CI job** stays red on every PR until the four repository secrets exist (see #62's
-  questions). The `check`, `davinci` and new `engine` jobs are the ones to watch.
+  questions) or #76 lands, which runs the browser suite without them. The `check`, `davinci` and
+  new `engine` jobs are the ones to watch.
 - **App renames** to `apps/earth1` and `apps/e14` were not done: the current names build and
   deploy, and a rename would touch Vercel settings, which the brief rules out.
 - **Search Console**: neither site is indexed yet; submitting `https://earth1.co/sitemap.xml` is
@@ -46,10 +53,16 @@ package scaffolds); it had not opened a PR when this file was written.
 3. Merge order for the stacked PRs (default: bottom up).
 4. Whether to group earth1's eleven nav links (default: keep flat).
 5. Whether to delete the old Cloudflare Pages app and docs (default: keep until confirmed).
+6. e1-4 stream beads: add an aria-only scrub and transcript reveal (default: yes, follow-up PR).
+7. Deepgram, OpenAI and Anthropic fallbacks in e1-4: remove now or flag off until Da Vinci ships
+   (default: remove now; decide under #62's Q1).
+8. `/talk`, `/profile` and the 2D to 5D pages are text-heavy (default: drop from navigation,
+   rebuild voice-only).
 
 ## Suggested next three tasks
 
-1. Merge #65–#72 bottom up, then submit the earth1 sitemap in Search Console.
+1. Merge #65–#72 bottom up, and #76 then #77–#80 on the e1-4 side; then submit the earth1
+   sitemap in Search Console.
 2. Add the four test-project secrets so the Playwright job can go green, then land #62.
 3. Give `/research` and `/philanthropy` real content through `packages/content`, the last two
    earth1 pages that are still a title and one line.
