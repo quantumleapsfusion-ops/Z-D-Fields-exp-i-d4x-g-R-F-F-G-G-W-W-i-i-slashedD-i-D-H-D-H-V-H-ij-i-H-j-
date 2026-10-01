@@ -3,6 +3,7 @@ import { EB_Garamond, Michroma, Space_Grotesk } from "next/font/google";
 import Link from "next/link";
 import { Earth1Mark } from "@earth-one/ui";
 
+import "katex/dist/katex.min.css";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { SolarSystem } from "@/components/SolarSystem";
