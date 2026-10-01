@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { sectionBySlug } from "@earth-one/content";
+
+import { FieldPage } from "@/components/FieldPage";
 
 import { research } from "@/lib/research";
 import { site } from "@/lib/site";
@@ -27,6 +30,8 @@ export default async function PillarPage({ params }: Props) {
   const { pillar } = await params;
   const page = site.pillars.find((p) => p.slug === pillar);
   if (!page) notFound();
+  const section = sectionBySlug.get(page.slug);
+  if (section) return <FieldPage section={section} />;
   return (
     <>
       <h1 className="font-display text-xl tracking-[0.2em] uppercase sm:text-4xl">
