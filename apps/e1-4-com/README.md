@@ -136,7 +136,11 @@ Bucket access model:
   Gravity superposition heuristics, duration formatting). No network, no database.
 - **E2E (Playwright):** `e2e/*.spec.ts` on desktop + mobile Chrome. Runs against a production
   build (`npm run build` first; the config starts `next start` on port 3100). It creates
-  disposable Prisma users and sessions and removes their database rows and Storage objects.
+  disposable users and sessions and removes their database rows and Storage objects. Chromium is
+  launched with a fake microphone, so speaking at the front door and to Da Vinci is exercised
+  for real. Point `NEXT_PUBLIC_SUPABASE_URL` at `http://127.0.0.1:54321` when you build, and the
+  suite runs its own small Storage fake (`e2e/helpers/fake-storage.ts`) instead of a Supabase
+  project; any Postgres works for `DATABASE_URL`. That is how CI runs it, with no secrets.
 
 Live database and Storage checks run with `npm run test:live`; see `docs/live-e2e.md`.
 

@@ -91,6 +91,22 @@ export async function loginAs(context: BrowserContext, baseURL: string): Promise
   return user.id;
 }
 
+/**
+ * Adopts the account behind a session the app itself created (for example by a voice signing in at
+ * the front door), so `cleanupE2eUsers` removes it with the rest.
+ */
+export async function rememberSessionUser(sessionToken: string): Promise<string> {
+  const {
+    rows: [session],
+  } = await db.query<{ user_id: string }>(
+    "select user_id from sessions where token_hash = $1",
+    [createHash("sha256").update(sessionToken).digest("hex")],
+  );
+  if (!session) throw new Error("no session for that cookie");
+  testUsers.add(session.user_id);
+  return session.user_id;
+}
+
 export async function expectLoggedOut(page: Page): Promise<void> {
   await page.goto("/stream");
   await page.waitForURL(/\/login\?next=%2Fstream/);
