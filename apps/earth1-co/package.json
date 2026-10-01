@@ -2,7 +2,7 @@
   "name": "earth1-co",
   "version": "0.1.0",
   "private": true,
-  "description": "earth1.co — Earth 1 Coalescent.",
+  "description": "earth1.co \u2014 Earth 1 Coalescent.",
   "engines": {
     "node": ">=22"
   },
@@ -11,7 +11,8 @@
     "build": "next build",
     "start": "next start --port 3001",
     "lint": "eslint",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@earth-one/content": "*",
@@ -33,6 +34,7 @@
     "eslint-config-next": "16.3.6",
     "eslint-config-prettier": "^10.1.8",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }
