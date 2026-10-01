@@ -16,8 +16,13 @@ export function Footer() {
         </Link>
         <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
           <li>
-            <a href="https://e1-4.com" className="label hover:text-white">
-              e1-4.com
+            <a
+              href={site.e14.url}
+              title={site.e14.line}
+              aria-label={`${site.e14.name}, ${site.e14.tagline}`}
+              className="label hover:text-white"
+            >
+              {site.e14.name}.com
             </a>
           </li>
           <li>

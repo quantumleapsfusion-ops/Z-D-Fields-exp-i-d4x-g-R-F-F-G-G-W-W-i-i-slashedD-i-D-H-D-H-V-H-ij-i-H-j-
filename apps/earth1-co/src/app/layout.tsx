@@ -31,6 +31,12 @@ const garamond = EB_Garamond({
   variable: "--font-eb-garamond",
 });
 
+/**
+ * Google Search Console "HTML tag" verification. Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in the
+ * Vercel project (see docs/SEARCH-CONSOLE.md); unset, no tag is rendered.
+ */
+const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
+
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
@@ -39,14 +45,17 @@ export const metadata: Metadata = {
   },
   description: site.description,
   applicationName: site.name,
+  creator: site.org,
+  publisher: site.org,
   keywords: [...site.keywords],
+  ...(googleVerification ? { verification: { google: googleVerification } } : {}),
   openGraph: {
     type: "website",
     url: site.url,
     siteName: site.org,
     title: `${site.org} — Global citizenship for all`,
     description: site.description,
-    images: [{ url: "/icon.svg", alt: site.org }],
+    // The card image itself comes from app/opengraph-image.png (file convention).
   },
   twitter: {
     card: "summary_large_image",
