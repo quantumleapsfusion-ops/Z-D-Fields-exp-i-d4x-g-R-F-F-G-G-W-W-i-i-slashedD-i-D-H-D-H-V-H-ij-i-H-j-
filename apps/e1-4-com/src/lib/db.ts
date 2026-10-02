@@ -3,12 +3,15 @@ import "server-only";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 import { serverEnv } from "@/lib/env";
+import { withPgbouncerParams } from "@/lib/pooler-url";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function createPrismaClient() {
   // Pooled (transaction-mode) Postgres connection for the app runtime.
-  const adapter = new PrismaPg({ connectionString: serverEnv().databaseUrl });
+  const adapter = new PrismaPg({
+    connectionString: withPgbouncerParams(serverEnv().databaseUrl),
+  });
   return new PrismaClient({ adapter });
 }
 

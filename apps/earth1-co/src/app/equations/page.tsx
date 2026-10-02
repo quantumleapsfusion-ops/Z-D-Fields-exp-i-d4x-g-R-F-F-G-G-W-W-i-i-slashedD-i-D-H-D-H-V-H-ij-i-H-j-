@@ -4,6 +4,7 @@ import Link from "next/link";
 import { EquationBlock, H2, Heading, Page, Prose } from "@/components/library/parts";
 import { equations } from "@/lib/library/equations";
 import { personBySlug } from "@/lib/library/people";
+import { site } from "@/lib/site";
 
 const description =
   "The equations of quantum mechanics and quantum computing, from Planck's E = hν to Shor's algorithm, each explained in plain language with the people who found them.";
@@ -12,6 +13,11 @@ export const metadata: Metadata = {
   title: "Equations",
   description,
   alternates: { canonical: "/equations" },
+  openGraph: {
+    title: `Equations — ${site.name}`,
+    description: description,
+    url: "/equations",
+  },
 };
 
 const groups = [

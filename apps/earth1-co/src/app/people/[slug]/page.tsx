@@ -62,6 +62,7 @@ export default async function PersonPage({ params }: Props) {
     },
   };
   const related = (p.related ?? []).filter((r) => personBySlug.has(r));
+  const quotes = (p.quotes ?? []).filter((q) => q.verified && q.source.trim());
 
   return (
     <Page>
@@ -99,10 +100,10 @@ export default async function PersonPage({ params }: Props) {
         ))}
       </Prose>
 
-      {p.quotes?.length ? (
+      {quotes.length ? (
         <>
           <H2>In their own words</H2>
-          {p.quotes.map((q) => (
+          {quotes.map((q) => (
             <figure
               key={q.text.slice(0, 24)}
               className="mt-6 border-l border-white/40 pl-5"

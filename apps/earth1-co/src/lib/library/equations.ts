@@ -5,6 +5,7 @@ export const equations: Equation[] = [
     id: "planck-relation",
     name: "The Planck relation",
     formula: "E = hν",
+    tex: String.raw`E = h\nu`,
     year: "1900",
     explain:
       "Light of frequency ν comes in packets of energy E, and the packet size is fixed by one new constant of nature, h. Planck wrote it down to fit the glow of hot objects; it turned out to be the first line of the quantum story.",
@@ -40,6 +41,7 @@ export const equations: Equation[] = [
     id: "de-broglie",
     name: "The de Broglie wavelength",
     formula: "λ = h / p",
+    tex: String.raw`\lambda = \frac{h}{p}`,
     year: "1924",
     explain:
       "Every moving thing has a wavelength: the heavier or faster it is, the shorter it gets. For a tennis ball it is absurdly small. For an electron it is about the size of an atom, so electrons can interfere like waves.",
@@ -51,6 +53,7 @@ export const equations: Equation[] = [
     id: "schrodinger",
     name: "The Schrödinger equation",
     formula: "iħ ∂ψ/∂t = Ĥψ",
+    tex: String.raw`i\hbar\,\frac{\partial}{\partial t}\,\psi = \hat{H}\,\psi`,
     year: "1926",
     explain:
       "The rule for how a quantum state changes in time. ψ, the wave function, holds everything that can be known about a system; Ĥ is its energy. Between measurements, ψ evolves smoothly and predictably, and all the strangeness lives in how we read it.",
@@ -63,6 +66,7 @@ export const equations: Equation[] = [
     id: "born-rule",
     name: "The Born rule",
     formula: "P(x) = |ψ(x)|²",
+    tex: String.raw`P(x) = \lvert\psi(x)\rvert^{2}`,
     year: "1926",
     explain:
       "The wave function does not say where a particle is. Square its size at a point and you get the probability of finding the particle there. This is where chance enters physics at its foundation.",
@@ -84,6 +88,7 @@ export const equations: Equation[] = [
     id: "uncertainty",
     name: "The uncertainty principle",
     formula: "Δx · Δp ≥ ħ / 2",
+    tex: String.raw`\Delta x\,\Delta p \ge \frac{\hbar}{2}`,
     year: "1927",
     explain:
       "A quantum state cannot have a sharply defined position and a sharply defined momentum at once. This is not clumsy instruments: the two quantities simply are not both sharp in nature. Squeeze one and the other spreads.",
@@ -95,6 +100,7 @@ export const equations: Equation[] = [
     id: "dirac",
     name: "The Dirac equation",
     formula: "(iħγᵘ∂ᵤ − mc)ψ = 0",
+    tex: String.raw`\left(i\hbar\gamma^{\mu}\partial_{\mu} - mc\right)\psi = 0`,
     year: "1928",
     explain:
       "Quantum mechanics made compatible with special relativity. It gave the electron its spin automatically and predicted a mirror particle with opposite charge, the positron, found four years later. It was the first prediction of antimatter.",
@@ -127,6 +133,7 @@ export const equations: Equation[] = [
     id: "bell-state",
     name: "An entangled pair (a Bell state)",
     formula: "|Φ⁺⟩ = (|00⟩ + |11⟩) / √2",
+    tex: String.raw`\lvert\Phi^{+}\rangle = \frac{\lvert 00\rangle + \lvert 11\rangle}{\sqrt{2}}`,
     year: "1935 / 1964",
     explain:
       "Two qubits that are each undecided, but whose answers are locked together: measure one and get 0, and the other will give 0; get 1, and it gives 1. No message passes between them. Bell's theorem shows that no scheme of answers fixed in advance, with nothing acting at a distance, can reproduce these results, and experiments confirm it.",
@@ -158,6 +165,7 @@ export const equations: Equation[] = [
     id: "qubit",
     name: "The qubit",
     formula: "|ψ⟩ = α|0⟩ + β|1⟩,  |α|² + |β|² = 1",
+    tex: String.raw`\lvert\psi\rangle = \alpha\lvert 0\rangle + \beta\lvert 1\rangle,\quad \lvert\alpha\rvert^{2} + \lvert\beta\rvert^{2} = 1`,
     year: "1995",
     explain:
       "A quantum bit is not 0 or 1 but a blend of both, with amplitudes α and β. Measuring gives 0 with probability |α|² and 1 with probability |β|², and the blend is gone. The skill of quantum computing is steering the amplitudes before you look.",
@@ -169,6 +177,7 @@ export const equations: Equation[] = [
     id: "hadamard",
     name: "The Hadamard gate",
     formula: "H|0⟩ = (|0⟩ + |1⟩) / √2",
+    tex: String.raw`H\lvert 0\rangle = \frac{\lvert 0\rangle + \lvert 1\rangle}{\sqrt{2}}`,
     year: "—",
     explain:
       "The gate that turns a definite 0 into an even blend of 0 and 1. Almost every quantum algorithm starts by applying it to every qubit so that the circuit works on an equal blend of all possible inputs, which interference then sorts out.",

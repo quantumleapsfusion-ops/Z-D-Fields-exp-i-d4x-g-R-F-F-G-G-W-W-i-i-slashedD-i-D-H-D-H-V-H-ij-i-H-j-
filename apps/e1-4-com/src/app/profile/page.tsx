@@ -9,12 +9,9 @@ import { requireUser } from "@/lib/auth/user";
 import { prisma } from "@/lib/db";
 import { AVATARS_BUCKET, storage } from "@/lib/storage";
 
-import {
-  AvatarForm,
-  DeleteAccountForm,
-  NameForm,
-  RevokeShareButton,
-} from "./ProfileForms";
+import { HoldToDestroy } from "@/components/HoldToDestroy";
+
+import { AvatarForm, NameForm, RevokeShareButton } from "./ProfileForms";
 
 export const metadata = { title: "Profile", robots: { index: false } };
 
@@ -157,13 +154,14 @@ export default async function ProfilePage() {
 
         <div className="hairline my-10" />
 
-        <h2 className="label text-ochre mb-3">Delete account</h2>
+        <h2 className="label text-ochre mb-3">Destroy everything</h2>
         <p className="text-chalk/70 mb-4 max-w-xl text-sm leading-relaxed">
-          Permanently destroys your account, every Voice Stream segment and its audio, all
-          transcriptions, every voice note you sent in Talk, share links, chalkboards and
-          your avatar: database rows and stored files. This cannot be undone.
+          Press and keep pressing for three seconds. Your account, every stream entry and
+          its audio, all transcripts, every voice note you sent in Talk, share links,
+          chalkboards and your avatar are destroyed: database rows and stored files.
+          Letting go early cancels. This cannot be undone.
         </p>
-        <DeleteAccountForm />
+        <HoldToDestroy />
       </section>
     </PageShell>
   );
