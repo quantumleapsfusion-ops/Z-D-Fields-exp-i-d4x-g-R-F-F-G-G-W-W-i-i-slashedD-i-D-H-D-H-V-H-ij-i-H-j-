@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BlackHoleSimulator } from "@/components/BlackHoleSimulator";
 import { DNAHelix } from "@/components/DNAHelix";
 import { PeriodicTable } from "@/components/PeriodicTable";
+import { ProteinFolder } from "@/components/ProteinFolder";
 import { SolarSystem } from "@/components/SolarSystem";
 import { research } from "@/lib/research";
 import { site } from "@/lib/site";
@@ -63,10 +64,32 @@ export default async function PillarPage({ params }: Props) {
                 ))}
               </ul>
 
+              {/* Cross-links */}
+              {(area.id === "chemistry" || area.id === "biology" || area.id === "biochemistry") && (
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {area.id !== "chemistry" && (
+                    <a href="#chemistry" className="text-xs border border-white/25 px-3 py-1 rounded-full hover:border-white/50">
+                      Chemistry
+                    </a>
+                  )}
+                  {area.id !== "biology" && (
+                    <a href="#biology" className="text-xs border border-white/25 px-3 py-1 rounded-full hover:border-white/50">
+                      Biology
+                    </a>
+                  )}
+                  {area.id !== "biochemistry" && (
+                    <a href="#biochemistry" className="text-xs border border-white/25 px-3 py-1 rounded-full hover:border-white/50">
+                      Biochemistry
+                    </a>
+                  )}
+                </div>
+              )}
+
               {/* Interactive visualizations */}
               <div className="mt-8">
                 {area.id === "chemistry" && <PeriodicTable />}
                 {area.id === "biology" && <DNAHelix />}
+                {area.id === "biochemistry" && <ProteinFolder />}
                 {area.id === "physics" && (
                   <div className="space-y-12">
                     <div>

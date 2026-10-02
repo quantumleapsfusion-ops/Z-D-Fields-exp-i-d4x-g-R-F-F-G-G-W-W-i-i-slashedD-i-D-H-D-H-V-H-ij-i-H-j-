@@ -44,6 +44,17 @@ export const research = [
     },
   },
   {
+    id: "biochemistry",
+    title: "Biochemistry",
+    question:
+      "How do proteins fold, enzymes catalyze reactions, and cells harvest energy from molecules?",
+    focus: ["Enzyme kinetics", "Protein folding", "Energy metabolism"],
+    reference: {
+      title: "NCBI Biochemistry",
+      url: "https://www.ncbi.nlm.nih.gov/books/NBK22430/",
+    },
+  },
+  {
     id: "physics",
     title: "Physics",
     question:
