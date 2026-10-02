@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
+import { withPgbouncerParams } from "@/lib/pooler-url";
 import { AVATARS_BUCKET, VOICE_BUCKET } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -41,7 +42,8 @@ function databaseUrlShape() {
   const raw = process.env.DATABASE_URL?.trim();
   if (!raw) return null;
   try {
-    const url = new URL(raw);
+    // Report the URL the Prisma client actually uses.
+    const url = new URL(withPgbouncerParams(raw));
     return {
       postgresScheme: url.protocol === "postgres:" || url.protocol === "postgresql:",
       poolerPort6543: url.port === "6543",
