@@ -134,7 +134,8 @@ export default function TopologyCollapse({
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     } catch {
-      el.innerHTML = '<p style="color: rgba(241, 237, 225, 0.6); text-align: center; padding: 2rem;">WebGL not available</p>';
+      el.innerHTML =
+        '<p style="color: rgba(241, 237, 225, 0.6); text-align: center; padding: 2rem;">WebGL not available</p>';
       return;
     }
 
@@ -205,9 +206,10 @@ export default function TopologyCollapse({
       const k = Math.min(1, (now - changedAt.current) / duration);
 
       // Easing with anticipation and follow-through: slow start, fast middle, slow end
-      const ease = k < 0.5
-        ? 2 * k * k * (3 - 2 * k) // easeInOutQuad for smoother anticipation
-        : 1 - (-2 * k + 2) ** 2 / 2; // easeOutQuad for follow-through
+      const ease =
+        k < 0.5
+          ? 2 * k * k * (3 - 2 * k) // easeInOutQuad for smoother anticipation
+          : 1 - (-2 * k + 2) ** 2 / 2; // easeOutQuad for follow-through
 
       // Particles are pulled through the core (the "event horizon") before reaching the target.
       const pull = Math.sin(Math.PI * ease) * 0.85;

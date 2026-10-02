@@ -30,7 +30,8 @@ export default function Board3D({
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true });
     } catch {
-      el.innerHTML = '<p style="color: rgba(241, 237, 225, 0.6); text-align: center; padding: 2rem;">WebGL not available</p>';
+      el.innerHTML =
+        '<p style="color: rgba(241, 237, 225, 0.6); text-align: center; padding: 2rem;">WebGL not available</p>';
       return;
     }
 
