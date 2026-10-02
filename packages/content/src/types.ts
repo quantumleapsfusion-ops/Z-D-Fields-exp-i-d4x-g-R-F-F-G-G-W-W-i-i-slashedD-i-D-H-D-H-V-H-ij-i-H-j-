@@ -25,7 +25,7 @@ export type Figure = {
 };
 
 export type FieldSlug =
-  "chemistry" | "physics" | "biology" | "biochemistry" | "mathematics";
+  "chemistry" | "physics" | "biology" | "biochemistry" | "mathematics" | "philanthropy";
 
 /** A displayed equation. `tex` is KaTeX source; `label` is what a screen reader hears. */
 export type TopicEquation = {
