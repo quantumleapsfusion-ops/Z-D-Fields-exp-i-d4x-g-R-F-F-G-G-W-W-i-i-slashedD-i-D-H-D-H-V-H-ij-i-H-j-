@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { haptic } from "@/lib/device/haptics";
 import type { LiveTranscription } from "./useLiveTranscription";
 
 /** Mic toggle + "type instead" input. Shared by the live-transcription surfaces. */
@@ -21,7 +22,15 @@ export function LiveControls({
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={() => (live.listening ? live.stop() : void live.start())}
+          onClick={() => {
+            if (live.listening) {
+              haptic("stop");
+              live.stop();
+            } else {
+              haptic("start");
+              void live.start();
+            }
+          }}
           aria-pressed={live.listening}
           className={`flex h-11 shrink-0 items-center gap-2 rounded-full px-5 font-sans text-sm transition-colors ${
             live.listening
@@ -39,6 +48,7 @@ export function LiveControls({
           className="flex min-w-0 flex-1"
           onSubmit={(e) => {
             e.preventDefault();
+            haptic("accepted");
             live.pushText(draft);
             setDraft("");
           }}
