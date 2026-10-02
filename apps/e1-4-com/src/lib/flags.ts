@@ -11,4 +11,5 @@ export const flags = {
   gravityChalkboard: flag(process.env.NEXT_PUBLIC_FEATURE_GRAVITY_CHALKBOARD, true),
   eventHorizon: flag(process.env.NEXT_PUBLIC_FEATURE_EVENT_HORIZON, true),
   superposition: flag(process.env.NEXT_PUBLIC_FEATURE_SUPERPOSITION, true),
+  daVinci: flag(process.env.NEXT_PUBLIC_FEATURE_DA_VINCI, false),
 } as const;
