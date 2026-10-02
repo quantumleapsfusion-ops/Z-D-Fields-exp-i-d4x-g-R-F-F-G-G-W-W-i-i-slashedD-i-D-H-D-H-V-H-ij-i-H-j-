@@ -25,7 +25,15 @@ export default function Board3D({
   useEffect(() => {
     const el = container.current;
     if (!el) return;
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+    } catch {
+      el.innerHTML = '<p style="color: rgba(241, 237, 225, 0.6); text-align: center; padding: 2rem;">WebGL not available</p>';
+      return;
+    }
+
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(el.clientWidth, el.clientHeight);
     el.appendChild(renderer.domElement);
