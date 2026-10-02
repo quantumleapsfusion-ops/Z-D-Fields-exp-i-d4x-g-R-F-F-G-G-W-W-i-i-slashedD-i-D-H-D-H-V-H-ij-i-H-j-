@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { BlackHoleSimulator } from "@/components/BlackHoleSimulator";
+import { DNAHelix } from "@/components/DNAHelix";
+import { PeriodicTable } from "@/components/PeriodicTable";
+import { SolarSystem } from "@/components/SolarSystem";
 import { research } from "@/lib/research";
 import { site } from "@/lib/site";
 
@@ -36,7 +40,7 @@ export default async function PillarPage({ params }: Props) {
         {page.line}
       </p>
       {page.slug === "research" ? (
-        <div className="mt-16 grid w-full max-w-4xl gap-12 text-left sm:grid-cols-2">
+        <div className="mt-16 w-full max-w-4xl space-y-16 text-left">
           {research.map((area) => (
             <section key={area.id} id={area.id} aria-labelledby={`${area.id}-title`}>
               <h2
@@ -58,11 +62,34 @@ export default async function PillarPage({ params }: Props) {
                   </li>
                 ))}
               </ul>
+
+              {/* Interactive visualizations */}
+              <div className="mt-8">
+                {area.id === "chemistry" && <PeriodicTable />}
+                {area.id === "biology" && <DNAHelix />}
+                {area.id === "physics" && (
+                  <div className="space-y-12">
+                    <div>
+                      <h3 className="text-sm font-light tracking-[0.08em] uppercase text-white/70 mb-4">
+                        Orbital mechanics
+                      </h3>
+                      <SolarSystem />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-light tracking-[0.08em] uppercase text-white/70 mb-4">
+                        Black hole simulator
+                      </h3>
+                      <BlackHoleSimulator />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <a
                 href={area.reference.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-5 inline-block border-b border-white/40 pb-0.5 text-xs tracking-[0.08em] text-white/70 hover:text-white"
+                className="mt-8 inline-block border-b border-white/40 pb-0.5 text-xs tracking-[0.08em] text-white/70 hover:text-white"
               >
                 {area.reference.title} ↗
               </a>
