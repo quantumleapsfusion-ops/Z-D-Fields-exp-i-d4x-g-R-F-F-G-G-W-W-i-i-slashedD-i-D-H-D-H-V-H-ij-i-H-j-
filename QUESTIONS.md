@@ -54,32 +54,57 @@ so the e2e job no longer needs the four repository secrets and runs on this PR a
 applied by you (`DEPLOYMENT.md` §5); nothing here runs them. Confirm after merging by opening
 `/api/health` on production.
 
-### Q7. Device binding: one account per device, second auth on new phone
+### Q7. Device binding: one account per device, voice-auth only on new phone
 
-From Z's brief: "new device = voice only (strong anti-spoofing)". Signed-in on device A, moving to
-device B requires re-authorization via voice (no password, no WebAuthn passkey on device B until
-voice is verified). Z's hand-off (2026-10-01 18:32) flags this as still open: the specific
-second-step method (cloud provider, stored cookie, fingerprint, etc.) is TBD.
+From Z (2026-10-01 18:35): "new device = voice only (strong anti-spoofing)." Signed-in on device A,
+moving to device B requires re-authorization via voice. No code, no fallback step; voice
+authentication is the sole guard against cross-device takeover.
 
-- A. Implement in #62 or immediately after: bind account to device fingerprint (UA, IP hash,
-  display specs, or browser storage); sign-in on new device requires fresh voice liveness check.
+- A. Implement: bind account to device fingerprint (UA, IP hash, display specs, or browser storage);
+  sign-in on new device requires fresh voice liveness + anti-spoofing check (no second-step code).
 - B. Defer to a later PR; for now, multi-device sign-in works after any successful voice sign-in.
-  **Default (Z, 2026-10-01 18:35): Implement for production; may be post-#62 if time-constrained.
-  Method TBD per Z's hand-off; keep pluggable.**
-- **GATE: Blocked on Z's decision on the new-device second-step method and legal compliance (Q9).**
+  **Decided (Z, 2026-10-01 18:35): A. Voice-auth only, no fallback code. Escalates Q8 (SpeechBrain
+  anti-spoofing) to critical-path blocker.**
+- **GATE: Blocked on anti-spoofing evaluation (Q8) and legal compliance (Q9).**
 
 ### Q8. Voice authentication: choose between self-hosted (SpeechBrain) and third-party SaaS
 
 Z's brief: "no third-party AI SDKs in e1-4 product code" (OpenAI, Anthropic, Gemini). Voiceprints
-require strong anti-spoofing.
+require strong anti-spoofing. **CRITICAL:** Q7 (device binding) is now voice-auth-only with no
+fallback code. Anti-spoofing is the sole guard against cloned voices and cross-device takeover.
 
 - A. Evaluate and integrate SpeechBrain ECAPA-TDNN (speaker verification) + AASIST (anti-spoofing).
   Self-hosted, no vendor API calls, no licensing cost. Requires model files and library setup.
+  Report FAR/FRR on real user voices before production launch.
 - B. Use das-Peak (Veridas) or IDVoice (ID R&D) managed service (documented in `docs/VOICE_AUTH.md`).
   Vendor handles FAR/FRR validation; requires credentials and vendor integration.
-- C. Keep the in-house voiceprint as-is; anti-spoofing is out of scope.
-  **Default (Z, 2026-10-02): A, evaluate SpeechBrain + AASIST. Liveness (current challenge-response)
-  is the interim anti-spoofing; voiceprint matching + blending to be reviewed after launch.**
+- C. Keep the in-house voiceprint as-is; rely on liveness (challenge-response) as interim anti-spoofing.
+  **Decided (Z, 2026-10-02): A, evaluate SpeechBrain + AASIST. CRITICAL-PATH: must measure FAR/FRR
+  on real voices before production, since voice auth is the only device-binding protection.**
+
+### Q8a. Residual risk: device binding with voice-auth-only and no fallback code
+
+Z decided (2026-10-01 18:35) that new devices authenticate via voice only, with no second-step code
+or fallback. This shifts the entire account-takeover risk to anti-spoofing accuracy. If a cloned
+voice passes the liveness + anti-spoofing check, the attacker signs in on a new device and owns the
+account (no recovery without Z's manual intervention).
+
+Risk factors:
+
+- FAR (false-accept rate) on speaker verification must be very low (&lt;0.1% is typical vendor target)
+- Liveness + anti-spoofing must reject realistic clones (AI voice synthesis, deepfakes, high-quality
+  recordings under different acoustic conditions)
+- SpeechBrain evaluation on real e1-4 user voices is critical before launch
+- If anti-spoofing fails, users can lose accounts permanently
+
+- A. Accept the risk. Implement device binding as voice-auth-only; measure FAR/FRR; improve based on
+  real user data after launch. Document the residual risk in the privacy policy and account
+  recovery terms.
+- B. Add a fallback: voice-auth primary, but rate-limited passkey as secondary (user could sign in
+  via passkey if they fear their voice has been cloned).
+- C. Defer device binding until after SpeechBrain FAR/FRR is validated on a real user cohort.
+  **Decided (Z, 2026-10-01 18:35): A. Voice-auth-only; log the risk; measure and iterate on real
+  user data. Update privacy policy and account-recovery terms to document the single point of failure.**
 
 ### Q9. Voiceprint consent: UK GDPR special category, Illinois BIPA
 
