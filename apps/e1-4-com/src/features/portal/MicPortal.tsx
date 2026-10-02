@@ -24,7 +24,20 @@ import { useCarry } from "@/lib/carry";
 import { haptic } from "@/lib/device/haptics";
 import { requestTilt } from "@/lib/device/tilt";
 
-const PinField = dynamic(() => import("@/features/codex/PinField"), { ssr: false });
+/** Loading placeholder for PinField while the component is being dynamically imported. */
+function PinFieldLoading() {
+  return (
+    <div
+      className="h-full w-full bg-blackboard"
+      aria-hidden="true"
+    />
+  );
+}
+
+const PinField = dynamic(() => import("@/features/codex/PinField"), {
+  ssr: false,
+  loading: PinFieldLoading,
+});
 
 const subscribeNever = () => () => {};
 const BUZZ_LEVEL = 0.35;
