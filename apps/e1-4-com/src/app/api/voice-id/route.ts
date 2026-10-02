@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 
+import { withRuntimeEnv } from "@/lib/api/handler";
 import { getUserId } from "@/lib/auth/user";
 import { prisma } from "@/lib/db";
 import { identifyVoice } from "@/lib/voiceprint/identity";
@@ -57,7 +58,7 @@ async function recordLogin(
 }
 
 /** Body: mono 16 kHz 16-bit little-endian PCM. The voice itself is the credential. */
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   const hash = clientHash(request);
   const device = request.headers.get("user-agent")?.slice(0, 200) || null;
   if (await rateLimited(hash)) {
@@ -87,3 +88,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Voice not recognised" }, { status: 500 });
   }
 }
+export const POST = withRuntimeEnv(handlePOST);

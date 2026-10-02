@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Tex } from "@/components/Tex";
 import { equationById } from "@/lib/library/equations";
 import { personBySlug } from "@/lib/library/people";
 import type { Equation, Person } from "@/lib/library/types";
@@ -66,12 +67,18 @@ export function EquationBlock({
       <p className="font-sans text-xs tracking-[0.18em] text-white/55 uppercase">
         {equation.name} · {equation.year}
       </p>
-      <p
-        className="mt-2 text-2xl italic sm:text-3xl"
-        aria-label={`${equation.name}: ${equation.formula}`}
-      >
-        {equation.formula}
-      </p>
+      {equation.tex ? (
+        <p className="mt-2 text-2xl sm:text-3xl">
+          <Tex tex={equation.tex} label={`${equation.name}: ${equation.formula}`} />
+        </p>
+      ) : (
+        <p
+          className="mt-2 text-2xl italic sm:text-3xl"
+          aria-label={`${equation.name}: ${equation.formula}`}
+        >
+          {equation.formula}
+        </p>
+      )}
       {compact ? null : (
         <>
           <p className="mt-3 text-lg leading-relaxed text-white/80">{equation.explain}</p>

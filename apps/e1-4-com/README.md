@@ -130,6 +130,15 @@ Bucket access model:
 | `npm run prisma:deploy`  | Apply pending migrations (`migrate deploy`)           |
 | `npm run prisma:studio`  | Browse the database                                   |
 
+## Running without Supabase
+
+Set `STORAGE_PROVIDER=local` in `.env.local` and the app keeps audio and avatars as files under
+`.e14-storage/` (change it with `LOCAL_STORAGE_DIR`), served from `/api/local-storage`. Only
+Postgres is needed then: `DATABASE_URL` and `DIRECT_URL` can point at any local database once
+`npm run prisma:deploy` has run against it. `NEXT_PUBLIC_SUPABASE_URL` and
+`SUPABASE_SERVICE_ROLE_KEY` may stay blank. Production always uses Supabase; a serverless
+deployment has no disk to keep files on.
+
 ## Testing
 
 - **Unit (Vitest):** `src/**/*.test.ts`, pure logic only (LLM JSON extraction, Da Vinci ops,
@@ -142,7 +151,10 @@ Bucket access model:
   suite runs its own small Storage fake (`e2e/helpers/fake-storage.ts`) instead of a Supabase
   project; any Postgres works for `DATABASE_URL`. That is how CI runs it, with no secrets.
 
-Live database and Storage checks run with `npm run test:live`; see `docs/live-e2e.md`.
+Live database and Storage checks run with `npm run test:live`; see `docs/live-e2e.md`. CI runs the
+deletion proof from that set on every push (`live/delete-all.live.test.ts`): after
+`DELETE /api/account`, or the hold gesture on the profile page that calls it, not one row or stored
+file of that person remains.
 
 ## Deploying to Vercel
 

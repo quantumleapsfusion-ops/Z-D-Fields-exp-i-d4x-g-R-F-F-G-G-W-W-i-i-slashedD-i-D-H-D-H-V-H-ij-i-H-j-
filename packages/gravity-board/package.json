@@ -1,0 +1,20 @@
+{
+  "name": "@earth-one/gravity-board",
+  "version": "0.0.0",
+  "private": true,
+  "description": "e1-4 3D: the Gravity Board contract. Types only; the board itself lives in apps/e1-4-com.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "eslint-config-prettier": "^10.1.8",
+    "typescript": "^5"
+  }
+}

@@ -19,16 +19,26 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
 });
 
+/**
+ * Google Search Console "HTML tag" verification. Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in the
+ * Vercel project (see docs/SEARCH-CONSOLE.md); unset, no tag is rendered.
+ */
+const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
+
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
     default: `${site.name}: ${site.seoTitle}`,
-    template: `%s · ${site.name}`,
+    template: `%s · ${site.name}, ${site.tagline}`,
   },
   description: site.description,
   applicationName: site.name,
   authors: [{ name: site.org, url: site.philosophyUrl }],
+  creator: site.org,
+  publisher: site.org,
+  category: "social",
   keywords: [...site.keywords],
+  ...(googleVerification ? { verification: { google: googleVerification } } : {}),
   openGraph: {
     type: "website",
     url: site.url,
