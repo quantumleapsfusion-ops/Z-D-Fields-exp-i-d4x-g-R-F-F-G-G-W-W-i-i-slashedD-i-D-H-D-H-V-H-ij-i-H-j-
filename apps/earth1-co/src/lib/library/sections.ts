@@ -402,7 +402,109 @@ export const quantumComputing: SectionContent & {
   ],
 };
 
+export const physics: SectionContent = {
+  slug: "physics",
+  title: "Physics & Gravity",
+  description:
+    "Simulations and explanations of gravitational physics, black holes, orbital mechanics, relativistic effects, and spacetime geometry.",
+  line: "Gravity shapes the universe at every scale, from falling apples to colliding black holes.",
+  intro: [
+    "Gravity is the oldest mystery in physics. Before Newton, falling objects and moving planets seemed unrelated. Newton unified them with one inverse-square law. Einstein unified gravity with spacetime itself: mass bends spacetime, and objects follow the curves.",
+    "This section explores the geometry of gravity through interactive simulations: the black hole horizon, the way light bends around massive objects, the dance of orbits, and the way time itself slows down in strong gravitational fields. These are not thought experiments. They are what has been measured by telescopes, gravitational wave detectors, and GPS satellites.",
+  ],
+  concepts: [
+    {
+      id: "schwarzschild",
+      title: "Black Holes and the Event Horizon",
+      body: [
+        "When a massive star collapses, gravity becomes so strong that nothing can escape—not even light. The boundary of this region is the event horizon. It is not a wall: you could cross it without noticing anything special (though tidal forces would shred you). But to a distant observer, you would appear to slow down and freeze at the boundary.",
+        "The event horizon's radius, called the Schwarzschild radius, is roughly 3 kilometers per solar mass. For the Sun, this is smaller than an atom. For a black hole of 10 solar masses, it is 30 kilometers. For the supermassive black holes at the centers of galaxies, it is millions of kilometers across.",
+      ],
+    },
+    {
+      id: "lensing",
+      title: "Gravitational Lensing",
+      body: [
+        "Light follows the curves in spacetime just as planets do. A massive object can bend light rays, acting like a lens. This has been used to measure the masses of galaxies, to find exoplanets, and most dramatically, to see the shadow of a black hole silhouetted against its glowing accretion disk.",
+        "The bending angle depends on how close the light ray passes the mass. For weak lensing (far from a black hole), it is proportional to the mass. For strong lensing near a black hole, light can be bent into spiral orbits, creating the 'photon ring' that frames the black hole's silhouette.",
+      ],
+    },
+    {
+      id: "accretion",
+      title: "Accretion Disks and Energy Release",
+      body: [
+        "When material falls toward a black hole, conservation of angular momentum forces it into an orbit, forming a disk. Friction converts orbital energy to heat, reaching temperatures of millions of Kelvin. Black holes are often the brightest objects in their regions of space, shining in X-rays from the hot gas spiraling inward.",
+        "This accretion process is not limited to black holes. Young stars are surrounded by accretion disks from which planets form. Neutron stars accreting from companions shine as X-ray binaries. The same physics, from substellar to supermassive scales.",
+      ],
+    },
+    {
+      id: "time-dilation",
+      title: "Time Dilation",
+      body: [
+        "Einstein's theory predicts that time itself runs at different rates depending on gravity and motion. Near a black hole, time runs much slower than far away. An observer falling into a black hole experiences nothing special, but to a distant observer, they appear to freeze at the event horizon, taking infinite time to cross.",
+        "This is not imagination. GPS satellites must account for time dilation, or they would accumulate errors of kilometers per day. Clocks at sea level run slower than clocks on mountains. The effect is tiny in everyday life but enormous near a black hole.",
+      ],
+    },
+    {
+      id: "orbits",
+      title: "Orbits and Kepler's Laws",
+      body: [
+        "Objects in orbit obey Kepler's laws: planets closer to the Sun orbit faster and take less time to complete an orbit, following the inverse-square law. The same law governs stars orbiting black holes, moons orbiting planets, and galaxies orbiting each other.",
+        "Near a black hole, relativistic effects modify these laws. The innermost stable circular orbit exists at just six times the event horizon radius. Any closer, and objects can no longer maintain a stable orbit; they must either fall in or escape.",
+      ],
+    },
+  ],
+  timeline: [
+    {
+      year: "1666",
+      text: "Newton's inverse-square law of gravity; Kepler's laws explained.",
+    },
+    {
+      year: "1783",
+      text: "Michell and Laplace propose 'dark stars' so massive that light cannot escape.",
+    },
+    {
+      year: "1915",
+      text: "Einstein publishes general relativity; gravity is the curvature of spacetime.",
+      person: "albert-einstein",
+    },
+    {
+      year: "1916",
+      text: "Schwarzschild discovers the metric describing a non-rotating black hole.",
+    },
+    {
+      year: "1963",
+      text: "Kerr discovers the metric for a rotating black hole.",
+    },
+    {
+      year: "1967",
+      text: "Jocelyn Bell and Antony Hewish discover pulsars; neutron stars revealed.",
+    },
+    {
+      year: "1974",
+      text: "Hawking predicts black holes emit radiation and can evaporate.",
+    },
+    {
+      year: "1994",
+      text: "Hubble Space Telescope measures the mass of the black hole at the center of M87.",
+    },
+    {
+      year: "2015",
+      text: "LIGO detects gravitational waves from two merging black holes.",
+    },
+    {
+      year: "2019",
+      text: "Event Horizon Telescope images the shadow of the black hole at the center of M87.",
+    },
+    {
+      year: "2022",
+      text: "Event Horizon Telescope images Sagittarius A*, the black hole at the center of our galaxy.",
+    },
+  ],
+};
+
 export const sectionList = [
   { slug: "quantum-mechanics", title: "Quantum Mechanics", line: quantumMechanics.line },
   { slug: "quantum-computing", title: "Quantum Computing", line: quantumComputing.line },
+  { slug: "physics", title: "Physics & Gravity", line: physics.line },
 ] as const;

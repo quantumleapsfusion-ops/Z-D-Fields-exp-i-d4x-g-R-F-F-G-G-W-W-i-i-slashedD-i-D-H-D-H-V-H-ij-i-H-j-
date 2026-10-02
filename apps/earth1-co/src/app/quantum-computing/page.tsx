@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { QubitLab } from "@/components/library/QubitLab";
+import { SuperpositionVisualizer } from "@/components/SuperpositionVisualizer";
 import {
   EquationBlock,
   H2,
@@ -81,6 +82,19 @@ export default function QuantumComputingPage() {
           {c.id === "gates" ? <QubitLab /> : null}
         </section>
       ))}
+
+      <H2>Qubits and Superposition</H2>
+      <Prose>
+        <p>
+          The Bloch sphere visualization below shows how a qubit exists in superposition
+          as a point on the sphere. When measured, it collapses to either the |0⟩ or |1⟩
+          pole. This superposition—the coherent combination of states—is what gives
+          quantum computers their power. The other visualizations show how this principle
+          manifests in wave-particle duality and quantum interference.
+        </p>
+      </Prose>
+
+      <SuperpositionVisualizer />
 
       <H2 id="hardware">Four ways to build one</H2>
       <Prose>

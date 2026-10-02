@@ -1,4 +1,4 @@
-export type SectionSlug = "quantum-mechanics" | "quantum-computing";
+export type SectionSlug = "quantum-mechanics" | "quantum-computing" | "physics";
 
 /** A quotation we have checked against a primary source. Anything we could not source stays out, or goes in `notes`. */
 export type Quote = {
