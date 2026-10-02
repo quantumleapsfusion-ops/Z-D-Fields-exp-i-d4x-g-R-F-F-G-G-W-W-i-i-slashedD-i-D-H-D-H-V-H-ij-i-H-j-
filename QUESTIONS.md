@@ -105,4 +105,3 @@ The existing EventHorizon (4D) and DaVinciConversation (5D) components both have
 - B. Rebuild both as voice-only (icons, motion, sound, aria-labels), one PR each.
 - C. Remove /horizon and /davinci from navigation now (behind a default-off feature flag).
   **Default: A** (shipping as-is) or **B** (rebuild voice-only). This PR ships A with the packages integrated. If you prefer B or C, let me know and I'll refactor.
-
