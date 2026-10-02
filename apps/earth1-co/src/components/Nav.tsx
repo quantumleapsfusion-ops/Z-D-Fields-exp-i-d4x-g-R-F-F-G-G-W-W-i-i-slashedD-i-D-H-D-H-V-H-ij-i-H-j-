@@ -16,7 +16,7 @@ const links = [
 export function Nav() {
   const path = usePathname();
   return (
-    <nav aria-label="Pages" className="px-6 pb-[max(2rem,env(safe-area-inset-bottom))]">
+    <nav aria-label="Pages" className="px-6 pt-4 pb-8 sm:pt-6 sm:pb-12">
       <ul className="mx-auto flex max-w-3xl flex-wrap justify-center gap-x-6 gap-y-3 sm:gap-x-10">
         {links.map((l) => (
           <li key={l.href}>
