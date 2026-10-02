@@ -289,7 +289,8 @@ export const physicsTopics: Topic[] = [
       },
       {
         tex: t`A = \lambda N = \frac{\ln 2}{t_{1/2}} N`,
-        label: "A equals lambda N, which equals natural log of 2 over t half life, times N",
+        label:
+          "A equals lambda N, which equals natural log of 2 over t half life, times N",
         note: "Activity: the number of decays per second. The decay constant is λ.",
       },
     ],
@@ -305,7 +306,8 @@ export const physicsTopics: Topic[] = [
     equations: [
       {
         tex: t`^{235}_{92}\text{U} + n \to ^{141}_{56}\text{Ba} + ^{92}_{36}\text{Kr} + 3n + 200\text{ MeV}`,
-        label: "uranium 235 plus neutron splits into barium 141, krypton 92, 3 neutrons, and 200 million electron volts",
+        label:
+          "uranium 235 plus neutron splits into barium 141, krypton 92, 3 neutrons, and 200 million electron volts",
         note: "A typical fission reaction. The products are highly energetic.",
       },
       {

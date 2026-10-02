@@ -146,7 +146,8 @@ export const physics: FieldSection = {
           text: "I have discovered something interesting.",
           source: "",
           verified: false,
-          caveat: "Röntgen's reported words to his wife on the discovery. The source is unclear.",
+          caveat:
+            "Röntgen's reported words to his wife on the discovery. The source is unclear.",
         },
       ],
     },
@@ -188,7 +189,8 @@ export const physics: FieldSection = {
           text: "Now I am become Death, the destroyer of worlds.",
           source: "Recollection of the Trinity test in an interview",
           verified: false,
-          caveat: "Oppenheimer gave different accounts of his thoughts at Trinity. This quote, drawn from the Bhagavad Gita, may reflect his interpretation in retrospect rather than his exact words at the time.",
+          caveat:
+            "Oppenheimer gave different accounts of his thoughts at Trinity. This quote, drawn from the Bhagavad Gita, may reflect his interpretation in retrospect rather than his exact words at the time.",
         },
       ],
     },
