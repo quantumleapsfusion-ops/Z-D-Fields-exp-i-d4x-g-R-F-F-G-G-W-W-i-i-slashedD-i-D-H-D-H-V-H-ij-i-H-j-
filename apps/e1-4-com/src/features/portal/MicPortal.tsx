@@ -296,7 +296,7 @@ function Centre({ docked, children }: { docked?: boolean; children: ReactNode })
   return (
     <div
       className={`z-10 flex flex-col items-center gap-6 transition-all duration-700 ${
-        docked ? "absolute bottom-[max(2.5rem,env(safe-area-inset-bottom))]" : ""
+        docked ? "absolute bottom-[max(2.5rem,env(safe-area-inset-bottom))]" : "relative"
       }`}
     >
       {children}
