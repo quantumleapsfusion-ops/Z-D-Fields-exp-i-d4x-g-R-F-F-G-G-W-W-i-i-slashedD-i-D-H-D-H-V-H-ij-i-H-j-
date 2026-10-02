@@ -10,6 +10,7 @@ import { useStreamTranscript } from "@/features/voice-stream/useStreamTranscript
 import { useCarry } from "@/lib/carry";
 import type { BoardDocument } from "@/lib/chalkboard/types";
 import { transcriptElements } from "@/lib/voice/transcript";
+import { haptic } from "@/lib/device/haptics";
 
 const Board3D = dynamic(() => import("@/features/chalkboard/Board3D"), {
   ssr: false,
@@ -93,7 +94,10 @@ export function GravityChalkboard({
           <select
             id="gravity-board-picker"
             value={boardId ?? ""}
-            onChange={(event) => selectBoard(event.target.value)}
+            onChange={(event) => {
+              haptic("stage");
+              selectBoard(event.target.value);
+            }}
             className="border-chalk/15 bg-blackboard text-chalk h-9 max-w-full rounded-full border px-3 font-sans text-sm"
           >
             {boards.map((item) => (
@@ -119,7 +123,10 @@ export function GravityChalkboard({
             <input
               type="checkbox"
               checked={timeDepth}
-              onChange={(event) => setTimeDepth(event.target.checked)}
+              onChange={(event) => {
+                haptic("stage");
+                setTimeDepth(event.target.checked);
+              }}
             />
             Time as depth
           </label>
@@ -131,14 +138,20 @@ export function GravityChalkboard({
                 min={tMin}
                 max={tMax}
                 value={untilClamped}
-                onChange={(event) => setUntil(Number(event.target.value))}
+                onChange={(event) => {
+                  haptic("seek");
+                  setUntil(Number(event.target.value));
+                }}
               />
             </label>
           ) : null}
           <button
             type="button"
             aria-pressed={showTranscript}
-            onClick={() => setShowTranscript((visible) => !visible)}
+            onClick={() => {
+              haptic("stage");
+              setShowTranscript((visible) => !visible);
+            }}
             className="text-dust hover:text-chalk text-left"
           >
             {showTranscript ? "Hide stream" : "Show stream"}

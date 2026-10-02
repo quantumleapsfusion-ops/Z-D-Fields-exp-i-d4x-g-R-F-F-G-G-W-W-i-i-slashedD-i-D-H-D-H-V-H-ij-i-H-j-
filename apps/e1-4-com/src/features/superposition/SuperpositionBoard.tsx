@@ -8,6 +8,7 @@ import { useLiveTranscription } from "@/features/live/useLiveTranscription";
 import { StreamSource } from "@/features/voice-stream/StreamSource";
 import { useStreamTranscript } from "@/features/voice-stream/useStreamTranscript";
 import type { Superposition } from "@/lib/gravity/superposition";
+import { haptic } from "@/lib/device/haptics";
 
 const TopologyCollapse = dynamic(() => import("@/features/gravity/TopologyCollapse"), {
   ssr: false,
@@ -101,7 +102,10 @@ export function SuperpositionBoard() {
             <button
               type="button"
               disabled={!text || phase === "sampling"}
-              onClick={() => void sample()}
+              onClick={() => {
+                haptic("stage");
+                void sample();
+              }}
               className="bg-chalk text-blackboard self-start rounded-full px-5 py-2 font-sans text-sm disabled:opacity-40"
             >
               {phase === "sampling"
@@ -121,6 +125,7 @@ export function SuperpositionBoard() {
                       key={`${candidate.title}-${index}`}
                       type="button"
                       onClick={() => {
+                        haptic("accepted");
                         setChosen(index);
                         setPhase("resolved");
                       }}
@@ -156,6 +161,7 @@ export function SuperpositionBoard() {
                   <button
                     type="button"
                     onClick={() => {
+                      haptic("accepted");
                       setChosen(superposition.resolvedIndex);
                       setPhase("resolved");
                     }}
@@ -166,12 +172,22 @@ export function SuperpositionBoard() {
                 ) : null}
                 <button
                   type="button"
-                  onClick={() => void sample()}
+                  onClick={() => {
+                    haptic("stage");
+                    void sample();
+                  }}
                   className="border-chalk/25 hover:border-ochre rounded-full border px-5 py-2 font-sans text-sm"
                 >
                   {stream.text ? "Superpose my stream" : "Sample again"}
                 </button>
-                <button type="button" onClick={reset} className="label hover:text-chalk">
+                <button
+                  type="button"
+                  onClick={() => {
+                    haptic("rejected");
+                    reset();
+                  }}
+                  className="label hover:text-chalk"
+                >
                   Reset
                 </button>
               </div>
