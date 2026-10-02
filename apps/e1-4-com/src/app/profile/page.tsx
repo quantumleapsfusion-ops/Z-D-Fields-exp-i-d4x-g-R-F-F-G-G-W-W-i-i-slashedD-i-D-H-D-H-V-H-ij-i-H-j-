@@ -11,9 +11,11 @@ import { AVATARS_BUCKET, storage } from "@/lib/storage";
 
 import {
   AvatarForm,
+  CancelDeletionButton,
   DeleteAccountForm,
   NameForm,
   RevokeShareButton,
+  ScheduleDeletionForm,
 } from "./ProfileForms";
 
 export const metadata = { title: "Profile", robots: { index: false } };
@@ -22,7 +24,12 @@ export default async function ProfilePage() {
   const sessionUser = await requireUser("/profile");
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: sessionUser.id },
-    include: {
+    select: {
+      id: true,
+      displayName: true,
+      avatarPath: true,
+      handle: true,
+      scheduledDeleteAt: true,
       shares: { where: { revokedAt: null }, orderBy: { createdAt: "desc" } },
       stream: { select: { _count: { select: { segments: true } } } },
       _count: {
@@ -157,13 +164,46 @@ export default async function ProfilePage() {
 
         <div className="hairline my-10" />
 
-        <h2 className="label text-ochre mb-3">Delete account</h2>
-        <p className="text-chalk/70 mb-4 max-w-xl text-sm leading-relaxed">
-          Permanently destroys your account, every Voice Stream segment and its audio, all
-          transcriptions, every voice note you sent in Talk, share links, chalkboards and
-          your avatar: database rows and stored files. This cannot be undone.
-        </p>
-        <DeleteAccountForm />
+        {user.scheduledDeleteAt ? (
+          <>
+            <h2 className="label text-ochre mb-3">Deletion scheduled</h2>
+            <p className="text-chalk/70 mb-4 max-w-xl text-sm leading-relaxed">
+              Your account is scheduled for deletion on{" "}
+              <span className="text-chalk font-mono">
+                {new Date(user.scheduledDeleteAt).toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+              . You can cancel anytime before then.
+            </p>
+            <CancelDeletionButton />
+          </>
+        ) : (
+          <>
+            <h2 className="label text-ochre mb-3">Delete account</h2>
+            <p className="text-chalk/70 mb-4 max-w-xl text-sm leading-relaxed">
+              Permanently destroys your account, every Voice Stream segment and its audio, all
+              transcriptions, every voice note you sent in Talk, share links, chalkboards and
+              your avatar: database rows and stored files. This cannot be undone.
+            </p>
+            <p className="text-chalk/70 mb-4 max-w-xl text-sm leading-relaxed">
+              You can request deletion with a 30-day cancellation window, or delete immediately.
+            </p>
+            <div className="flex flex-col gap-6">
+              <div>
+                <h3 className="label text-chalk/80 mb-3 text-xs">Schedule deletion (30 days)</h3>
+                <ScheduleDeletionForm />
+              </div>
+              <div>
+                <h3 className="label text-ochre/80 mb-3 text-xs">Delete immediately</h3>
+                <DeleteAccountForm />
+              </div>
+            </div>
+          </>
+        )}
       </section>
     </PageShell>
   );

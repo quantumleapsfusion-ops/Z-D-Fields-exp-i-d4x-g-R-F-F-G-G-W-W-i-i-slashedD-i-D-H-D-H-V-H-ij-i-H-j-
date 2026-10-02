@@ -3,7 +3,9 @@
 import { useActionState, useTransition } from "react";
 
 import {
+  cancelDeleteAccount,
   deleteAccount,
+  softDeleteAccount,
   updateName,
   uploadAvatar,
   type ActionState,
@@ -50,6 +52,40 @@ export function NameForm({ defaultName }: { defaultName: string }) {
       <input name="name" defaultValue={defaultName} maxLength={80} className={input} />
       <button type="submit" disabled={pending} className={`${button} self-start`}>
         Save
+      </button>
+      <Status state={state} />
+    </form>
+  );
+}
+
+export function ScheduleDeletionForm() {
+  const [state, action, pending] = useActionState(softDeleteAccount, null);
+  return (
+    <form action={action} className="flex max-w-md flex-col gap-3">
+      <input name="confirm" placeholder="Type DELETE to confirm" className={input} />
+      <button
+        type="submit"
+        disabled={pending}
+        className="border-ochre/60 text-ochre hover:bg-ochre hover:text-blackboard self-start rounded-full border px-4 py-2 text-sm transition-colors disabled:opacity-50"
+      >
+        {pending ? "Scheduling…" : "Schedule deletion (30 days)"}
+      </button>
+      <Status state={state} />
+    </form>
+  );
+}
+
+export function CancelDeletionButton() {
+  const [state, action, pending] = useActionState(cancelDeleteAccount, null);
+
+  return (
+    <form action={action}>
+      <button
+        type="submit"
+        disabled={pending}
+        className="border-chalk/20 hover:border-chalk hover:text-chalk self-start rounded-full border px-4 py-2 text-sm transition-colors disabled:opacity-50"
+      >
+        {pending ? "Cancelling…" : "Cancel deletion"}
       </button>
       <Status state={state} />
     </form>

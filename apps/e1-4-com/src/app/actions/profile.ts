@@ -89,6 +89,45 @@ export async function removeAvatar(): Promise<void> {
   revalidatePath("/", "layout");
 }
 
+/** Requests account deletion with a 30-day cancellation window. */
+export async function softDeleteAccount(
+  _prev: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  const userId = await authed();
+  if (
+    String(form.get("confirm") ?? "")
+      .trim()
+      .toUpperCase() !== "DELETE"
+  ) {
+    return { ok: false, message: "Type DELETE to confirm." };
+  }
+  await prisma.user.update({
+    where: { id: userId },
+    data: { scheduledDeleteAt: new Date() },
+  });
+  await endSession();
+  redirect("/?deletion-scheduled=1");
+}
+
+/** Cancels a scheduled account deletion. */
+export async function cancelDeleteAccount(): Promise<ActionState> {
+  const userId = await authed();
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { scheduledDeleteAt: true },
+  });
+  if (!user?.scheduledDeleteAt) {
+    return { ok: false, message: "No deletion scheduled." };
+  }
+  await prisma.user.update({
+    where: { id: userId },
+    data: { scheduledDeleteAt: null },
+  });
+  revalidatePath("/profile");
+  return { ok: true, message: "Deletion cancelled." };
+}
+
 /** Permanently deletes the account, all audio, transcripts, boards, shares and stored blobs. */
 export async function deleteAccount(
   _prev: ActionState,

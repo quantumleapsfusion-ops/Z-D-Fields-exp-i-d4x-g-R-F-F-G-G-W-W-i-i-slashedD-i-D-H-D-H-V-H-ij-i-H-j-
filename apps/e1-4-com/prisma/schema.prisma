@@ -21,6 +21,8 @@ model User {
   avatarPath  String?  @map("avatar_path")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  /// When deletion was requested; data will be hard-deleted 30 days later. Null means active.
+  scheduledDeleteAt DateTime? @map("scheduled_delete_at") @db.Timestamptz
 
   stream      VoiceStream?
   shares      Share[]
