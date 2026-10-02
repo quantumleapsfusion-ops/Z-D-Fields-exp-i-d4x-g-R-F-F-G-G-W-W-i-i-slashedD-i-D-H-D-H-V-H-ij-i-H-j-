@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { decodeSound } from "@/features/sound/decode";
+import { haptic } from "@/lib/device/haptics";
 import { commentOn } from "@/lib/sound/commentary";
 
 import { speak } from "./voice";
@@ -39,7 +40,10 @@ export function CodexReplay({ audioUrl }: { audioUrl: string }) {
     <div className="mt-3">
       <button
         type="button"
-        onClick={() => void listen()}
+        onClick={() => {
+          haptic("play");
+          void listen();
+        }}
         disabled={busy}
         className="text-ochre text-sm disabled:opacity-60"
       >
