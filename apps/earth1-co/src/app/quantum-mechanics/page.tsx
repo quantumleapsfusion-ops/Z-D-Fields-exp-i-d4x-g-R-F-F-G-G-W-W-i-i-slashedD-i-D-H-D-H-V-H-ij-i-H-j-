@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { DoubleSlit } from "@/components/library/DoubleSlit";
+import { SuperpositionVisualizer } from "@/components/SuperpositionVisualizer";
 import {
   EquationBlock,
   H2,
@@ -80,6 +81,19 @@ export default function QuantumMechanicsPage() {
           {c.id === "wave-particle" ? <DoubleSlit /> : null}
         </section>
       ))}
+
+      <H2>Superposition: Visualized</H2>
+      <Prose>
+        <p>
+          Explore three fundamental demonstrations of quantum superposition: the Bloch
+          sphere shows how a qubit exists in superposition until measured, the double-slit
+          experiment reveals wave-particle duality and the collapse of superposition with
+          observation, and wave interference shows how multiple states coexist and
+          interfere.
+        </p>
+      </Prose>
+
+      <SuperpositionVisualizer />
 
       <H2 id="interpretations">What does it mean? The main interpretations</H2>
       <Prose>

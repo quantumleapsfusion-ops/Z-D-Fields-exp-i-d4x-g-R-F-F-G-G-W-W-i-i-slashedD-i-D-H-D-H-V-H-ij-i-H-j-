@@ -5,6 +5,7 @@ import { EnergyConverter } from "@/components/EnergyConverter";
 import { SpecialRelativityVisualizer } from "@/components/SpecialRelativityVisualizer";
 import { SpacetimeCurvatureVisualizer } from "@/components/SpacetimeCurvatureVisualizer";
 import { StringTheoryVisualizer } from "@/components/StringTheoryVisualizer";
+import { SuperpositionVisualizer } from "@/components/SuperpositionVisualizer";
 import { H2, Heading, Page, Prose, SectionFooter } from "@/components/library/parts";
 import { site } from "@/lib/site";
 
@@ -58,6 +59,39 @@ export default function PhysicsPage() {
       <H2>Black Hole Simulator</H2>
 
       <BlackHoleSimulator />
+
+      <H2>Superposition: The Core of Quantum Mechanics</H2>
+
+      <SuperpositionVisualizer />
+
+      <Prose>
+        <h3 className="mt-8">What Is Superposition?</h3>
+        <p>
+          Superposition is a fundamental principle of quantum mechanics: a quantum system
+          can exist in multiple states simultaneously until measured. A qubit is not just
+          "0 or 1" before measurement—it genuinely occupies both states at once as a
+          coherent superposition α|0⟩ + β|1⟩. This is not ignorance about which state it
+          really is; the superposition itself is the real quantum state.
+        </p>
+
+        <p>
+          The double-slit experiment elegantly demonstrates superposition's wave nature.
+          Without detection, particles pass through both slits simultaneously, interfering
+          with themselves like waves. But the moment we add a detector to measure which
+          slit they pass through, superposition collapses—the particles are forced to
+          choose one slit or the other, and interference disappears. This is not the
+          observer "looking at" the system; measurement requires physical interaction that
+          necessarily disturbs the quantum state.
+        </p>
+
+        <p>
+          Superposition is not the particle "trying all answers at once" as a classical
+          computer would. Rather, it's a genuine quantum state where all possibilities
+          coexist as a single coherent entity. This coherence—the ability for different
+          parts of the superposition to interfere—is what enables quantum computing and
+          quantum simulation.
+        </p>
+      </Prose>
 
       <H2>String Theory: Vibrating Strings as Particles</H2>
 
