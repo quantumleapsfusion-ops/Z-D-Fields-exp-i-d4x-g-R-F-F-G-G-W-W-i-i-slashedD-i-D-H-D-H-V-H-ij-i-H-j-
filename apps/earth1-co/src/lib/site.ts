@@ -50,6 +50,11 @@ export const site = {
       title: "Global Citizenship",
       line: "Every person on Earth is a citizen of it.",
     },
+    {
+      slug: "space-exploration",
+      title: "Space & Exploration",
+      line: "Understanding our place in the universe.",
+    },
   ],
   founder: {
     name: "Zachariah Robertson",
