@@ -232,7 +232,7 @@ export function BlackHoleSimulator() {
         <canvas
           ref={canvasRef}
           className="w-full bg-black"
-          style={{ aspect: "640 / 480" }}
+          style={{ aspectRatio: "640 / 480" }}
         />
         <figcaption className="sr-only">
           Interactive black hole simulator showing Schwarzschild geometry, gravitational lensing,
