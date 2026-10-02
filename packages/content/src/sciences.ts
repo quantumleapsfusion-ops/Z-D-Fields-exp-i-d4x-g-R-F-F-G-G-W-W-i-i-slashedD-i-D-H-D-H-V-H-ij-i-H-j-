@@ -109,6 +109,28 @@ export const physics: FieldSection = {
       quotes: [],
     },
     {
+      slug: "pierre-curie",
+      name: "Pierre Curie",
+      born: "1859",
+      died: "1906",
+      field: ["Physics", "Chemistry"],
+      contributions: [
+        "With Marie, discovered the phenomenon of radioactivity in 1898, showing it was an atomic property independent of chemistry, and developed systematic methods to measure it quantitatively.",
+        "Won the Nobel Prize in Physics in 1903 (shared with Marie and Becquerel) for the discovery of spontaneous radioactivity.",
+        "Discovered the unit of radioactivity, the Curie, now named after him: the activity of one gram of radium-226.",
+        "Worked on crystal symmetry and piezoelectricity (the generation of electricity by mechanical stress), discoveries that were foundational to later solid-state physics.",
+        "Died in a street accident in Paris when a wagon struck him; the year 1906 was critical as it came just before quantum mechanics would explain what radioactivity is.",
+      ],
+      quotes: [
+        {
+          text: "Life is not easy for any of us. But what of that? We must have perseverance and above all confidence in ourselves.",
+          source: "",
+          verified: false,
+          caveat: "Widely attributed but the source is unclear.",
+        },
+      ],
+    },
+    {
       slug: "wilhelm-rontgen",
       name: "Wilhelm Röntgen",
       born: "1845",
@@ -156,16 +178,17 @@ export const physics: FieldSection = {
       died: "1967",
       field: ["Physics"],
       contributions: [
-        "Director of the Los Alamos Laboratory during the Manhattan Project, overseeing the design and assembly of the first atomic bombs.",
-        "Theoretical contributions to nuclear physics, quantum mechanics and astrophysics.",
-        "After the war, opposed further nuclear weapons development and the arms race, and was stripped of his security clearance in 1954 at the height of McCarthyism.",
+        "Directed the Los Alamos Laboratory from 1942 to 1945, assembling a laboratory of 4,000 scientists to design and build the first atomic bombs as part of the Manhattan Project.",
+        "On 16 July 1945 at the Trinity test in New Mexico, the first nuclear device was detonated, releasing energy equivalent to thousands of tons of TNT and beginning the nuclear age.",
+        "Days later, atomic bombs were dropped on Hiroshima (6 August) and Nagasaki (9 August), killing about 200,000 people and leading to Japan's surrender, ending the Second World War.",
+        "After the war, opposed further nuclear weapons development and the arms race. In 1954, the Eisenhower administration withdrew his security clearance during the McCarthy era for his political views and early doubts about the hydrogen bomb.",
       ],
       quotes: [
         {
           text: "Now I am become Death, the destroyer of worlds.",
-          source: "Quoted in an interview after the Trinity test, drawing on the Bhagavad Gita",
+          source: "Recollection of the Trinity test in an interview",
           verified: false,
-          caveat: "Oppenheimer later gave different accounts of what he said. The quote is often attributed to him, but the exact wording and context are disputed.",
+          caveat: "Oppenheimer gave different accounts of his thoughts at Trinity. This quote, drawn from the Bhagavad Gita, may reflect his interpretation in retrospect rather than his exact words at the time.",
         },
       ],
     },
