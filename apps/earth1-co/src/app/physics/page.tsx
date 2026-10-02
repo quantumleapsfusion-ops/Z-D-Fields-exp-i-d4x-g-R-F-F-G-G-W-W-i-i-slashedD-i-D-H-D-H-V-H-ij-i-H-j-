@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { BlackHoleSimulator } from "@/components/BlackHoleSimulator";
+import { EnergyConverter } from "@/components/EnergyConverter";
 import { SpecialRelativityVisualizer } from "@/components/SpecialRelativityVisualizer";
 import { SpacetimeCurvatureVisualizer } from "@/components/SpacetimeCurvatureVisualizer";
 import { StringTheoryVisualizer } from "@/components/StringTheoryVisualizer";
@@ -233,6 +234,10 @@ export default function PhysicsPage() {
           billions of light-years, sculpts the visible universe.
         </p>
       </Prose>
+
+      <H2>E=mc²: Mass-Energy Equivalence</H2>
+
+      <EnergyConverter />
 
       <SectionFooter current="physics" />
     </Page>
