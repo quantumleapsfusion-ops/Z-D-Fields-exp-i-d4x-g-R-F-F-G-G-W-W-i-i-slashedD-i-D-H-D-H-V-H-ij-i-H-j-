@@ -23,7 +23,7 @@ export function AnimatedCaption({
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | null>(null);
 
   const words = useRef<WordPlacement[]>([]);
 
