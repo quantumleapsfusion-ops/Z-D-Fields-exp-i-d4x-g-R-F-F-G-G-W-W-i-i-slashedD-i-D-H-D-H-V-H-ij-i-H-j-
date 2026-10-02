@@ -2,13 +2,16 @@
 
 import { AlgebraIllustration } from "@/components/AlgebraIllustration";
 import { CalculusIllustration } from "@/components/CalculusIllustration";
+import { ComplexNumbersIllustration } from "@/components/ComplexNumbersIllustration";
 import { DifferentialEquationsIllustration } from "@/components/DifferentialEquationsIllustration";
 import { DivisionIllustration } from "@/components/DivisionIllustration";
 import { EuclidElementsIllustration } from "@/components/EuclidElementsIllustration";
 import { EuclideanVsNonEuclideanIllustration } from "@/components/EuclideanVsNonEuclideanIllustration";
+import { FourierSeriesIllustration } from "@/components/FourierSeriesIllustration";
 import { FunctionsIllustration } from "@/components/FunctionsIllustration";
 import { IntegersIllustration } from "@/components/IntegersIllustration";
 import { ParametricCurvesIllustration } from "@/components/ParametricCurvesIllustration";
+import { TopologyIllustration } from "@/components/TopologyIllustration";
 import { VectorIllustration } from "@/components/VectorIllustration";
 import { research } from "@/lib/research";
 import { site } from "@/lib/site";
@@ -100,6 +103,28 @@ export default function PillarPage() {
             </div>
           </section>
 
+          {/* Fourier Series */}
+          <section id="fourier-series" aria-labelledby="fourier-title">
+            <h2
+              id="fourier-title"
+              className="font-display text-lg tracking-[0.16em] uppercase sm:text-2xl"
+            >
+              Fourier Series
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed font-light text-white/70 sm:text-base">
+              Any periodic waveform—no matter how complex—can be decomposed into
+              a sum of simple sine and cosine waves at different frequencies.
+              This decomposition is the Fourier series, a fundamental tool in
+              signal processing, music, image compression, and quantum mechanics.
+              By adding up the individual harmonics, we can reconstruct the
+              original signal perfectly. This reveals the deep structure hidden
+              in oscillations throughout nature.
+            </p>
+            <div className="mt-8">
+              <FourierSeriesIllustration />
+            </div>
+          </section>
+
           {/* Vectors */}
           <section id="vectors" aria-labelledby="vectors-title">
             <h2
@@ -116,6 +141,28 @@ export default function PillarPage() {
             </p>
             <div className="mt-8">
               <VectorIllustration />
+            </div>
+          </section>
+
+          {/* Complex Numbers */}
+          <section id="complex-numbers" aria-labelledby="complex-title">
+            <h2
+              id="complex-title"
+              className="font-display text-lg tracking-[0.16em] uppercase sm:text-2xl"
+            >
+              Complex Numbers
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed font-light text-white/70 sm:text-base">
+              Numbers with both real and imaginary parts. The complex plane
+              extends the real number line into two dimensions: the horizontal
+              axis for real values, the vertical for multiples of i (the
+              imaginary unit where i² = −1). Every complex number z = a + bi
+              can be visualized as a rotating vector from the origin. Complex
+              numbers are essential in quantum mechanics, electrical engineering,
+              and understanding periodic phenomena.
+            </p>
+            <div className="mt-8">
+              <ComplexNumbersIllustration />
             </div>
           </section>
 
@@ -177,6 +224,29 @@ export default function PillarPage() {
             </p>
             <div className="mt-8">
               <EuclidElementsIllustration />
+            </div>
+          </section>
+
+          {/* Topology */}
+          <section id="topology" aria-labelledby="topology-title">
+            <h2
+              id="topology-title"
+              className="font-display text-lg tracking-[0.16em] uppercase sm:text-2xl"
+            >
+              Topology
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed font-light text-white/70 sm:text-base">
+              The study of shapes that remain unchanged under continuous
+              deformation—stretching, bending, and twisting, but never tearing
+              or gluing. A torus (donut) has a fundamentally different topology
+              than a sphere: a hole cannot be continuously transformed away. A
+              Möbius strip has the remarkable property of having only one side.
+              Topology reveals the deep structure of space itself and is
+              essential in physics, cosmology, and understanding the nature of
+              dimensionality.
+            </p>
+            <div className="mt-8">
+              <TopologyIllustration />
             </div>
           </section>
 
