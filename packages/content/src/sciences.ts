@@ -108,6 +108,92 @@ export const physics: FieldSection = {
       ],
       quotes: [],
     },
+    {
+      slug: "pierre-curie",
+      name: "Pierre Curie",
+      born: "1859",
+      died: "1906",
+      field: ["Physics", "Chemistry"],
+      contributions: [
+        "With Marie, discovered the phenomenon of radioactivity in 1898, showing it was an atomic property independent of chemistry, and developed systematic methods to measure it quantitatively.",
+        "Won the Nobel Prize in Physics in 1903 (shared with Marie and Becquerel) for the discovery of spontaneous radioactivity.",
+        "Discovered the unit of radioactivity, the Curie, now named after him: the activity of one gram of radium-226.",
+        "Worked on crystal symmetry and piezoelectricity (the generation of electricity by mechanical stress), discoveries that were foundational to later solid-state physics.",
+        "Died in a street accident in Paris when a wagon struck him; the year 1906 was critical as it came just before quantum mechanics would explain what radioactivity is.",
+      ],
+      quotes: [
+        {
+          text: "Life is not easy for any of us. But what of that? We must have perseverance and above all confidence in ourselves.",
+          source: "",
+          verified: false,
+          caveat: "Widely attributed but the source is unclear.",
+        },
+      ],
+    },
+    {
+      slug: "wilhelm-rontgen",
+      name: "Wilhelm Röntgen",
+      born: "1845",
+      died: "1923",
+      field: ["Physics"],
+      contributions: [
+        "Discovered X-rays on 8 November 1895 while experimenting with cathode rays at the University of Würzburg. He found a glow from a fluorescent screen across the room, and showed that a mysterious radiation passed through paper and flesh but not bone.",
+        "Won the first Nobel Prize in Physics in 1901 for this discovery.",
+        "Called them X-rays because their nature was unknown. They turned out to be electromagnetic radiation of very short wavelength, like light but billions of times more energetic.",
+      ],
+      quotes: [
+        {
+          text: "I have discovered something interesting.",
+          source: "",
+          verified: false,
+          caveat:
+            "Röntgen's reported words to his wife on the discovery. The source is unclear.",
+        },
+      ],
+    },
+    {
+      slug: "ernest-rutherford",
+      name: "Ernest Rutherford",
+      born: "1871",
+      died: "1937",
+      field: ["Physics"],
+      contributions: [
+        "In 1909 devised the scattering experiment that revealed the nuclear structure of the atom: most of an atom is empty space, with a tiny positive nucleus at its centre.",
+        "Discovered and named alpha and beta radiation as two forms of radioactive decay, and showed they were nuclear processes.",
+        "First person to induce a nuclear reaction in the laboratory, in 1919, splitting the nitrogen nucleus.",
+        "Mentored eleven future Nobel laureates, more than any scientist of his era.",
+      ],
+      quotes: [
+        {
+          text: "If your experiment needs statistics, you ought to do a better experiment.",
+          source: "",
+          verified: false,
+          caveat: "Widely attributed but likely misquoted or paraphrased.",
+        },
+      ],
+    },
+    {
+      slug: "robert-oppenheimer",
+      name: "J. Robert Oppenheimer",
+      born: "1904",
+      died: "1967",
+      field: ["Physics"],
+      contributions: [
+        "Directed the Los Alamos Laboratory from 1942 to 1945, assembling a laboratory of 4,000 scientists to design and build the first atomic bombs as part of the Manhattan Project.",
+        "On 16 July 1945 at the Trinity test in New Mexico, the first nuclear device was detonated, releasing energy equivalent to thousands of tons of TNT and beginning the nuclear age.",
+        "Days later, atomic bombs were dropped on Hiroshima (6 August) and Nagasaki (9 August), killing about 200,000 people and leading to Japan's surrender, ending the Second World War.",
+        "After the war, opposed further nuclear weapons development and the arms race. In 1954, the Eisenhower administration withdrew his security clearance during the McCarthy era for his political views and early doubts about the hydrogen bomb.",
+      ],
+      quotes: [
+        {
+          text: "Now I am become Death, the destroyer of worlds.",
+          source: "Recollection of the Trinity test in an interview",
+          verified: false,
+          caveat:
+            "Oppenheimer gave different accounts of his thoughts at Trinity. This quote, drawn from the Bhagavad Gita, may reflect his interpretation in retrospect rather than his exact words at the time.",
+        },
+      ],
+    },
   ],
 };
 

@@ -268,6 +268,71 @@ export const physicsTopics: Topic[] = [
       },
     ],
   },
+  {
+    id: "atomic-nucleus-radioactivity",
+    title: "The atomic nucleus and radioactivity",
+    paragraphs: [
+      "Rutherford's 1909 scattering experiment showed that an atom is mostly empty space. Most of its mass sits in a tiny, positively charged nucleus at the centre, surrounded at great distance by electrons. The nucleus contains protons, with charge +e, and neutrons with no charge. The number of protons determines the element; isotopes are atoms of the same element with different numbers of neutrons.",
+      "Radioactivity is the spontaneous disintegration of unstable nuclei. Becquerel discovered it in uranium in 1896, and Marie and Pierre Curie named it and measured it systematically. Marie discovered polonium and radium, elements more radioactive than uranium. In alpha decay, an unstable nucleus emits a helium nucleus (two protons and two neutrons). In beta decay, a neutron turns into a proton, emitting an electron and an antineutrino. Gamma decay is the emission of a high-energy photon when a nucleus transitions to a lower energy state. The nuclei that result may themselves be radioactive, forming a decay chain.",
+      "The rate of decay is exponential: after a time equal to the half-life, half the nuclei in a sample have decayed. For uranium-238 the half-life is 4.5 billion years; for radium-226 it is 1600 years; for radon-222 it is 3.8 days. The shorter the half-life, the more decays per second and the more energy released. This heat powers radioisotope generators used in spacecraft far from the Sun.",
+    ],
+    equations: [
+      {
+        tex: t`N(t) = N_0 \, 2^{-t/t_{1/2}}`,
+        label: "N of t equals N nought times 2 to the minus t over t half life",
+        note: "Radioactive decay: N is the number of nuclei, t is time, and t₁/₂ is the half-life.",
+      },
+      {
+        tex: t`^{238}_{92}\text{U} \to ^{234}_{90}\text{Th} + ^{4}_{2}\text{He}`,
+        label: "uranium 238 decays to thorium 234 plus helium 4 (alpha particle)",
+        note: "Alpha decay of uranium-238. The thorium is also radioactive.",
+      },
+      {
+        tex: t`A = \lambda N = \frac{\ln 2}{t_{1/2}} N`,
+        label:
+          "A equals lambda N, which equals natural log of 2 over t half life, times N",
+        note: "Activity: the number of decays per second. The decay constant is λ.",
+      },
+    ],
+  },
+  {
+    id: "nuclear-fission",
+    title: "Nuclear fission and energy",
+    paragraphs: [
+      "In 1938 Otto Hahn and Fritz Strassmann bombarded uranium with neutrons and found barium, an element with half the mass. Lise Meitner and Otto Frisch, both refugee scientists from Nazi Germany, explained what had happened: the uranium nucleus had split into two fragments, releasing a burst of energy. Because binding energy per nucleon is highest for nuclei of medium mass, splitting a heavy nucleus releases energy—the difference in binding energy converts to kinetic energy of the fragments, mostly as heat.",
+      "When uranium-235 fissions, it releases 2 or 3 free neutrons. These can strike other uranium-235 nuclei and trigger more fissions. If enough uranium-235 is present (the critical mass), the chain reaction runs away and heat is released explosively: the principle of an atomic bomb. Enrico Fermi, another refugee scientist, built the world's first nuclear reactor in a squash court under Stagg Field at the University of Chicago on 2 December 1942. It was a controlled, sustained chain reaction—the beginning of nuclear power.",
+      "A single fission releases about 200 million electron volts. A gram of uranium-235 contains about 2×10²¹ atoms. If even 1 in a million undergoes fission, the energy released is enormous. This is why E = mc² matters: the energy that powers the Sun comes from hydrogen fusing into helium, and the mass lost converts to light. Fusion and fission, which power the present and shaped the twentieth century, both turn small mass differences into enormous energy.",
+    ],
+    equations: [
+      {
+        tex: t`^{235}_{92}\text{U} + n \to ^{141}_{56}\text{Ba} + ^{92}_{36}\text{Kr} + 3n + 200\text{ MeV}`,
+        label:
+          "uranium 235 plus neutron splits into barium 141, krypton 92, 3 neutrons, and 200 million electron volts",
+        note: "A typical fission reaction. The products are highly energetic.",
+      },
+      {
+        tex: t`E = (M_\text{initial} - M_\text{products})c^2`,
+        label: "E equals initial mass minus products mass, times c squared",
+        note: "The energy released in fission comes from the mass defect.",
+      },
+    ],
+  },
+  {
+    id: "nuclear-reactors",
+    title: "Nuclear reactors and safety",
+    paragraphs: [
+      "A nuclear power reactor uses a controlled chain reaction to heat water and drive turbines. Uranium fuel rods sit in a moderator (water or graphite) that slows neutrons so they are more likely to be captured by uranium-235. Control rods made of boron or cadmium are inserted to absorb excess neutrons and slow the reaction, or withdrawn to speed it up. The reactor is surrounded by a steel pressure vessel inside a concrete containment building.",
+      "On 26 April 1986, a power surge at Chernobyl Unit 4 in Ukraine knocked out cooling systems. The RBMK reactor had two fatal flaws. Its control rods were tipped with graphite, which absorbs neutrons slowly; when inserted, graphite first causes a brief neutron surge. More seriously, boiling water absorbed fewer neutrons, and the design did not prevent runaway if coolant was lost—a positive void coefficient. In seconds the core reached 2000°C. Graphite caught fire, carrying radioactive particles across Europe. Thirty-one people died in the first months, thousands developed thyroid cancer, and 330,000 were evacuated. Modern reactors have negative void coefficients, redundant safety systems and passive cooling that works without power.",
+      "Nuclear power produces reliable, carbon-free electricity, but spent fuel remains radioactive for thousands of years and must be kept isolated. The question is not whether radiation is deadly—it is, at high doses—but whether carbon-free electricity is worth the risk, and whether the risk can be managed well enough.",
+    ],
+    equations: [
+      {
+        tex: t`k = \frac{\text{neutrons produced}}{\text{neutrons lost}}`,
+        label: "k equals neutrons produced divided by neutrons lost",
+        note: "The multiplication factor. k = 1 is critical (steady state), k > 1 is supercritical (runaway), k < 1 is subcritical (dying out).",
+      },
+    ],
+  },
 ];
 
 export const biochemistryTopics: Topic[] = [
