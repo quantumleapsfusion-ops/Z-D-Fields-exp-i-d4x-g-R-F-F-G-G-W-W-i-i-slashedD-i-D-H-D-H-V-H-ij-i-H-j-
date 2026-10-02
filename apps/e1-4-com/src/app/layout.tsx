@@ -35,6 +35,15 @@ export const metadata: Metadata = {
     siteName: site.name,
     title: `${site.name}: ${site.seoTitle}`,
     description: site.description,
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "e1-4: earth life-forms",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
