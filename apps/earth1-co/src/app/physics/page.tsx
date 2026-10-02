@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { BlackHoleSimulator } from "@/components/BlackHoleSimulator";
+import { StringTheoryVisualizer } from "@/components/StringTheoryVisualizer";
 import { H2, Heading, Page, Prose, SectionFooter } from "@/components/library/parts";
 import { site } from "@/lib/site";
 
@@ -55,7 +56,29 @@ export default function PhysicsPage() {
 
       <BlackHoleSimulator />
 
+      <H2>String Theory: Vibrating Strings as Particles</H2>
+
+      <StringTheoryVisualizer />
+
       <Prose>
+        <h3 className="mt-8">The String Hypothesis</h3>
+        <p>
+          String theory proposes that all fundamental particles—electrons, quarks,
+          photons, W and Z bosons, and gravitons—are not point particles but tiny
+          vibrating strings. Different vibrational modes of the same string produce the
+          different particles we observe. A string vibrating in its lowest mode appears as
+          a photon; a higher mode vibration appears as a massive particle like a W boson.
+        </p>
+
+        <p>
+          The theory requires 10 or 11 spacetime dimensions: the 4 we observe (3 spatial +
+          1 time) plus 6 or 7 additional spatial dimensions compactified at the Planck
+          scale (~10⁻³⁵ meters). These extra dimensions are invisible to us because they
+          are rolled up so tightly that no probe could resolve them. String theory is
+          often framed as theoretical: it remains unconfirmed experimentally and continues
+          to evolve.
+        </p>
+
         <h3 className="mt-8">Schwarzschild Geometry</h3>
         <p>
           A non-rotating black hole in vacuum is described by the Schwarzschild metric,
