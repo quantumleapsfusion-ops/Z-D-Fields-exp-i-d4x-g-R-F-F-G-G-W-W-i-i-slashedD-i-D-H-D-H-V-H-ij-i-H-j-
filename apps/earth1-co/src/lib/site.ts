@@ -37,6 +37,21 @@ export const site = {
       line: "The same laws hold on every shore.",
     },
     {
+      slug: "cpu",
+      title: "CPU",
+      line: "The universal machine at the heart of every computer.",
+    },
+    {
+      slug: "gpu",
+      title: "GPU",
+      line: "Thousands of processors in parallel, unleashing massive throughput.",
+    },
+    {
+      slug: "tpu",
+      title: "TPU",
+      line: "Specialized silicon designed for tensor operations at scale.",
+    },
+    {
       slug: "chemistry",
       title: "Chemistry",
       line: "Everything you can touch, rearranged.",
