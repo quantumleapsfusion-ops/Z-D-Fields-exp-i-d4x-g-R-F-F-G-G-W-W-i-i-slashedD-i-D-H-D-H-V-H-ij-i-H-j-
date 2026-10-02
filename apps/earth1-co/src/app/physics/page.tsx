@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { BlackHoleSimulator } from "@/components/BlackHoleSimulator";
+import { SpecialRelativityVisualizer } from "@/components/SpecialRelativityVisualizer";
 import { SpacetimeCurvatureVisualizer } from "@/components/SpacetimeCurvatureVisualizer";
 import { StringTheoryVisualizer } from "@/components/StringTheoryVisualizer";
 import { H2, Heading, Page, Prose, SectionFooter } from "@/components/library/parts";
@@ -102,6 +103,35 @@ export default function PhysicsPage() {
           become: G<sub>μν</sub> = 8πT<sub>μν</sub>. This beautiful symmetry expresses a
           profound truth: matter tells spacetime how to curve, and spacetime tells matter
           how to move.
+        </p>
+      </Prose>
+
+      <H2>Special Relativity: Time and Space Are Relative</H2>
+
+      <SpecialRelativityVisualizer />
+
+      <Prose>
+        <h3 className="mt-8">The Light Clock Thought Experiment</h3>
+        <p>
+          Einstein's special relativity (1905) revealed that time and space are not
+          absolute. The speed of light is the same for all observers, regardless of their
+          motion. This simple fact has profound consequences: time runs slower in moving
+          reference frames, and objects contract in their direction of motion. The "light
+          clock" thought experiment elegantly demonstrates this. In a stationary frame,
+          light bounces vertically between two mirrors. But in a frame where the clock
+          moves horizontally, the light must travel a diagonal path—a longer
+          distance—while still moving at speed c. Since time is defined by the rhythm of
+          the clock, moving clocks must run slower to cover the longer diagonal path at
+          the same speed of light.
+        </p>
+
+        <p>
+          The Lorentz factor γ = 1/√(1 - v²/c²) quantifies these effects. Time dilates by
+          a factor of γ, and lengths contract by a factor of √(1 - v²/c²). At everyday
+          speeds these effects are imperceptible, but at relativistic speeds (approaching
+          light speed) they become dramatic. A spacecraft traveling at 99.9% the speed of
+          light would be contracted to a sliver of its rest length, and its occupants
+          would age much more slowly than stationary observers.
         </p>
 
         <h3 className="mt-8">Schwarzschild Geometry</h3>
