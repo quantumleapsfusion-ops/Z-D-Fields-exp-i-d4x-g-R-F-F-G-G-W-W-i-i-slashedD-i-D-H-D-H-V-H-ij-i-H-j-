@@ -25,33 +25,41 @@ interface VoiceIOActions {
 
 export type UseVoiceIO = VoiceIOState & VoiceIOActions;
 
-declare global {
-  interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
-  }
-}
-
 export function useVoiceIO(): UseVoiceIO {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  const isSupported =
+  const isSupported: boolean =
     typeof window !== "undefined" &&
-    (window.SpeechRecognition || window.webkitSpeechRecognition) &&
-    window.speechSynthesis;
+    Boolean(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).SpeechRecognition ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).webkitSpeechRecognition,
+    ) &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Boolean((window as any).speechSynthesis);
 
   // Initialize speech recognition
   useEffect(() => {
     if (!isSupported) return;
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SpeechRecognitionClass: any =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).SpeechRecognition ||
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognitionClass) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recognition: any = new SpeechRecognitionClass();
 
     recognition.continuous = false;
     recognition.interimResults = true;
@@ -63,7 +71,8 @@ export function useVoiceIO(): UseVoiceIO {
       setTranscript("");
     };
 
-    recognition.onresult = (event) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (event: any) => {
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcriptSegment = event.results[i][0].transcript;
@@ -76,7 +85,8 @@ export function useVoiceIO(): UseVoiceIO {
       if (interim) setTranscript((prev) => prev + interim);
     };
 
-    recognition.onerror = (event) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onerror = (event: any) => {
       setError(`Speech recognition error: ${event.error}`);
       setIsListening(false);
     };
@@ -109,8 +119,9 @@ export function useVoiceIO(): UseVoiceIO {
       if (!isSupported) return;
 
       return new Promise((resolve) => {
-        // Cancel any ongoing speech
-        window.speechSynthesis.cancel();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const synth = (window as any).speechSynthesis;
+        synth.cancel();
 
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.rate = 1;
@@ -126,14 +137,15 @@ export function useVoiceIO(): UseVoiceIO {
           resolve();
         };
 
-        utterance.onerror = (event) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        utterance.onerror = (event: any) => {
           setError(`Speech synthesis error: ${event.error}`);
           setIsSpeaking(false);
           resolve();
         };
 
         utteranceRef.current = utterance;
-        window.speechSynthesis.speak(utterance);
+        synth.speak(utterance);
       });
     },
     [isSupported],

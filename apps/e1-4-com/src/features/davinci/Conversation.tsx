@@ -2,7 +2,7 @@
 
 import { CompanionClient } from "@/lib/davinci/companion";
 import { useVoiceIO } from "@/lib/davinci/voice-io";
-import type { Turn } from "da-vinci";
+import type { Turn } from "@/lib/davinci/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export function DaVinciConversation() {

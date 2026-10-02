@@ -1,4 +1,4 @@
-import type { Companion, Turn } from "da-vinci";
+import type { Companion, Turn } from "./types";
 
 /**
  * Client-side Companion that calls the /api/davinci/chat endpoint.
