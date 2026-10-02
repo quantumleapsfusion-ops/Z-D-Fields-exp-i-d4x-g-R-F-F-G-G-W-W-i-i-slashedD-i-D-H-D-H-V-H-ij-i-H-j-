@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { BlackHoleSimulator } from "@/components/BlackHoleSimulator";
+import { SpacetimeCurvatureVisualizer } from "@/components/SpacetimeCurvatureVisualizer";
 import { StringTheoryVisualizer } from "@/components/StringTheoryVisualizer";
 import { H2, Heading, Page, Prose, SectionFooter } from "@/components/library/parts";
 import { site } from "@/lib/site";
@@ -77,6 +78,30 @@ export default function PhysicsPage() {
           are rolled up so tightly that no probe could resolve them. String theory is
           often framed as theoretical: it remains unconfirmed experimentally and continues
           to evolve.
+        </p>
+      </Prose>
+
+      <H2>Spacetime Curvature: Gravity as Geometry</H2>
+
+      <SpacetimeCurvatureVisualizer />
+
+      <Prose>
+        <h3 className="mt-8">Einstein's Insight</h3>
+        <p>
+          Einstein's general relativity reveals that gravity is not a force pushing on
+          objects, but rather the geometry of spacetime itself. Mass and energy curve
+          spacetime, and objects naturally follow geodesics—the straightest available
+          paths through this curved spacetime. What we perceive as gravitational
+          attraction is actually the curvature of space and time around massive bodies.
+        </p>
+
+        <p>
+          The Einstein field equations relate the curvature of spacetime (encoded in the
+          metric tensor g<sub>μν</sub>) to the distribution of matter and energy (the
+          stress-energy tensor T<sub>μν</sub>). In natural units where c = G = 1, they
+          become: G<sub>μν</sub> = 8πT<sub>μν</sub>. This beautiful symmetry expresses a
+          profound truth: matter tells spacetime how to curve, and spacetime tells matter
+          how to move.
         </p>
 
         <h3 className="mt-8">Schwarzschild Geometry</h3>
