@@ -34,6 +34,11 @@ export const learn = [
     title: "Global Citizenship",
     line: "Every person on Earth is a citizen of it.",
   },
+  {
+    slug: "philanthropy",
+    title: "Philanthropy",
+    line: "What we build, we give to the world.",
+  },
 ] as const;
 
 export type LearnSlug = (typeof learn)[number]["slug"];
