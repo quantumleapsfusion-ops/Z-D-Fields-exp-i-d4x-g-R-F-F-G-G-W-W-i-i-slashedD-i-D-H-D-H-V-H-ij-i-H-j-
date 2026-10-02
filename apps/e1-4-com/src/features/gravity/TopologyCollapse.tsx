@@ -201,16 +201,27 @@ export default function TopologyCollapse({
         from.set(positions);
         lastForm = formRef.current;
       }
-      const k = Math.min(1, (now - changedAt.current) / 2200);
-      const ease = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
+      const duration = 2200;
+      let k = Math.min(1, (now - changedAt.current) / duration);
+
+      // Easing with anticipation and follow-through: slow start, fast middle, slow end
+      const ease = k < 0.5
+        ? 2 * k * k * (3 - 2 * k) // easeInOutQuad for smoother anticipation
+        : 1 - (-2 * k + 2) ** 2 / 2; // easeOutQuad for follow-through
+
       // Particles are pulled through the core (the "event horizon") before reaching the target.
       const pull = Math.sin(Math.PI * ease) * 0.85;
       for (let i = 0; i < COUNT; i += 1) {
         target(lastForm, i, tmp, reliefRef.current);
         const j = i * 3;
         for (let a = 0; a < 3; a += 1) {
-          const v = from[j + a] + (tmp.getComponent(a) - from[j + a]) * ease;
-          positions[j + a] = v * (1 - pull);
+          const fromVal = from[j + a];
+          const toVal = tmp.getComponent(a);
+          const delta = toVal - fromVal;
+
+          // Calculate position with easing and pull effect
+          const eased = fromVal + delta * ease;
+          positions[j + a] = eased * (1 - pull);
         }
       }
       geometry.attributes.position.needsUpdate = true;
