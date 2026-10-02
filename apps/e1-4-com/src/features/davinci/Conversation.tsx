@@ -12,10 +12,13 @@ export function DaVinciConversation() {
   const [companion] = useState(() => new CompanionClient());
   const textInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSpeak = useCallback(async (text: string) => {
-    setHistory((prev) => [...prev, { role: "davinci", text }]);
-    await voice.speak(text);
-  }, [voice]);
+  const handleSpeak = useCallback(
+    async (text: string) => {
+      setHistory((prev) => [...prev, { role: "davinci", text }]);
+      await voice.speak(text);
+    },
+    [voice],
+  );
 
   const handleUserMessage = useCallback(
     async (text: string) => {
@@ -60,29 +63,26 @@ export function DaVinciConversation() {
 
   return (
     <div className="flex flex-col gap-4 p-6">
-      <div className="font-bold text-lg">Da Vinci</div>
+      <div className="text-lg font-bold">Da Vinci</div>
 
       {!voice.isSupported && (
-        <div className="text-sm text-yellow-600 bg-yellow-50 p-2 rounded">
+        <div className="rounded bg-yellow-50 p-2 text-sm text-yellow-600">
           Speech recognition not supported in your browser. Use text input below.
         </div>
       )}
 
       {voice.error && (
-        <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+        <div className="rounded bg-red-50 p-2 text-sm text-red-600">
           {voice.error}
-          <button
-            onClick={voice.clearError}
-            className="ml-2 text-xs underline"
-          >
+          <button onClick={voice.clearError} className="ml-2 text-xs underline">
             Dismiss
           </button>
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto max-h-96 border rounded p-4 bg-gray-50">
+      <div className="max-h-96 flex-1 overflow-y-auto rounded border bg-gray-50 p-4">
         {history.length === 0 && (
-          <div className="text-gray-400 text-sm">
+          <div className="text-sm text-gray-400">
             {voice.isSupported
               ? "Click the microphone or type to start talking with Da Vinci..."
               : "Type below to start talking with Da Vinci..."}
@@ -94,13 +94,13 @@ export function DaVinciConversation() {
             className={`mb-3 ${turn.role === "you" ? "text-right" : "text-left"}`}
           >
             <div
-              className={`inline-block rounded-lg px-3 py-2 max-w-xs ${
+              className={`inline-block max-w-xs rounded-lg px-3 py-2 ${
                 turn.role === "you"
                   ? "bg-blue-500 text-white"
                   : "bg-gray-200 text-gray-900"
               }`}
             >
-              <span className="text-xs font-semibold block mb-1">
+              <span className="mb-1 block text-xs font-semibold">
                 {turn.role === "you" ? "You" : "Da Vinci"}
               </span>
               {turn.text}
@@ -114,11 +114,11 @@ export function DaVinciConversation() {
           <button
             onClick={handleVoiceInput}
             disabled={isProcessing || voice.isSpeaking}
-            className={`flex-1 px-4 py-2 rounded font-medium transition ${
+            className={`flex-1 rounded px-4 py-2 font-medium transition ${
               voice.isListening
                 ? "bg-red-500 text-white"
                 : "bg-blue-500 text-white hover:bg-blue-600"
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
+            } disabled:cursor-not-allowed disabled:opacity-50`}
           >
             {voice.isListening
               ? `🎤 Listening... ${voice.transcript ? `"${voice.transcript}"` : ""}`
@@ -138,12 +138,12 @@ export function DaVinciConversation() {
           onKeyDown={(e) => {
             if (e.key === "Enter") handleTypeSubmit();
           }}
-          className="flex-1 px-3 py-2 border rounded disabled:opacity-50"
+          className="flex-1 rounded border px-3 py-2 disabled:opacity-50"
         />
         <button
           onClick={handleTypeSubmit}
           disabled={isProcessing || voice.isSpeaking}
-          className="px-4 py-2 bg-blue-500 text-white rounded font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded bg-blue-500 px-4 py-2 font-medium text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Send
         </button>

@@ -12,7 +12,9 @@ export const runtime = "nodejs";
 
 const requestSchema = z.object({
   said: z.string().min(1).max(4000),
-  history: z.array(z.object({ role: z.enum(["you", "davinci"]), text: z.string() })).default([]),
+  history: z
+    .array(z.object({ role: z.enum(["you", "davinci"]), text: z.string() }))
+    .default([]),
 });
 
 export async function POST(req: Request): Promise<Response> {
@@ -43,9 +45,6 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ reply, source: davinci ? "llm" : "stub" });
   } catch (error) {
     console.error("Chat route error:", error);
-    return Response.json(
-      { error: "Failed to process request" },
-      { status: 400 },
-    );
+    return Response.json({ error: "Failed to process request" }, { status: 400 });
   }
 }

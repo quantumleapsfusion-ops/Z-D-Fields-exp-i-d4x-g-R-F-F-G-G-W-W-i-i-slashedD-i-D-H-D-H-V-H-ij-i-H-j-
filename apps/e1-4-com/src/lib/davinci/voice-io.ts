@@ -40,8 +40,8 @@ export function useVoiceIO(): UseVoiceIO {
     Boolean(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).SpeechRecognition ||
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).webkitSpeechRecognition,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).webkitSpeechRecognition,
     ) &&
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Boolean((window as any).speechSynthesis);

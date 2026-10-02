@@ -5,7 +5,10 @@ import type { Companion, Turn } from "./types";
  * Implements the Companion interface for voice conversations with Da Vinci.
  */
 export class CompanionClient implements Companion {
-  async reply(said: string, history: Turn[]): Promise<{ reply: string; source: "llm" | "stub" }> {
+  async reply(
+    said: string,
+    history: Turn[],
+  ): Promise<{ reply: string; source: "llm" | "stub" }> {
     try {
       const response = await fetch("/api/davinci/chat", {
         method: "POST",
