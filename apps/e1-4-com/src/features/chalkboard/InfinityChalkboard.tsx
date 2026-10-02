@@ -19,6 +19,7 @@ import {
 import { DRAFT_KEY, localBoards } from "@/lib/chalkboard/local";
 import type { BoardDocument, BoardElement } from "@/lib/chalkboard/types";
 import { useCarry } from "@/lib/carry";
+import { haptic } from "@/lib/device/haptics";
 
 import { zoomAround, type Point, type Tool, type Viewport } from "./Board2D";
 import { parseVoice, shapeAt } from "./voice";
@@ -137,10 +138,12 @@ export function InfinityChalkboard({
   }, []);
 
   const undo = useCallback(() => {
+    haptic("pause");
     dispatch({ type: "undo" });
     setRevision((r) => r + 1);
   }, []);
   const redo = useCallback(() => {
+    haptic("play");
     dispatch({ type: "redo" });
     setRevision((r) => r + 1);
   }, []);
@@ -448,7 +451,10 @@ export function InfinityChalkboard({
                   type="button"
                   aria-pressed={tool === t.id}
                   title={`${t.label} (${t.key.toUpperCase()})`}
-                  onClick={() => setTool(t.id)}
+                  onClick={() => {
+                    haptic("stage");
+                    setTool(t.id);
+                  }}
                   className={`rounded-full px-3 py-1 font-sans text-xs transition-colors ${
                     tool === t.id
                       ? "bg-ochre text-blackboard"
@@ -465,7 +471,10 @@ export function InfinityChalkboard({
                   type="button"
                   aria-label={`Colour ${c}`}
                   aria-pressed={color === c}
-                  onClick={() => setColor(c)}
+                  onClick={() => {
+                    haptic("stage");
+                    setColor(c);
+                  }}
                   className={`h-5 w-5 rounded-full border ${color === c ? "border-chalk ring-ochre/60 ring-2" : "border-chalk/20"}`}
                   style={{ backgroundColor: c }}
                 />
