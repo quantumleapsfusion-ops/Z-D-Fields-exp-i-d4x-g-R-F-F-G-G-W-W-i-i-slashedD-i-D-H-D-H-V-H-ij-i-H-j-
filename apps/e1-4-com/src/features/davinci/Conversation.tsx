@@ -3,6 +3,7 @@
 import { CompanionClient } from "@/lib/davinci/companion";
 import { useVoiceIO } from "@/lib/davinci/voice-io";
 import type { Turn } from "@/lib/davinci/types";
+import { haptic } from "@/lib/device/haptics";
 import { useCallback, useRef, useState } from "react";
 
 export function DaVinciConversation() {
@@ -15,6 +16,7 @@ export function DaVinciConversation() {
   const handleSpeak = useCallback(
     async (text: string) => {
       setHistory((prev) => [...prev, { role: "davinci", text }]);
+      haptic("voice");
       await voice.speak(text);
     },
     [voice],
@@ -26,12 +28,14 @@ export function DaVinciConversation() {
 
       setHistory((prev) => [...prev, { role: "you", text }]);
       setIsProcessing(true);
+      haptic("start");
 
       try {
         const response = await companion.reply(text, history);
         await handleSpeak(response.reply);
       } catch (error) {
         console.error("Failed to get reply:", error);
+        haptic("rejected");
       } finally {
         setIsProcessing(false);
       }
@@ -42,12 +46,14 @@ export function DaVinciConversation() {
   const handleVoiceInput = useCallback(() => {
     if (voice.isListening) {
       voice.stopListening();
+      haptic("stop");
       if (voice.transcript) {
         handleUserMessage(voice.transcript);
         voice.resetTranscript();
       }
     } else {
       voice.startListening();
+      haptic("start");
     }
   }, [voice, handleUserMessage]);
 
@@ -55,6 +61,7 @@ export function DaVinciConversation() {
     if (textInputRef.current) {
       const text = textInputRef.current.value;
       if (text.trim()) {
+        haptic("accepted");
         handleUserMessage(text);
         textInputRef.current.value = "";
       }
