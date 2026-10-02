@@ -3,6 +3,11 @@ import type { Metadata } from "next";
 import { BlackHoleSimulator } from "@/components/BlackHoleSimulator";
 import { DiracEquation } from "@/components/DiracEquation";
 import { EnergyConverter } from "@/components/EnergyConverter";
+import { LagrangianAction } from "@/components/LagrangianAction";
+import { LorentzTransformation } from "@/components/LorentzTransformation";
+import { PauliMatrices } from "@/components/PauliMatrices";
+import { PoincareFeatured } from "@/components/PoincareFeatured";
+import { SchrodingerEquation } from "@/components/SchrodingerEquation";
 import { SpecialRelativityVisualizer } from "@/components/SpecialRelativityVisualizer";
 import { SpacetimeCurvatureVisualizer } from "@/components/SpacetimeCurvatureVisualizer";
 import { StringTheoryVisualizer } from "@/components/StringTheoryVisualizer";
@@ -94,6 +99,43 @@ export default function PhysicsPage() {
         </p>
       </Prose>
 
+      <H2>The Schrödinger Equation: Wavefunctions and Quantization</H2>
+
+      <SchrodingerEquation />
+
+      <Prose>
+        <h3 className="mt-8">The Wave Nature of Matter</h3>
+        <p>
+          The Schrödinger equation (iℏ∂ψ/∂t = Hψ) is the fundamental law governing quantum
+          mechanics. It describes how the wavefunction ψ, which encodes all information
+          about a quantum system, evolves over time. Unlike Newton's laws that predict
+          particle trajectories, the Schrödinger equation predicts probability
+          amplitudes—the wavefunction is not a real wave but a "matter wave" whose squared
+          magnitude |ψ|² gives the probability density of finding the particle at a
+          location.
+        </p>
+
+        <p>
+          In confined systems like a particle in a box with infinite potential walls,
+          something remarkable happens: only certain energies are allowed. The
+          wavefunction must form a standing wave that "fits" inside the box, just as a
+          vibrating guitar string can only resonate at specific frequencies. This is
+          energy quantization—the origin of discrete energy levels in atoms. The energy
+          formula E_n = n²ℏ²π²/(2mL²) depends on an integer n; you cannot have energy
+          between these levels. This discreteness is purely quantum; no classical system
+          behaves this way.
+        </p>
+
+        <p>
+          Energy eigenstates—the stationary states of the system—have a special property:
+          their probability density |ψ|² does not change over time. They oscillate only in
+          phase, experiencing a phase factor e^(-iE_nt/ℏ). This is why atoms are stable:
+          an electron in a ground state does not gradually spiral into the nucleus as
+          classical electromagnetism would predict. Instead, it exists in a stationary
+          state, forever cycling through its oscillating phase without radiating energy.
+        </p>
+      </Prose>
+
       <H2>The Dirac Equation: Spin and Antimatter</H2>
 
       <DiracEquation />
@@ -144,6 +186,52 @@ export default function PhysicsPage() {
         </p>
       </Prose>
 
+      <H2>Pauli Matrices and the Exclusion Principle</H2>
+
+      <PauliMatrices />
+
+      <Prose>
+        <h3 className="mt-8">The Algebra of Spin</h3>
+        <p>
+          The Pauli matrices σ_x, σ_y, and σ_z are the quantum operators that measure spin
+          along three orthogonal axes. They are 2×2 matrices that act on
+          spinors—two-component quantum states representing spin-½ particles like
+          electrons. Each Pauli matrix has eigenvalues of ±1, meaning spin measurement
+          along any axis yields exactly two outcomes: spin-up or spin-down, with
+          probability determined by the quantum state before measurement.
+        </p>
+
+        <p>
+          Together with the identity matrix, the Pauli matrices form a basis for all 2×2
+          Hermitian matrices and generate SU(2) rotations—the symmetry group of spin
+          space. They satisfy elegant commutation relations: [σ_x, σ_y] = 2iσ_z, [σ_y,
+          σ_z] = 2iσ_x, [σ_z, σ_x] = 2iσ_y. These commutation rules reveal the fundamental
+          structure of quantum angular momentum and show why measuring spin along one axis
+          disturbs the spin along others.
+        </p>
+
+        <h3 className="mt-8">Fermi, Pauli, and the Exclusion Principle</h3>
+        <p>
+          The Pauli exclusion principle states a profound fact: no two identical fermions
+          can occupy the same quantum state. This is not a rule imposed from outside; it
+          emerges from the fundamental antisymmetry of fermionic wavefunctions. When you
+          exchange two fermions, their combined wavefunction must change sign: ψ(x₁, x₂) =
+          −ψ(x₂, x₁). If two fermions were in the same quantum state, exchange would leave
+          the wavefunction unchanged, violating this antisymmetry. Therefore, no two
+          fermions can share an identical set of quantum numbers (n, l, m_l, m_s).
+        </p>
+
+        <p>
+          This principle explains atomic structure, chemical bonding, and the stability of
+          matter itself. Electrons fill atomic orbitals in shells, with at most two per
+          orbital (spin-up and spin-down). Without the exclusion principle, all electrons
+          would collapse into the lowest-energy state and atoms would be impossible. It
+          explains the periodic table's patterns, why matter doesn't pass through matter,
+          and even the degeneracy pressure that keeps neutron stars from collapsing under
+          their own weight.
+        </p>
+      </Prose>
+
       <H2>String Theory: Vibrating Strings as Particles</H2>
 
       <StringTheoryVisualizer />
@@ -165,6 +253,42 @@ export default function PhysicsPage() {
           are rolled up so tightly that no probe could resolve them. String theory is
           often framed as theoretical: it remains unconfirmed experimentally and continues
           to evolve.
+        </p>
+      </Prose>
+
+      <H2>The Principle of Least Action: Nature's Optimization</H2>
+
+      <LagrangianAction />
+
+      <Prose>
+        <h3 className="mt-8">Action and the Lagrangian</h3>
+        <p>
+          The principle of least action states that physical systems evolve along paths
+          that make the action S stationary—typically a minimum. The action is defined as
+          S = ∫L dt, where L is the Lagrangian: the difference between kinetic and
+          potential energy, L = T − V. This single principle, seemingly abstract and
+          elegant, gives rise to all equations of motion in physics: Newton's laws for
+          mechanics, Maxwell's equations for electromagnetism, and Einstein's equations
+          for gravity.
+        </p>
+
+        <p>
+          The Lagrangian formulation reveals a deep truth about nature: physical systems
+          are "lazy" in a mathematical sense. A particle doesn't follow the shortest path
+          between two points—it follows the path that minimizes the integral of (kinetic −
+          potential) energy over time. For a ball thrown through the air, this
+          action-minimizing path is a parabola, not a straight line. The parabola balances
+          kinetic energy (speed matters) against potential energy (height matters) in
+          exactly the right way to yield the trajectory we observe.
+        </p>
+
+        <p>
+          From the action principle emerge the Euler-Lagrange equations, δS/δq = 0, which
+          are the mathematical statement that the action is stationary. These partial
+          differential equations encode the system's dynamics completely. This formulation
+          unifies mechanics and field theory, explains conservation laws through Noether's
+          theorem (symmetries ↔ conserved quantities), and provides the foundation for
+          quantum field theory where paths are weighted by e^(iS/ℏ).
         </p>
       </Prose>
 
@@ -195,6 +319,43 @@ export default function PhysicsPage() {
       <H2>Special Relativity: Time and Space Are Relative</H2>
 
       <SpecialRelativityVisualizer />
+
+      <H2>Lorentz Transformations: Coordinates Between Reference Frames</H2>
+
+      <LorentzTransformation />
+
+      <Prose>
+        <h3 className="mt-8">How Spacetime Coordinates Transform</h3>
+        <p>
+          The Lorentz transformation describes how coordinates of events change between
+          two inertial reference frames in relative motion. If one observer measures an
+          event at position x and time t, an observer moving at velocity v will measure
+          that same event at position x' and time t' according to: x' = γ(x − vt) and t' =
+          γ(t − vx/c²), where γ = 1/√(1 − v²/c²) is the Lorentz factor. These
+          transformations are not derived from assumptions about how the world "ought" to
+          work; they emerge directly from the requirement that the speed of light c is the
+          same in all inertial frames.
+        </p>
+
+        <p>
+          One profound consequence is the relativity of simultaneity: events that are
+          simultaneous in one frame (Δt = 0) are not simultaneous in another frame moving
+          relative to it. The Lorentz transformation reveals that spacetime is not a
+          simple product of independent space and time—instead, motion mixes space and
+          time coordinates. As velocity approaches light speed, the Lorentz factor γ
+          diverges, revealing why no massive object can reach c: it would require infinite
+          energy.
+        </p>
+
+        <p>
+          The spacetime interval s² = −c²(Δt)² + (Δx)² is invariant under Lorentz
+          transformations; all observers calculate the same interval between events. This
+          invariant is the geometric distance in spacetime. Timelike intervals have s²
+          &lt; 0 and define proper time; spacelike intervals have s² &gt; 0 and cannot be
+          causally connected. The Lorentz transformation is the geometric rotation in
+          spacetime, analogous to ordinary rotations in 3D space.
+        </p>
+      </Prose>
 
       <Prose>
         <h3 className="mt-8">The Light Clock Thought Experiment</h3>
@@ -317,6 +478,63 @@ export default function PhysicsPage() {
           black hole. Planets orbit stars. And moons orbit planets. The same
           inverse-square law, integrated over distances ranging from kilometers to
           billions of light-years, sculpts the visible universe.
+        </p>
+      </Prose>
+
+      <H2>Poincaré: The Most Consequential Symmetry</H2>
+
+      <PoincareFeatured />
+
+      <Prose>
+        <h3 className="mt-8">The Group That Unified Physics</h3>
+        <p>
+          Henri Poincaré, working at the turn of the 20th century, discovered that the
+          symmetries of spacetime form a mathematical group: the Poincaré group P = O(1,3)
+          ⋉ ℝ⁴. This group combines Lorentz transformations (rotations and boosts mixing
+          space and time) with spacetime translations. Every event in spacetime can be
+          mapped to another event under these symmetries, and the physical laws remain
+          invariant. The Poincaré group is not merely an abstract mathematical
+          structure—it is the deepest symmetry principle underlying all of modern physics,
+          from quantum field theory to general relativity.
+        </p>
+
+        <p>
+          The implications are staggering. Conservation laws spring directly from Poincaré
+          symmetries: energy from time-translation invariance, momentum from
+          space-translation invariance, and angular momentum from rotational invariance.
+          These are not independent postulates but consequences of a single unified
+          symmetry. Particles are best understood as irreducible representations of the
+          Poincaré group—their mass and spin are quantum numbers labeling these
+          representations. This perspective, developed by Wigner and others, shows that
+          quantum field theory itself emerges from the requirement that particle creation
+          and annihilation respect Poincaré symmetry.
+        </p>
+
+        <h3 className="mt-8">Chaos, Topology, and the Three-Body Problem</h3>
+        <p>
+          Beyond spacetime symmetries, Poincaré was a visionary in understanding chaos and
+          topology. He realized that many systems, like the gravitational three-body
+          problem, have no closed-form solutions yet still obey deterministic laws. Small
+          changes in initial conditions lead to exponentially divergent trajectories - the
+          butterfly effect. Poincaré quantified this with Lyapunov exponents (λ &gt; 0 for
+          chaos) and invented the Poincaré section, a technique where periodic orbits are
+          reduced to discrete points in a lower-dimensional surface. This reduction
+          transforms continuous dynamics into map dynamics, revealing hidden structure:
+          chaotic orbits fill fractal-like curves, periodic orbits appear as fixed points,
+          and the global behavior becomes readable.
+        </p>
+
+        <p>
+          The study of nonlinear dynamics and chaos—central to understanding turbulence,
+          weather systems, and astronomical mechanics—was born from Poincaré's insights.
+          His topological approach showed that geometry and qualitative behavior matter
+          more than finding explicit solutions. This philosophy underpins modern dynamical
+          systems theory and has revolutionized our understanding of complex systems from
+          ecosystems to economies. Poincaré's legacy is not one result but a
+          transformation in how we think about physical law: not as a machine with
+          predictable outcomes, but as a rich tapestry of symmetries, bifurcations, and
+          emergent structure. He is the bridge from classical to quantum, from determinism
+          to chaos theory, and from mechanics to modern physics.
         </p>
       </Prose>
 
