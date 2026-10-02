@@ -2,7 +2,10 @@
 
 import { CalculusIllustration } from "@/components/CalculusIllustration";
 import { DifferentialEquationsIllustration } from "@/components/DifferentialEquationsIllustration";
+import { DivisionIllustration } from "@/components/DivisionIllustration";
 import { EuclidElementsIllustration } from "@/components/EuclidElementsIllustration";
+import { FunctionsIllustration } from "@/components/FunctionsIllustration";
+import { IntegersIllustration } from "@/components/IntegersIllustration";
 import { ParametricCurvesIllustration } from "@/components/ParametricCurvesIllustration";
 import { VectorIllustration } from "@/components/VectorIllustration";
 import { research } from "@/lib/research";
@@ -129,6 +132,70 @@ export default function PillarPage() {
             </p>
             <div className="mt-8">
               <EuclidElementsIllustration />
+            </div>
+          </section>
+
+          {/* Functions */}
+          <section id="functions" aria-labelledby="functions-title">
+            <h2
+              id="functions-title"
+              className="font-display text-lg tracking-[0.16em] uppercase sm:text-2xl"
+            >
+              Functions
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed font-light text-white/70 sm:text-base">
+              The fundamental building block of mathematics. A function maps
+              elements from one set (the domain) to elements in another set
+              (the codomain). Here, the function f(x) = x² takes inputs like
+              −2, −1, 0, 1, 2 and produces outputs 4, 1, 0, 1, 4. Functions
+              describe relationships between quantities and are essential to
+              modeling everything from physics to economics.
+            </p>
+            <div className="mt-8">
+              <FunctionsIllustration />
+            </div>
+          </section>
+
+          {/* Integers */}
+          <section id="integers" aria-labelledby="integers-title">
+            <h2
+              id="integers-title"
+              className="font-display text-lg tracking-[0.16em] uppercase sm:text-2xl"
+            >
+              Integers
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed font-light text-white/70 sm:text-base">
+              The whole numbers—positive, negative, and zero. On the number
+              line, each integer occupies a precise position. We can add,
+              subtract, multiply, and divide integers, performing the
+              fundamental operations that govern arithmetic. These operations
+              extend to more complex number systems and are the foundation of
+              all numerical reasoning.
+            </p>
+            <div className="mt-8">
+              <IntegersIllustration />
+            </div>
+          </section>
+
+          {/* Division */}
+          <section id="division" aria-labelledby="division-title">
+            <h2
+              id="division-title"
+              className="font-display text-lg tracking-[0.16em] uppercase sm:text-2xl"
+            >
+              Division & Modular Arithmetic
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed font-light text-white/70 sm:text-base">
+              When we divide integers, we get a quotient and a remainder. The
+              division algorithm states: a = qb + r, where a is the dividend,
+              b is the divisor, q is the quotient, and r is the remainder.
+              This simple formula unlocks modular arithmetic, where we care
+              only about the remainder. Modular arithmetic appears in
+              cryptography, computer science, and the study of periodic
+              phenomena throughout nature.
+            </p>
+            <div className="mt-8">
+              <DivisionIllustration />
             </div>
           </section>
         </div>
