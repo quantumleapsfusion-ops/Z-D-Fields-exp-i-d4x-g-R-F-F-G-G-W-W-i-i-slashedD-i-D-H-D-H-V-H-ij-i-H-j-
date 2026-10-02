@@ -364,14 +364,20 @@ export function InfinityChalkboard({
             {new Date(localRestore.updatedAt).toLocaleTimeString()}
             <button
               type="button"
-              onClick={restoreLocal}
+              onClick={() => {
+                haptic("accepted");
+                restoreLocal();
+              }}
               className="label hover:text-ochre"
             >
               Restore
             </button>
             <button
               type="button"
-              onClick={dismissLocal}
+              onClick={() => {
+                haptic("rejected");
+                dismissLocal();
+              }}
               className="label hover:text-chalk"
             >
               Discard
@@ -391,13 +397,23 @@ export function InfinityChalkboard({
             </option>
           ))}
         </select>
-        <button type="button" onClick={newBoard} className="label hover:text-chalk">
+        <button
+          type="button"
+          onClick={() => {
+            haptic("stage");
+            newBoard();
+          }}
+          className="label hover:text-chalk"
+        >
           New
         </button>
         {boardId ? (
           <button
             type="button"
-            onClick={() => void removeBoard()}
+            onClick={() => {
+              haptic("rejected");
+              void removeBoard();
+            }}
             className="label hover:text-ochre"
           >
             Delete
@@ -411,7 +427,10 @@ export function InfinityChalkboard({
           {stream.text ? (
             <button
               type="button"
-              onClick={() => live.pushText(stream.text)}
+              onClick={() => {
+                haptic("accepted");
+                live.pushText(stream.text);
+              }}
               className="text-dust hover:text-chalk font-mono text-xs underline underline-offset-4"
             >
               Place all
@@ -425,7 +444,10 @@ export function InfinityChalkboard({
                 <li key={segment.id}>
                   <button
                     type="button"
-                    onClick={() => live.pushText(text)}
+                    onClick={() => {
+                      haptic("accepted");
+                      live.pushText(text);
+                    }}
                     className="flex flex-col items-start gap-1 text-left font-sans text-sm"
                   >
                     <time className="label" dateTime={segment.startedAt}>
