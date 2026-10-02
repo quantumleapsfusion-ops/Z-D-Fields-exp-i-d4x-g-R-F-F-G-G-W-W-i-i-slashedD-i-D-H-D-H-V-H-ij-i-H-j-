@@ -90,7 +90,7 @@ export const philanthropy: FieldSection = {
       ],
     },
     {
-      slug: "marie-curie",
+      slug: "marie-curie-donor",
       name: "Marie Curie",
       born: "1867",
       died: "1934",

@@ -53,7 +53,7 @@ export const mathematics: FieldSection = {
       ],
     },
     {
-      slug: "isaac-newton",
+      slug: "isaac-newton-calculus",
       name: "Isaac Newton",
       born: "1643",
       died: "1727",
