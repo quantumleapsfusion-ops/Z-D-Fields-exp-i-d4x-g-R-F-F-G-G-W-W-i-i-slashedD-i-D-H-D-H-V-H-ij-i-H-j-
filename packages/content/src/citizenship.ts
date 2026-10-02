@@ -242,6 +242,135 @@ export const globalCitizenship: FieldSection = {
         },
       ],
     },
+    {
+      slug: "john-von-neumann",
+      name: "John von Neumann",
+      born: "1903",
+      died: "1957",
+      field: ["Mathematics", "Computing", "Physics"],
+      contributions: [
+        "Pioneer of computer science and game theory, showed that complex systems could be analyzed mathematically.",
+        "Worked on the hydrogen bomb but later warned that nuclear weapons made global coordination unavoidable: nations could no longer act in isolation.",
+      ],
+      quotes: [
+        {
+          text: "The sciences do not try to explain nature. They interact with nature, and the real output of science is not understanding by itself, but understanding plus power.",
+          source: "The Physicist Looks at Society (1956)",
+          verified: false,
+          caveat: "Approximate quote; exact wording varies in sources.",
+        },
+      ],
+    },
+    {
+      slug: "alan-turing",
+      name: "Alan Turing",
+      born: "1912",
+      died: "1954",
+      field: ["Mathematics", "Computing", "Logic"],
+      contributions: [
+        "Founder of computer science and artificial intelligence; created the Turing Test asking whether machines could think.",
+        "Showed that computation was universal: any problem solvable by one machine could be solved by any other, a principle that makes global communication possible.",
+      ],
+      quotes: [
+        {
+          text: "I believe that at the end of the century the use of words and general educated opinion will have altered so much that one will be able to speak of machines thinking without expecting to be contradicted.",
+          source: "Computing Machinery and Intelligence (1950)",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "claude-shannon",
+      name: "Claude Shannon",
+      born: "1916",
+      died: "2001",
+      field: ["Mathematics", "Information theory"],
+      contributions: [
+        "Founder of information theory; proved that any message could be reliably transmitted across noisy channels using error correction.",
+        "His work made possible the global communications networks—telephone, radio, internet—that connect humanity.",
+      ],
+      quotes: [
+        {
+          text: "Information is the resolution of uncertainty.",
+          source: "A Mathematical Theory of Communication (1948)",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "j-robert-oppenheimer",
+      name: "J. Robert Oppenheimer",
+      born: "1904",
+      died: "1967",
+      field: ["Physics", "Leadership"],
+      contributions: [
+        "Led the Manhattan Project to build the atomic bomb; later became the voice of nuclear scientists' responsibility to humanity.",
+        "Argued that the bomb had made war between great powers irrational: survival now required global cooperation.",
+      ],
+      quotes: [
+        {
+          text: "Now I am become Death, the destroyer of worlds.",
+          source: "Quoted from the Bhagavad Gita, speaking after the first atomic bomb test (Trinity), July 1945",
+          verified: true,
+          caveat: "His paraphrase of the Gita; reflects his later remorse about weapons development.",
+        },
+      ],
+    },
+    {
+      slug: "karl-popper",
+      name: "Karl Popper",
+      born: "1902",
+      died: "1994",
+      field: ["Philosophy", "Political theory"],
+      contributions: [
+        "Argued for 'open society': a political system where ideas compete and citizens can critique power without fear.",
+        "Showed that totalitarianism—whether communist or fascist—arises when one group claims final truth; global peace requires openness to revision.",
+      ],
+      quotes: [
+        {
+          text: "The open society is one in which men are free to discuss their differences openly and where conflicts are settled by argument rather than by violence.",
+          source: "The Open Society and Its Enemies (1945)",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "nassim-taleb",
+      name: "Nassim Taleb",
+      born: "1960",
+      died: "",
+      field: ["Philosophy", "Risk management"],
+      contributions: [
+        "Argued that global systems are fragile to rare, extreme events ('black swans') that standard risk models miss.",
+        "Showed that tightly connected global networks can amplify small shocks into systemic crises; resilience requires redundancy and diversity.",
+      ],
+      quotes: [
+        {
+          text: "The inability to predict outliers implies the inability to predict the course of history.",
+          source: "The Black Swan (2007)",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "mark-zuckerberg",
+      name: "Mark Zuckerberg",
+      born: "1984",
+      died: "",
+      field: ["Technology", "Internet platforms"],
+      contributions: [
+        "Built Facebook with the stated mission of connecting people across borders and making the world more open and connected.",
+        "Demonstrated that technology platforms can reach billions and shape how humanity communicates, for better and worse.",
+      ],
+      quotes: [
+        {
+          text: "The biggest challenge we face is that most of the problems we face are global in nature, but our institutions are national.",
+          source: "Facebook post and public statements, 2016–2017",
+          verified: false,
+          caveat: "Paraphrased from multiple public statements; exact wording varies.",
+        },
+      ],
+    },
   ],
   sub: {
     id: "science-fiction",
