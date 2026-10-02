@@ -94,10 +94,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {site.org}
           </Link>
         </header>
+        <Nav />
         <main className="flex flex-1 flex-col items-center justify-end px-6 pt-[52svh] pb-12 text-center sm:pt-[60svh]">
           {children}
         </main>
-        <Nav />
         <Footer />
       </body>
     </html>
