@@ -52,6 +52,6 @@ export type FieldSection = {
   /** The subject itself, before the people. */
   topics?: Topic[];
   figures: Figure[];
-  /** Optional sub-section, e.g. science fiction under global citizenship. */
-  sub?: { id: string; title: string; intro: string[]; figures: Figure[] };
+  /** Optional sub-sections, e.g. science fiction under global citizenship. */
+  sub?: readonly { id: string; title: string; intro: string[]; figures: Figure[] }[];
 };

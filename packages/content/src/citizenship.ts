@@ -372,9 +372,10 @@ export const globalCitizenship: FieldSection = {
       ],
     },
   ],
-  sub: {
-    id: "science-fiction",
-    title: "In science fiction",
+  sub: [
+    {
+      id: "science-fiction",
+      title: "In science fiction",
     intro: [
       "Science fiction is where people have rehearsed what governing a crowded galaxy might feel like, or what happens when technology upends the power structures that nations depend on.",
     ],
@@ -473,5 +474,59 @@ export const globalCitizenship: FieldSection = {
         ],
       },
     ],
-  },
+    },
+    {
+    id: "planetary-architects",
+    title: "Planetary architects: multiplanetary civilization",
+    intro: [
+      "The transition from a single-planet to a multiplanetary species raises the deepest question of global citizenship: what is humanity's obligation to itself, and to worlds we have yet to reach? Two contemporary thinkers—one building the technologies, one chronicling visionaries—argue that survival and flourishing require thinking across planetary scales.",
+    ],
+    figures: [
+      {
+        slug: "elon-musk",
+        name: "Elon Musk",
+        born: "1971",
+        died: "",
+        field: ["Engineering", "Space exploration", "Technology"],
+        contributions: [
+          "Founded SpaceX with the goal of making humanity multiplanetary; argues that becoming a multiplanetary species is essential for the long-term survival of human civilization.",
+          "Advocates for first-principles thinking: break problems down to physical laws rather than analogy, a method he applies to energy, transportation, and space.",
+        ],
+        quotes: [
+          {
+            text: "I think there is a strong humanitarian argument for making life multiplanetary in order to safeguard the existence of humanity in the event that something catastrophic were to happen.",
+            source: "TED Talk and interviews, 2005–present",
+            verified: false,
+            caveat: "Paraphrased from multiple interviews; exact wording varies.",
+          },
+          {
+            text: "The first principles approach involves looking at a situation and taking the relevant facts as an input and reasoning from there. This is how science works.",
+            source: "Quoted in interviews on methodology",
+            verified: false,
+            caveat: "Loosely sourced; reflects his consistent philosophy.",
+          },
+        ],
+      },
+      {
+        slug: "walter-isaacson",
+        name: "Walter Isaacson",
+        born: "1952",
+        died: "",
+        field: ["Biography", "History", "Journalism"],
+        contributions: [
+          "Biographer of visionaries including Einstein, Steve Jobs, Benjamin Franklin, and Leonardo da Vinci; his work shows how individual genius shapes epochs.",
+          "Wrote the biography of Elon Musk (2023), chronicling how one person's conviction about humanity's future on multiple planets shapes technology and society.",
+        ],
+        quotes: [
+          {
+            text: "The most creative people are willing to start from first principles and think in new ways. They see interconnections across disciplines.",
+            source: "From interviews on his biographical work",
+            verified: false,
+            caveat: "Paraphrased from Isaacson's commentary on visionaries he has studied.",
+          },
+        ],
+      },
+    ],
+    },
+  ],
 };
