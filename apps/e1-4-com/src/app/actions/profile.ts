@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import { getUserId } from "@/lib/auth/user";
 import { endSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { hardDeleteUser } from "@/lib/privacy/hard-delete";
 import { AVATARS_BUCKET, storage } from "@/lib/storage";
 
 const AVATAR_TYPES: Record<string, string> = {

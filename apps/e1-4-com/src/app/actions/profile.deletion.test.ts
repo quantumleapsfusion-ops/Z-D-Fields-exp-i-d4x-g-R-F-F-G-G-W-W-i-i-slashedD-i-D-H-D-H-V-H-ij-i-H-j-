@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 
 import { prisma } from "@/lib/db";
 
@@ -12,7 +12,7 @@ describe("account deletion scheduling", () => {
 
   it("schedules deletion 30 days in the future", async () => {
     const now = new Date();
-    const createdUser = await prisma.user.create({
+    await prisma.user.create({
       data: { id: userId, displayName: "Test User" },
     });
 
@@ -75,7 +75,6 @@ describe("account deletion scheduling", () => {
 
   it("can find users past their deletion date", async () => {
     const past = new Date(Date.now() - 1000); // 1 second ago
-    const future = new Date(Date.now() + DELETION_DELAY_MS);
 
     await prisma.user.create({
       data: {
