@@ -2,6 +2,7 @@
 
 import type { SegmentDTO } from "@/lib/voice/stream";
 
+import { haptic } from "@/lib/device/haptics";
 import { formatDay, formatDuration, formatTime } from "./format";
 
 export type TimelineItem =
@@ -124,7 +125,10 @@ function SegmentCard({
             {onPlay ? (
               <button
                 type="button"
-                onClick={() => onPlay(segment.id)}
+                onClick={() => {
+                  haptic("play");
+                  onPlay(segment.id);
+                }}
                 aria-label={`Play from ${formatTime(segment.startedAt)}`}
                 className="border-chalk/25 text-chalk hover:border-ochre hover:text-ochre flex h-7 w-7 items-center justify-center rounded-full border transition-colors"
               >
