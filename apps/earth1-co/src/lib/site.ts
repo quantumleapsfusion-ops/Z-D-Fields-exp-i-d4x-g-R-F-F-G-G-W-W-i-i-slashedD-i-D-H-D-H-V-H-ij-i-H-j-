@@ -41,6 +41,11 @@ export const site = {
       line: "Open questions, answered in the open, for everyone.",
     },
     {
+      slug: "space-exploration",
+      title: "Space Exploration",
+      line: "Beyond Earth, the laws of physics remain our guide.",
+    },
+    {
       slug: "philanthropy",
       title: "Philanthropy",
       line: "What we build, we give to the world.",
