@@ -108,6 +108,67 @@ export const physics: FieldSection = {
       ],
       quotes: [],
     },
+    {
+      slug: "wilhelm-rontgen",
+      name: "Wilhelm Röntgen",
+      born: "1845",
+      died: "1923",
+      field: ["Physics"],
+      contributions: [
+        "Discovered X-rays on 8 November 1895 while experimenting with cathode rays at the University of Würzburg. He found a glow from a fluorescent screen across the room, and showed that a mysterious radiation passed through paper and flesh but not bone.",
+        "Won the first Nobel Prize in Physics in 1901 for this discovery.",
+        "Called them X-rays because their nature was unknown. They turned out to be electromagnetic radiation of very short wavelength, like light but billions of times more energetic.",
+      ],
+      quotes: [
+        {
+          text: "I have discovered something interesting.",
+          source: "",
+          verified: false,
+          caveat: "Röntgen's reported words to his wife on the discovery. The source is unclear.",
+        },
+      ],
+    },
+    {
+      slug: "ernest-rutherford",
+      name: "Ernest Rutherford",
+      born: "1871",
+      died: "1937",
+      field: ["Physics"],
+      contributions: [
+        "In 1909 devised the scattering experiment that revealed the nuclear structure of the atom: most of an atom is empty space, with a tiny positive nucleus at its centre.",
+        "Discovered and named alpha and beta radiation as two forms of radioactive decay, and showed they were nuclear processes.",
+        "First person to induce a nuclear reaction in the laboratory, in 1919, splitting the nitrogen nucleus.",
+        "Mentored eleven future Nobel laureates, more than any scientist of his era.",
+      ],
+      quotes: [
+        {
+          text: "If your experiment needs statistics, you ought to do a better experiment.",
+          source: "",
+          verified: false,
+          caveat: "Widely attributed but likely misquoted or paraphrased.",
+        },
+      ],
+    },
+    {
+      slug: "robert-oppenheimer",
+      name: "J. Robert Oppenheimer",
+      born: "1904",
+      died: "1967",
+      field: ["Physics"],
+      contributions: [
+        "Director of the Los Alamos Laboratory during the Manhattan Project, overseeing the design and assembly of the first atomic bombs.",
+        "Theoretical contributions to nuclear physics, quantum mechanics and astrophysics.",
+        "After the war, opposed further nuclear weapons development and the arms race, and was stripped of his security clearance in 1954 at the height of McCarthyism.",
+      ],
+      quotes: [
+        {
+          text: "Now I am become Death, the destroyer of worlds.",
+          source: "Quoted in an interview after the Trinity test, drawing on the Bhagavad Gita",
+          verified: false,
+          caveat: "Oppenheimer later gave different accounts of what he said. The quote is often attributed to him, but the exact wording and context are disputed.",
+        },
+      ],
+    },
   ],
 };
 
