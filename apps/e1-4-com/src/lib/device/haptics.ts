@@ -7,6 +7,9 @@ export const HAPTICS = {
   accepted: [20, 30, 60],
   rejected: [80, 40, 80],
   voice: [8],
+  play: [20, 10, 20],
+  pause: [15, 20, 15],
+  seek: [12],
 } as const satisfies Record<string, readonly number[]>;
 
 export type Haptic = keyof typeof HAPTICS;

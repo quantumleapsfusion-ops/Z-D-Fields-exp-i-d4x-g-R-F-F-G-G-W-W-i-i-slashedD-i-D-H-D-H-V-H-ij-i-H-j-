@@ -1,5 +1,7 @@
 import { create } from "zustand";
 
+import { haptic } from "@/lib/device/haptics";
+
 export type PlayableSegment = {
   id: string;
   durationMs: number;
@@ -69,15 +71,23 @@ export const usePlayback = create<PlaybackState>((set, get) => ({
   toggle: () => {
     const { engine, playlist, playing, current, offsetMs } = get();
     if (!engine || !playlist || playlist.segments.length === 0) return;
-    if (playing) engine.pause();
-    else void engine.resume().catch(() => engine.load(current, offsetMs, true));
+    if (playing) {
+      haptic("pause");
+      engine.pause();
+    } else {
+      haptic("play");
+      void engine.resume().catch(() => engine.load(current, offsetMs, true));
+    }
   },
 
   playFrom: (segmentId) => {
     const { engine, playlist } = get();
     if (!engine || !playlist) return;
     const index = playlist.segments.findIndex((s) => s.id === segmentId);
-    if (index >= 0) void engine.load(index, 0, true);
+    if (index >= 0) {
+      haptic("play");
+      void engine.load(index, 0, true);
+    }
   },
 
   seekGlobal: (ms) => {
@@ -89,6 +99,7 @@ export const usePlayback = create<PlaybackState>((set, get) => ({
     );
     if (index === -1) index = playlist.segments.length - 1;
     if (index < 0) return;
+    haptic("seek");
     void engine.load(index, Math.max(0, ms - starts[index]), playing);
   },
 
@@ -97,6 +108,7 @@ export const usePlayback = create<PlaybackState>((set, get) => ({
     if (!engine || !playlist) return false;
     const index = current + 1;
     if (index >= playlist.segments.length) return false;
+    haptic("play");
     void engine.load(index, 0, true);
     return true;
   },

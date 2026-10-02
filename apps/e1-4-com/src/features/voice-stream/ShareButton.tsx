@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 
 import { createShareAction } from "@/app/actions/stream";
+import { haptic } from "@/lib/device/haptics";
 
 export function ShareButton({
   segmentId,
@@ -22,9 +23,11 @@ export function ShareButton({
   const copy = async (link: string) => {
     try {
       await navigator.clipboard.writeText(link);
+      haptic("saved");
       setCopied(true);
       setError("");
     } catch {
+      haptic("rejected");
       setError("Copy unavailable. Select the link below.");
     }
   };
@@ -37,9 +40,11 @@ export function ShareButton({
           includeAudio,
           includeTranscript,
         });
+        haptic("saved");
         setUrl(`${window.location.origin}/s/${token}`);
         setError("");
       } catch {
+        haptic("rejected");
         setError("Could not create a share link. Try again.");
       }
     });
@@ -63,6 +68,7 @@ export function ShareButton({
       <button
         type="button"
         onClick={() => {
+          haptic("stage");
           setOpen((v) => !v);
           setUrl(null);
           setCopied(false);
