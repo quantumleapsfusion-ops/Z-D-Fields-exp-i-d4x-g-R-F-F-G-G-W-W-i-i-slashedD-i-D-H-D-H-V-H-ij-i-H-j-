@@ -1,0 +1,20 @@
+{
+  "name": "@earth-one/da-vinci",
+  "version": "0.0.0",
+  "private": true,
+  "description": "e1-4 5D: the Da Vinci contract, e1-4's own intelligence. Types only; the gateway lives in apps/davinci.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "eslint-config-prettier": "^10.1.8",
+    "typescript": "^5"
+  }
+}
