@@ -54,7 +54,7 @@ describe("research", () => {
       expect(r.reference.url.startsWith("https://")).toBe(true);
       expect(r.focus.length).toBeGreaterThan(0);
     }
-    expect(research.map((r) => r.id)).toEqual(["quantum-mechanics", "quantum-computing"]);
+    expect(research.map((r) => r.id)).toEqual(["quantum-mechanics", "quantum-computing", "biology"]);
   });
 });
 
