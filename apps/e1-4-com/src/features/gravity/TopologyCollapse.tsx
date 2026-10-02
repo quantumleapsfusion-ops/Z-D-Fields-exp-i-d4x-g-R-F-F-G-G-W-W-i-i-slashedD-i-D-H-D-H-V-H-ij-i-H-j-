@@ -202,7 +202,7 @@ export default function TopologyCollapse({
         lastForm = formRef.current;
       }
       const duration = 2200;
-      let k = Math.min(1, (now - changedAt.current) / duration);
+      const k = Math.min(1, (now - changedAt.current) / duration);
 
       // Easing with anticipation and follow-through: slow start, fast middle, slow end
       const ease = k < 0.5
