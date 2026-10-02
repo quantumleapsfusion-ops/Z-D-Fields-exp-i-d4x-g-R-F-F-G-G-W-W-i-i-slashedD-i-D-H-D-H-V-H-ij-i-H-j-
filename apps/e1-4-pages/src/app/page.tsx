@@ -31,7 +31,7 @@ export default function Home() {
           <h1 className="font-display max-w-4xl text-[3.5rem] leading-[0.98] tracking-tight sm:text-[6rem] lg:text-[7rem]">
             Greetings Earthling.
           </h1>
-          <p className="text-ochre font-display mt-6 text-3xl sm:text-5xl">Think.</p>
+          <p className="text-ochre font-display mt-6 text-3xl sm:text-5xl">Become Legendary.</p>
           <p className="text-dust mt-7 max-w-2xl font-sans text-lg leading-relaxed sm:text-2xl">
             Four ways to speak. A world of ways to be heard.
           </p>

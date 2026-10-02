@@ -4,15 +4,15 @@ export const site = {
   url: "https://e1-4.com",
   org: "Earth 1 Coalescent",
   hero: "Greetings Earthling.",
-  motto: "Think.",
+  motto: "Become Legendary.",
   subhead: "one voice, five dimensions",
   tagline: "earth life-forms",
   /** What the name stands for, spelled out for search engines, link previews and screen readers. */
   expansion: "e1-4 stands for earth life-forms",
   pitch: "A social network with no typing. You speak; everything else follows.",
-  seoTitle: "earth life-forms. Think out loud with your voice",
+  seoTitle: "earth life-forms. Become Legendary out loud with your voice",
   /** The spoken introduction, played once per device on the first gesture at the front door. */
-  spokenIntro: ["e one four.", "Earth life-forms.", "Think."],
+  spokenIntro: ["e one four.", "Earth life-forms.", "Become Legendary."],
   keywords: [
     "earth life-forms",
     "earth life forms",
