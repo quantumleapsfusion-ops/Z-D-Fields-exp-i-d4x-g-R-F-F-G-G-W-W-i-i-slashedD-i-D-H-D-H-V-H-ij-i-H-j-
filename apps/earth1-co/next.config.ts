@@ -41,12 +41,6 @@ const nextConfig: NextConfig = {
         destination: "/learn/global-citizenship",
         permanent: true,
       },
-      // Redirect old /philanthropy to /about
-      {
-        source: "/philanthropy",
-        destination: "/about",
-        permanent: true,
-      },
       // Redirect old /founder to /about
       {
         source: "/founder",
