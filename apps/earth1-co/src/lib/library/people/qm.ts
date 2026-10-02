@@ -42,11 +42,13 @@ export const qmPeople: Person[] = [
     ],
     quotes: [
       {
+        verified: true,
         text: "Quantum mechanics is certainly imposing. But an inner voice tells me that it is not yet the real thing. The theory says a lot, but does not really bring us any closer to the secret of the 'old one'. I, at any rate, am convinced that He does not throw dice.",
         source: "Letter to Max Born, 4 December 1926, in The Born–Einstein Letters",
         caveat: "Translations of this letter vary slightly in wording.",
       },
       {
+        verified: true,
         text: "spukhafte Fernwirkung (spooky action at a distance)",
         source: "Letter to Max Born, 3 March 1947, in The Born–Einstein Letters",
         caveat:
@@ -145,6 +147,7 @@ export const qmPeople: Person[] = [
     ],
     quotes: [
       {
+        verified: true,
         text: "We have to remember that what we observe is not nature in itself but nature exposed to our method of questioning.",
         source: "Physics and Philosophy: The Revolution in Modern Science (1958)",
       },
@@ -229,6 +232,7 @@ export const qmPeople: Person[] = [
     ],
     quotes: [
       {
+        verified: true,
         text: "The underlying physical laws necessary for the mathematical theory of a large part of physics and the whole of chemistry are thus completely known, and the difficulty is only that the exact application of these laws leads to equations much too complicated to be soluble.",
         source:
           "'Quantum Mechanics of Many-Electron Systems', Proceedings of the Royal Society A 123 (1929)",
@@ -276,10 +280,12 @@ export const qmPeople: Person[] = [
     ],
     quotes: [
       {
+        verified: true,
         text: "I think I can safely say that nobody understands quantum mechanics.",
         source: "The Character of Physical Law (1965), chapter 6",
       },
       {
+        verified: true,
         text: "Nature isn't classical, dammit, and if you want to make a simulation of nature, you'd better make it quantum mechanical, and by golly it's a wonderful problem, because it doesn't look so easy.",
         source:
           "'Simulating Physics with Computers', International Journal of Theoretical Physics 21 (1982)",

@@ -44,6 +44,25 @@ jobs:
       - run: mypy davinci tests
       - run: pytest -q
 
+  engine:
+    name: E1-4 Engine (ruff, mypy, pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/engine/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy .
+      - run: pytest -q
+
   e2e:
     name: Playwright smoke (e1-4.com on a throwaway database and storage fake)
     runs-on: ubuntu-latest
@@ -84,6 +103,12 @@ jobs:
         working-directory: apps/e1-4-com
       - run: npx turbo run build --filter=e1-4-com
       - run: npm run test:e2e
+      - name: Deletion proof (nothing of a destroyed account remains in the database or storage)
+        working-directory: apps/e1-4-com
+        run: |
+          node e2e/helpers/fake-storage-server.mts &
+          sleep 1
+          npx vitest run --config live/vitest.config.ts live/delete-all.live.test.ts
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

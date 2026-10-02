@@ -4,6 +4,7 @@ export const site = {
   url: "https://earth1.co",
   org: "Earth 1 Coalescent",
   focus: "Global citizenship for all.",
+  motto: "Global Citizenship For All",
   description:
     "Earth 1 Coalescent is a home for global citizenship: every person on Earth is a citizen of it, owns their own voice and data, and speaks freely across borders.",
   keywords: [
@@ -36,6 +37,21 @@ export const site = {
       line: "The same laws hold on every shore.",
     },
     {
+      slug: "chemistry",
+      title: "Chemistry",
+      line: "Everything you can touch, rearranged.",
+    },
+    {
+      slug: "biology",
+      title: "Biology",
+      line: "One family tree, four billion years deep.",
+    },
+    {
+      slug: "biochemistry",
+      title: "Biochemistry",
+      line: "The chemistry that keeps every cell alive.",
+    },
+    {
       slug: "research",
       title: "Research",
       line: "Open questions, answered in the open, for everyone.",
@@ -51,6 +67,13 @@ export const site = {
       line: "Every person on Earth is a citizen of it.",
     },
   ],
+  /** The product site. e1-4 is short for "earth life-forms". */
+  e14: {
+    name: "e1-4",
+    tagline: "earth life-forms",
+    url: "https://e1-4.com",
+    line: "e1-4 stands for earth life-forms: a voice-only social network by Earth 1 Coalescent.",
+  },
   founder: {
     name: "Zachariah Robertson",
     role: "Founder & Chief Executive",
