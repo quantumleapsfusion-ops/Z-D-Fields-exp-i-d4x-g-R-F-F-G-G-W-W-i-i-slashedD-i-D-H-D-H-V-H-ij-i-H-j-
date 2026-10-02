@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { BlackHoleSimulator } from "@/components/BlackHoleSimulator";
+import { DiracEquation } from "@/components/DiracEquation";
 import { EnergyConverter } from "@/components/EnergyConverter";
 import { SpecialRelativityVisualizer } from "@/components/SpecialRelativityVisualizer";
 import { SpacetimeCurvatureVisualizer } from "@/components/SpacetimeCurvatureVisualizer";
@@ -90,6 +91,56 @@ export default function PhysicsPage() {
           coexist as a single coherent entity. This coherence—the ability for different
           parts of the superposition to interfere—is what enables quantum computing and
           quantum simulation.
+        </p>
+      </Prose>
+
+      <H2>The Dirac Equation: Spin and Antimatter</H2>
+
+      <DiracEquation />
+
+      <Prose>
+        <h3 className="mt-8">Unifying Quantum Mechanics and Relativity</h3>
+        <p>
+          Paul Dirac's 1928 equation was the first successful marriage of quantum
+          mechanics and special relativity. Unlike the Schrödinger equation, which treats
+          space and time asymmetrically, the Dirac equation treats them on equal footing,
+          respecting Einstein's relativistic symmetries. The equation governs the behavior
+          of spin-½ fermions like electrons.
+        </p>
+
+        <p>
+          The Dirac equation (iγ<sup>μ</sup>∂<sub>μ</sub> - m)ψ = 0 has a remarkable
+          property: its solutions include states with both positive and negative energy.
+          At first, Dirac interpreted negative energy as a mathematical curiosity. But in
+          1931, he realized that if a "sea" of negative-energy states is filled, a hole in
+          this sea would behave like a particle with positive energy and opposite charge:
+          the antiparticle. For electrons, this is the positron, the antimatter
+          counterpart.
+        </p>
+
+        <p>
+          The energy gap between positive (electron) and negative (positron) branches is
+          2mc², explaining why matter-antimatter pair creation requires high energies.
+          When an electron falls from positive to negative energy, it radiates this energy
+          as a photon—a process Dirac interpreted as the electron moving backward in time,
+          or equivalently, as the positron moving forward in time.
+        </p>
+
+        <h3 className="mt-8">Spin-½: An Intrinsic Property</h3>
+        <p>
+          The Dirac equation naturally predicts that electrons are spin-½ particles.
+          Unlike classical spinning objects, an electron's spin is an intrinsic quantum
+          property that has no classical analog. A spin-½ particle has only two spin
+          states: spin-up and spin-down, described by a two-component spinor wavefunction.
+        </p>
+
+        <p>
+          The Dirac equation's prediction of antimatter was spectacularly confirmed when
+          Carl Anderson discovered the positron in cosmic rays in 1932. This was the first
+          prediction of a new particle made purely from theoretical considerations,
+          marking a watershed moment: quantum field theory, where particles can be created
+          and annihilated, emerged as the framework for understanding nature at its most
+          fundamental level.
         </p>
       </Prose>
 
