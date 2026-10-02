@@ -23,6 +23,8 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@earth-one/da-vinci": "*",
+    "@earth-one/event-horizon": "*",
     "@earth-one/liquid-metal": "*",
     "@earth-one/spacetime": "*",
     "@earth-one/ui": "*",

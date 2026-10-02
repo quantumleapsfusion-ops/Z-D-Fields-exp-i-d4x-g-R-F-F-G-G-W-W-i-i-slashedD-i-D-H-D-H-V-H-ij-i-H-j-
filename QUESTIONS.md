@@ -96,3 +96,12 @@ They predate the zero-visible-text rule and show headings and paragraphs.
 - C. Remove them from navigation now and rebuild them under A as budget allows.
   **Default: C.** It is a small, reversible change that stops the rule being broken in production
   while the voice-only versions are built.
+
+## PR #103: 4D (Event Horizon) and 5D (Da Vinci) implementation
+
+The existing EventHorizon (4D) and DaVinciConversation (5D) components both have visible text (labels, instructions, conversation bubbles) which violates the zero-visible-text rule from the brief. Per Q3, the default is to remove text-heavy pages from navigation and rebuild voice-only later.
+
+- A. Keep current implementations with text, as documented exceptions.
+- B. Rebuild both as voice-only (icons, motion, sound, aria-labels), one PR each.
+- C. Remove /horizon and /davinci from navigation now (behind a default-off feature flag).
+  **Default: A** (shipping as-is) or **B** (rebuild voice-only). This PR ships A with the packages integrated. If you prefer B or C, let me know and I'll refactor.
