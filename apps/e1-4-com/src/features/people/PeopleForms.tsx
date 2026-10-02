@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 
 import { addContactByHandleAction, claimHandleAction } from "@/app/actions/people";
 import type { ActionState } from "@/app/actions/profile";
+import { haptic } from "@/lib/device/haptics";
 
 const input =
   "min-w-0 flex-1 rounded-full border border-chalk/20 bg-transparent px-4 py-2 font-sans text-chalk placeholder:text-dust/60 focus:border-ochre focus:outline-none";
@@ -22,7 +23,12 @@ function Status({ state }: { state: ActionState }) {
 export function HandleForm({ current }: { current: string | null }) {
   const [state, action, pending] = useActionState(claimHandleAction, null);
   return (
-    <form action={action}>
+    <form
+      action={action}
+      onSubmit={() => {
+        haptic("stage");
+      }}
+    >
       <div className="flex gap-2">
         <input
           name="handle"
@@ -47,7 +53,12 @@ export function HandleForm({ current }: { current: string | null }) {
 export function AddContactForm() {
   const [state, action, pending] = useActionState(addContactByHandleAction, null);
   return (
-    <form action={action}>
+    <form
+      action={action}
+      onSubmit={() => {
+        haptic("stage");
+      }}
+    >
       <div className="flex gap-2">
         <input
           name="handle"
@@ -75,12 +86,15 @@ export function ShareMyLink({ url }: { url: string }) {
   const share = async () => {
     try {
       if (navigator.share) {
+        haptic("stage");
         await navigator.share({ title: "Talk to me on e1-4", url });
         return;
       }
+      haptic("saved");
       await navigator.clipboard.writeText(url);
       setNote("Link copied");
     } catch {
+      haptic("rejected");
       setNote(null);
     }
   };
