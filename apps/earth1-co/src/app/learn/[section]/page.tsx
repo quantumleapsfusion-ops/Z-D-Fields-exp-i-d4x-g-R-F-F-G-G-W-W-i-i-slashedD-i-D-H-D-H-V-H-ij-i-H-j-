@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
-import { learn, type LearnSlug } from "@/lib/learn";
+import { learn } from "@/lib/learn";
 
 type Props = { params: Promise<{ section: string }> };
 
@@ -115,7 +115,7 @@ const content: Record<string, React.ReactNode> = {
         Quantum computers harness quantum phenomena to solve problems beyond the reach of classical computers. By exploiting superposition and entanglement, they can explore vast solution spaces simultaneously.
       </p>
       <p className="text-white/70 mb-4 leading-relaxed">
-        Applications in physics simulation, optimization, and cryptography promise to revolutionize how we solve humanity's greatest challenges.
+        Applications in physics simulation, optimization, and cryptography promise to revolutionize how we solve humanity&apos;s greatest challenges.
       </p>
       <h3 className="text-base sm:text-lg font-light tracking-[0.08em] mt-8 mb-4">Key Topics</h3>
       <ul className="text-white/70 space-y-2 ml-4">

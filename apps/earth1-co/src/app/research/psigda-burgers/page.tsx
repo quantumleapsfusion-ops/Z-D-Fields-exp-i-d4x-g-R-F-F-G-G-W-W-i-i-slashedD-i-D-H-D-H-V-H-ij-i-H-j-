@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Burgers' Equation | Research",
+  title: "Burgers&apos; Equation | Research",
   description:
-    "Physics-informed neural networks for Burgers' equation. Can we solve it more cheaply than the baseline?",
+    "Physics-informed neural networks for Burgers&apos; equation. Can we solve it more cheaply than the baseline?",
   alternates: { canonical: "/research/psigda-burgers" },
 };
 
@@ -24,7 +24,7 @@ export default function BurgersPage() {
         Physics-Informed Neural Networks
       </h1>
       <h2 className="mt-4 text-lg sm:text-xl font-light text-white/70">
-        Burgers' Equation
+        Burgers&apos; Equation
       </h2>
 
       <div className="mt-12 max-w-3xl space-y-12 text-left">
@@ -34,7 +34,7 @@ export default function BurgersPage() {
             Question
           </h3>
           <p className="mt-4 text-base leading-relaxed">
-            Can a physics-informed neural network solve Burgers' equation more
+            Can a physics-informed neural network solve Burgers&apos; equation more
             cheaply than the published baseline?
           </p>
         </section>
@@ -60,7 +60,7 @@ export default function BurgersPage() {
             Method
           </h3>
           <p className="mt-4 text-base leading-relaxed text-white/70">
-            We reproduce the DeepXDE Burgers' equation example using
+            We reproduce the DeepXDE Burgers&apos; equation example using
             physics-informed neural networks, measuring L2 relative error
             against the reference solution.
           </p>
@@ -76,7 +76,7 @@ export default function BurgersPage() {
               href="https://github.com/lululxvi/deepxde"
               className="text-white hover:text-white/70 transition-colors underline"
             >
-              DeepXDE Burgers' Equation Example
+              DeepXDE Burgers&apos; Equation Example
             </a>
             <span className="ml-2 text-white/50">(L2 relative error)</span>
           </p>
