@@ -26,6 +26,11 @@ export const site = {
   },
   pillars: [
     {
+      slug: "legends",
+      title: "Legends",
+      line: "Visionaries, scientists, and thinkers who shaped human understanding.",
+    },
+    {
       slug: "mathematics",
       title: "Mathematics",
       line: "The one language every nation already shares.",
