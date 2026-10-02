@@ -31,6 +31,16 @@ export function Footer() {
             </Link>
           </li>
           <li>
+            <Link href="/privacy" className="label hover:text-white">
+              Privacy
+            </Link>
+          </li>
+          <li>
+            <Link href="/terms" className="label hover:text-white">
+              Terms
+            </Link>
+          </li>
+          <li>
             <a href={`mailto:${site.founder.email}`} className="label hover:text-white">
               Contact
             </a>
