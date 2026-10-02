@@ -1,9 +1,11 @@
 "use client";
 
+import { AlgebraIllustration } from "@/components/AlgebraIllustration";
 import { CalculusIllustration } from "@/components/CalculusIllustration";
 import { DifferentialEquationsIllustration } from "@/components/DifferentialEquationsIllustration";
 import { DivisionIllustration } from "@/components/DivisionIllustration";
 import { EuclidElementsIllustration } from "@/components/EuclidElementsIllustration";
+import { EuclideanVsNonEuclideanIllustration } from "@/components/EuclideanVsNonEuclideanIllustration";
 import { FunctionsIllustration } from "@/components/FunctionsIllustration";
 import { IntegersIllustration } from "@/components/IntegersIllustration";
 import { ParametricCurvesIllustration } from "@/components/ParametricCurvesIllustration";
@@ -35,6 +37,49 @@ export default function PillarPage() {
 
       {page.slug === "mathematics" && (
         <div className="mt-16 w-full max-w-4xl space-y-16">
+          {/* Algebra */}
+          <section id="algebra" aria-labelledby="algebra-title">
+            <h2
+              id="algebra-title"
+              className="font-display text-lg tracking-[0.16em] uppercase sm:text-2xl"
+            >
+              Algebra
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed font-light text-white/70 sm:text-base">
+              The mathematics of symbols and unknowns. Rather than working only
+              with numbers, algebra uses letters to represent quantities we want
+              to find. We solve equations by applying the same operations to
+              both sides, preserving balance. This systematic approach to
+              problem-solving extends from simple equations to complex
+              structures that model everything from physics to engineering.
+            </p>
+            <div className="mt-8">
+              <AlgebraIllustration />
+            </div>
+          </section>
+
+          {/* Euclidean vs Non-Euclidean Geometry */}
+          <section id="euclidean-vs-noneuclidean" aria-labelledby="euclid-vs-title">
+            <h2
+              id="euclid-vs-title"
+              className="font-display text-lg tracking-[0.16em] uppercase sm:text-2xl"
+            >
+              Euclidean vs Non-Euclidean Geometry
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed font-light text-white/70 sm:text-base">
+              Euclidean geometry describes flat spaces where parallel lines never
+              meet and the angles in a triangle sum to 180°. But space itself can
+              curve. In hyperbolic geometry, space curves inward and parallel
+              lines diverge. On a sphere, space curves outward and parallel lines
+              converge. These non-Euclidean geometries are not abstract curiosities—they
+              are essential for understanding the curved spacetime of Einstein's
+              relativity and the topology of the universe itself.
+            </p>
+            <div className="mt-8">
+              <EuclideanVsNonEuclideanIllustration />
+            </div>
+          </section>
+
           {/* Calculus */}
           <section id="calculus" aria-labelledby="calculus-title">
             <h2
