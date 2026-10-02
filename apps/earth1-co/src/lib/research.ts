@@ -21,4 +21,15 @@ export const research = [
       url: "https://quantum.cloud.ibm.com/learning/en",
     },
   },
+  {
+    id: "chemistry",
+    title: "Chemistry",
+    question:
+      "How do atoms bond and rearrange to create the incredible diversity of matter we see?",
+    focus: ["Bonding", "Reactions", "Kinetics"],
+    reference: {
+      title: "Nature · Chemistry",
+      url: "https://www.nature.com/subjects/chemistry",
+    },
+  },
 ] as const;
