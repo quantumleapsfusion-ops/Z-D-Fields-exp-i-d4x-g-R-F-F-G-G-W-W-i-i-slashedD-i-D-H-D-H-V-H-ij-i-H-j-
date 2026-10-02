@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fixed placeholder secrets used only by unit tests"
+regexes = ['''test-secret-0123456789abcdef''']
