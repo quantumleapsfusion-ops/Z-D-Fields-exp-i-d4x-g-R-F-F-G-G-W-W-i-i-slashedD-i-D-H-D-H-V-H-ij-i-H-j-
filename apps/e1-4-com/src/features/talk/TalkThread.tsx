@@ -15,6 +15,7 @@ import { TalkField } from "@/features/talk/TalkField";
 import { formatDay, formatDuration, formatTime } from "@/features/voice-stream/format";
 import { useRecorder, type CapturedSpan } from "@/features/voice-stream/useRecorder";
 import { usePlayback, type Playlist } from "@/lib/audio/store";
+import { haptic } from "@/lib/device/haptics";
 import { DIMENSIONS, inTalk } from "@/lib/talk/dimensions";
 import { usePlaylist } from "@/lib/audio/usePlaylist";
 import type { MemberDTO, NoteDTO, ThreadDTO } from "@/lib/talk/conversations";
@@ -118,9 +119,11 @@ export function TalkThread({
         });
         if (!res.ok) throw new Error(String(res.status));
         const { note } = (await res.json()) as { note: NoteDTO };
+        haptic("saved");
         setNotes((prev) => mergeNotes(prev, [note]));
         setPending((prev) => prev.filter((p) => p.id !== item.id));
       } catch {
+        haptic("rejected");
         setPending((prev) =>
           prev.map((p) => (p.id === item.id ? { ...p, failed: true } : p)),
         );
@@ -147,6 +150,7 @@ export function TalkThread({
   const liveNow = mode === "live" && recorder.state !== "idle";
 
   const start = async (next: Mode) => {
+    haptic("start");
     const liveId = next === "live" ? crypto.randomUUID() : null;
     sessions.current = [
       ...sessions.current.slice(-20),
@@ -158,6 +162,7 @@ export function TalkThread({
   };
 
   const finish = () => {
+    haptic("stop");
     recorder.stop();
     if (mode === "live") void postLive(conversationId, null);
   };
