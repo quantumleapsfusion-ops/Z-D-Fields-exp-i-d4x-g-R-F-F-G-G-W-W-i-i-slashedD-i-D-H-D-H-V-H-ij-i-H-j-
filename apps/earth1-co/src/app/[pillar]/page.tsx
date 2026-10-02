@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { sectionBySlug } from "@earth-one/content";
 
 import { FieldPage } from "@/components/FieldPage";
+import { ProteinFolder } from "@/components/ProteinFolder";
 
 import { research } from "@/lib/research";
 import { site } from "@/lib/site";
@@ -83,6 +84,11 @@ export default async function PillarPage({ params }: Props) {
               </a>
             </section>
           ))}
+        </div>
+      ) : null}
+      {page.slug === "biochemistry" ? (
+        <div className="mt-16 w-full max-w-4xl">
+          <ProteinFolder />
         </div>
       ) : null}
     </>
