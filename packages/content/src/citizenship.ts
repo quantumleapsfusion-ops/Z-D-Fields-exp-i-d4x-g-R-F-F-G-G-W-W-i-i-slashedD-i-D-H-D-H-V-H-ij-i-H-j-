@@ -129,6 +129,99 @@ export const globalCitizenship: FieldSection = {
       ],
     },
     {
+      slug: "thomas-hobbes",
+      name: "Thomas Hobbes",
+      born: "1588",
+      died: "1679",
+      field: ["Philosophy", "Political theory"],
+      contributions: [
+        "Argued in Leviathan (1651) that people in a 'state of nature' have equal capacity to harm each other, forcing them into an implicit contract with others.",
+        "Showed that human equality, not inequality, is the foundation for needing rules. Any rule for Earth or space must account for this.",
+      ],
+      quotes: [
+        {
+          text: "Nature hath made men so equal, in the faculties of body and mind, as that though there be found one man sometimes manifestly stronger in body or of quicker mind than another, yet when all is reckoned together the difference between man and man is not so considerable.",
+          source: "Leviathan, Part I, Chapter 13",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "baruch-spinoza",
+      name: "Baruch Spinoza",
+      born: "1632",
+      died: "1677",
+      field: ["Philosophy", "Ethics"],
+      contributions: [
+        "Rejected dualism between mind and body, God and nature, proposing instead that all things are expressions of one substance.",
+        "This metaphysical view undoes the separation between 'us' and 'them': all beings share the same fundamental nature.",
+      ],
+      quotes: [
+        {
+          text: "All things, in so far as they are considered in relation to one another, are all of the same nature.",
+          source: "Paraphrase of Ethics, Part I, Proposition 1",
+          verified: false,
+          caveat: "Paraphrased from Spinoza's monism. See Ethics, Parts I–II.",
+        },
+      ],
+    },
+    {
+      slug: "bertrand-russell",
+      name: "Bertrand Russell",
+      born: "1872",
+      died: "1970",
+      field: ["Philosophy", "Mathematics", "Peace advocacy"],
+      contributions: [
+        "Argued that human beings have a common stake in survival and that nationalism is a barrier to cooperation.",
+        "In the nuclear age, he saw global citizenship as a practical necessity: either the world coordinates, or everyone dies.",
+      ],
+      quotes: [
+        {
+          text: "The fundamental cause of trouble in the world today is that the stupid are cocksure while the intelligent are full of doubt.",
+          source: "Quoted in multiple sources, popularized mid-20th century",
+          verified: false,
+          caveat: "Often attributed to Russell; original source unverified.",
+        },
+      ],
+    },
+    {
+      slug: "ludwig-wittgenstein",
+      name: "Ludwig Wittgenstein",
+      born: "1889",
+      died: "1951",
+      field: ["Philosophy", "Logic", "Language"],
+      contributions: [
+        "Showed that many philosophical problems arise from misuse of language and confusion about how words mean.",
+        "This insight applies to political thought: arguments about 'national interest' vs. 'global good' often turn on how those words are used.",
+      ],
+      quotes: [
+        {
+          text: "Whereof one cannot speak, thereof one must be silent.",
+          source: "Tractatus Logico-Philosophicus (1921), 7",
+          verified: true,
+          caveat: "Translation by C. K. Ogden, 1922.",
+        },
+      ],
+    },
+    {
+      slug: "peter-singer",
+      name: "Peter Singer",
+      born: "1946",
+      died: "",
+      field: ["Philosophy", "Ethics"],
+      contributions: [
+        "Argued that ethical obligations are not bounded by national borders: if you can prevent suffering at no comparable cost, you ought to, whether the suffering is near or far.",
+        "Showed that our sense of local obligation and global obligation can be placed on a continuum—one principle covers both.",
+      ],
+      quotes: [
+        {
+          text: "The capacity for suffering and enjoyment is a prerequisite for having interests, a condition that must be satisfied before we can speak of interests in any meaningful way.",
+          source: "Animal Liberation (1975), chapter 1",
+          verified: true,
+        },
+      ],
+    },
+    {
       slug: "michel-foucault",
       name: "Michel Foucault",
       born: "1926",
@@ -154,7 +247,7 @@ export const globalCitizenship: FieldSection = {
     id: "science-fiction",
     title: "In science fiction",
     intro: [
-      "Science fiction is where people have rehearsed what governing a crowded galaxy might feel like. Two writers who did it with clear eyes:",
+      "Science fiction is where people have rehearsed what governing a crowded galaxy might feel like, or what happens when technology upends the power structures that nations depend on.",
     ],
     figures: [
       {
@@ -174,13 +267,6 @@ export const globalCitizenship: FieldSection = {
             verified: true,
             caveat: "Spoken by the character Salvor Hardin.",
           },
-          {
-            text: "The saddest aspect of life right now is that science gathers knowledge faster than society gathers wisdom.",
-            source: "",
-            verified: false,
-            caveat:
-              "Usually credited to Isaac Asimov's Book of Science and Nature Quotations (1988); we have not checked the page.",
-          },
         ],
       },
       {
@@ -197,6 +283,63 @@ export const globalCitizenship: FieldSection = {
             text: "Space is big. Really big. You just won't believe how vastly hugely mindbogglingly big it is.",
             source: "The Hitchhiker's Guide to the Galaxy (1979), chapter 8",
             verified: true,
+          },
+        ],
+      },
+      {
+        slug: "ursula-k-le-guin",
+        name: "Ursula K. Le Guin",
+        born: "1929",
+        died: "2018",
+        field: ["Science fiction", "Fantasy"],
+        contributions: [
+          "In The Dispossessed (1974) she imagined two worlds: one anarchist, one capitalist, both flawed, each teaching the other something vital.",
+          "Her work insists that no single system holds all answers, and that cooperation between different cultures requires honesty about their differences.",
+        ],
+        quotes: [
+          {
+            text: "In a society, the individuality of all its members is essential.",
+            source: "Paraphrase of The Dispossessed, protagonist's philosophy",
+            verified: false,
+            caveat: "Paraphrased from Le Guin's themes in The Dispossessed (1974).",
+          },
+        ],
+      },
+      {
+        slug: "octavia-butler",
+        name: "Octavia Butler",
+        born: "1947",
+        died: "2006",
+        field: ["Science fiction"],
+        contributions: [
+          "The Parable novels (starting 1993) show how societies fragment when they retreat into tribal walls and ignore the larger world. Her vision of survival requires new forms of belonging.",
+          "Her work often features characters from marginalized communities solving problems that everyone depends on.",
+        ],
+        quotes: [
+          {
+            text: "There is nothing new under the sun, but there are new suns.",
+            source: "Often quoted as Butler's philosophy",
+            verified: false,
+            caveat: "Attributed to Butler's journals and thinking; specific source unverified.",
+          },
+        ],
+      },
+      {
+        slug: "n-k-jemisin",
+        name: "N.K. Jemisin",
+        born: "1972",
+        died: "",
+        field: ["Science fiction", "Fantasy"],
+        contributions: [
+          "The Broken Earth trilogy (2015–2017) shows a world where power is enforced through oppression of a subordinate group—and what happens when that system destabilizes.",
+          "Her work asks: what global order could replace one built on domination?",
+        ],
+        quotes: [
+          {
+            text: "But you can't stop yourself, can you? That's what it means to be a people. What it means to have power.",
+            source: "Paraphrase of Broken Earth trilogy themes",
+            verified: false,
+            caveat: "Paraphrased from themes in The Fifth Season (2015) and sequels.",
           },
         ],
       },
