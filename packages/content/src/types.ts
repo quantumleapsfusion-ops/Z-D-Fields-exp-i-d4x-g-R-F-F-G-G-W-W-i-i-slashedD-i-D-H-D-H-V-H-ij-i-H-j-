@@ -44,7 +44,7 @@ export type Topic = {
 };
 
 export type FieldSection = {
-  slug: FieldSlug | "global-citizenship";
+  slug: FieldSlug | "global-citizenship" | "philanthropy";
   title: string;
   /** One line under the title; also the meta description lead. */
   line: string;
