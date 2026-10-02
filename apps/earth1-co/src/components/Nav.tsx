@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { site } from "@/lib/site";
-
 const links = [
-  ...site.pillars.map((p) => ({ href: `/${p.slug}`, title: p.title })),
-  { href: "/founder", title: "Founder" },
+  { href: "/research", title: "Research" },
+  { href: "/papers", title: "Papers" },
+  { href: "/notebooks", title: "Notebooks" },
+  { href: "/lab-notes", title: "Lab Notes" },
+  { href: "/learn", title: "Learn" },
+  { href: "/about", title: "About" },
 ];
 
 export function Nav() {

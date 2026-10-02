@@ -2,10 +2,10 @@ export const site = {
   name: "earth1",
   domain: "earth1.co",
   url: "https://earth1.co",
-  org: "Earth 1 Coalescent",
-  focus: "Global citizenship for all.",
+  org: "Earth 1 Lab",
+  focus: "Using AI and quantum computing to solve the equations of physics.",
   description:
-    "Earth 1 Coalescent is a home for global citizenship: every person on Earth is a citizen of it, owns their own voice and data, and speaks freely across borders.",
+    "Earth 1 Lab is a research lab using AI and quantum computing to solve the equations of physics. Global citizenship for all.",
   keywords: [
     "global citizenship",
     "global citizen",
