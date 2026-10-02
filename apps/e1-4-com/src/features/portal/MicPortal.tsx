@@ -18,6 +18,7 @@ import { speak } from "@/features/codex/voice";
 import { useDaVinciTalk } from "@/features/davinci/useDaVinciTalk";
 import { PasskeyAdd, PasskeyLogin } from "@/features/portal/Passkey";
 import { decodeSound } from "@/features/sound/decode";
+import { endOfSpeech } from "@/features/voice-id/endpoint";
 import { sendVoice, type VoiceRefusal } from "@/features/voice-id/pcm";
 import { saveSpan } from "@/features/voice-stream/saveSpan";
 import { usePendingFlush } from "@/features/voice-stream/usePendingFlush";
@@ -56,11 +57,12 @@ export function MicPortal({ signedIn }: { signedIn: boolean }) {
  */
 function sayDigits(digits: string, onWord: () => void): Promise<void> {
   return new Promise((resolve) => {
-    speak(digits.split(""), { onLine: () => {}, onWord, onEnd: resolve });
+    speak([digits.split("").join(" ")], { onLine: () => {}, onWord, onEnd: resolve });
   });
 }
 
 const MAX_ANSWER_MS = 8000;
+const PROMPT_GAP_MS = 150;
 
 /**
  * The voice is the only key. Tap, listen: the phone says four digits out loud. Say them back.
@@ -83,6 +85,8 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
   const [pulse, setPulse] = useState(0);
   const challenge = useRef<string | null>(null);
   const answerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [heardDigits, setHeardDigits] = useState(false);
+  const finished = useRef<ReturnType<typeof endOfSpeech> | null>(null);
 
   const refuse = useCallback((reason: VoiceRefusal) => {
     haptic(reason === "voice" ? "rejected" : reason);
@@ -121,6 +125,15 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
   useVoiceBuzz(recording ? recorder.level : 0);
   const { stop, arm, record } = recorder;
 
+  // The answer ends by itself once the person stops talking, so nobody has to find Stop.
+  useEffect(() => {
+    if (!recording || !finished.current) return;
+    if (finished.current(recorder.level, performance.now())) {
+      haptic("stop");
+      stop();
+    }
+  }, [recording, recorder.level, stop]);
+
   useEffect(() => {
     if (!refusal) return;
     const timer = setTimeout(() => setRefusal(null), 1600);
@@ -140,11 +153,10 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
       window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
     }
     setRefusal(null);
+    const asked = fetch("/api/voice-id/challenge", { method: "POST" }).catch(() => null);
     if (!(await arm())) return refuse("setup");
 
-    const res = await fetch("/api/voice-id/challenge", { method: "POST" }).catch(
-      () => null,
-    );
+    const res = await asked;
     const body = res?.ok
       ? ((await res.json().catch(() => null)) as {
           challenge: { id: string; digits: string } | null;
@@ -153,14 +165,16 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
     if (!body) return refuse("setup");
 
     challenge.current = null;
+    setHeardDigits(Boolean(body.challenge));
     if (body.challenge) {
       if (!("speechSynthesis" in window)) return refuse("setup");
       challenge.current = body.challenge.id;
       setPhase("prompt");
       await sayDigits(body.challenge.digits, () => setPulse((n) => n + 1));
-      await new Promise((done) => setTimeout(done, 350));
+      await new Promise((done) => setTimeout(done, PROMPT_GAP_MS));
     }
     setPhase("idle");
+    finished.current = endOfSpeech();
     if (!(await record())) return;
     answerTimer.current = setTimeout(stop, MAX_ANSWER_MS);
   };
@@ -227,14 +241,16 @@ export function VoiceGate({ next = "/" }: { next?: string }) {
         <p role="status" className="sr-only">
           {recorder.error ??
             (recording
-              ? "Listening. Say the four digits you heard."
+              ? heardDigits
+                ? "Listening. Say the four digits you heard."
+                : "Listening"
               : phase === "prompt"
                 ? "Listen to four digits"
                 : phase === "checking"
                   ? "Recognising your voice"
                   : refusal
                     ? "Not recognised. Tap and speak again."
-                    : "Tap, listen, then say the digits back to enter")}
+                    : "Tap and speak to enter")}
         </p>
       </Centre>
     </Frame>
