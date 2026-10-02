@@ -9,11 +9,13 @@ export type {
 export { citableQuotes, lifespan } from "./quotes";
 export { globalCitizenship } from "./citizenship";
 export { biochemistry } from "./biochemistry";
-export { biology, chemistry, mathematics, physics } from "./sciences";
+export { mathematics } from "./mathematics";
+export { biology, chemistry, physics } from "./sciences";
 
 import { globalCitizenship } from "./citizenship";
 import { biochemistry } from "./biochemistry";
-import { biology, chemistry, mathematics, physics } from "./sciences";
+import { mathematics } from "./mathematics";
+import { biology, chemistry, physics } from "./sciences";
 import type { FieldSection } from "./types";
 
 /** Every content-backed section, keyed by its URL slug. */
