@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LiveControls } from "@/features/live/LiveControls";
 import { useLiveTranscription } from "@/features/live/useLiveTranscription";
 import type { DrawOp, DrawResponse } from "@/lib/davinci/ops";
+import { haptic } from "@/lib/device/haptics";
 
 import { AnimatedTranscript } from "./AnimatedTranscript";
 
@@ -91,6 +92,7 @@ export function DaVinciApp({
   }, [live.phrases, drawing, requestDrawing]);
 
   async function translate(lang: string) {
+    haptic("start");
     setTranslateError(null);
     const text = live.phrases.map((p) => p.text).join("\n");
     if (!text) return;
@@ -100,11 +102,17 @@ export function DaVinciApp({
       body: JSON.stringify({ text: text.slice(-8000), target: lang }),
     });
     const data = (await res.json()) as { text?: string };
-    if (!res.ok || !data.text) setTranslateError("Translation unavailable.");
-    else setTranslation({ lang, text: data.text });
+    if (!res.ok || !data.text) {
+      haptic("rejected");
+      setTranslateError("Translation unavailable.");
+    } else {
+      haptic("accepted");
+      setTranslation({ lang, text: data.text });
+    }
   }
 
   function clearAll() {
+    haptic("rejected");
     live.reset();
     drawnUpTo.current = 0;
     setOps([]);
