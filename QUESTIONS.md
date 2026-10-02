@@ -54,6 +54,45 @@ so the e2e job no longer needs the four repository secrets and runs on this PR a
 applied by you (`DEPLOYMENT.md` §5); nothing here runs them. Confirm after merging by opening
 `/api/health` on production.
 
+### Q7. Device binding: one account per device, second auth on new phone
+
+From Z's brief: "new device = voice only (strong anti-spoofing)". Signed-in on device A, moving to
+device B requires re-authorization via voice (no password, no WebAuthn passkey on device B until
+voice is verified).
+
+- A. Implement in #62 or immediately after: bind account to device fingerprint (UA, IP hash,
+  display specs, or browser storage); sign-in on new device requires fresh voice liveness check.
+- B. Defer to a later PR; for now, multi-device sign-in works after any successful voice sign-in.
+  **Default (Z, 2026-10-01 18:35): Implement for production; may be post-#62 if time-constrained.**
+
+### Q8. Voice authentication: choose between self-hosted (SpeechBrain) and third-party SaaS
+
+Z's brief: "no third-party AI SDKs in e1-4 product code" (OpenAI, Anthropic, Gemini). Voiceprints
+require strong anti-spoofing.
+
+- A. Evaluate and integrate SpeechBrain ECAPA-TDNN (speaker verification) + AASIST (anti-spoofing).
+  Self-hosted, no vendor API calls, no licensing cost. Requires model files and library setup.
+- B. Use das-Peak (Veridas) or IDVoice (ID R&D) managed service (documented in `docs/VOICE_AUTH.md`).
+  Vendor handles FAR/FRR validation; requires credentials and vendor integration.
+- C. Keep the in-house voiceprint as-is; anti-spoofing is out of scope.
+  **Default (Z, 2026-10-02): A, evaluate SpeechBrain + AASIST. Liveness (current challenge-response)
+  is the interim anti-spoofing; voiceprint matching + blending to be reviewed after launch.**
+
+### Q9. Voiceprint consent: UK GDPR special category, Illinois BIPA
+
+Voiceprints are special-category personal data under UK GDPR (biometric). Illinois BIPA requires
+explicit notice and opt-in before collection. Deletion on account removal, 3-year auto-expiry if
+unused.
+
+- A. Add pre-enrollment consent screen: "Your voice will be encrypted and stored. It cannot be
+  used to identify you in public. It will be deleted if you remove your account or don't use e1-4
+  for 3 years." Gate enrollment until consent is given. Detect IL users and block or show BIPA notice.
+- B. Add privacy/terms pages (already required per Z's brief) and link them at sign-in; no separate
+  consent screen.
+- C. Consent is implicit in account creation; no explicit flow.
+  **Default (Z, 2026-10-01 18:35, Build Spec): A. Pre-enrollment consent screen. Block under-13s.
+  Implement BIPA notice for IL users or exclude Illinois (compliance decision pending legal review).**
+
 ## PR #66: E1-4 Engine hosting
 
 `services/engine` builds and tests, and has a Dockerfile, but nothing deploys it.

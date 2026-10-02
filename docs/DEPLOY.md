@@ -51,7 +51,29 @@ npm run prisma:deploy
 The SQL files in `supabase/migrations/` are retained. Create Storage buckets in the dashboard;
 do not apply legacy Auth-trigger setup for voice identity.
 
-## 5. Smoke check after the first deploy
+## 5. Voice authentication setup
+
+Voice sign-in uses liveness (challenge-response with random digits) and voiceprints (spectral
+comparison stored server-side). After merging PR #62 and running migrations:
+
+- **Device binding** (Q7 in QUESTIONS.md): One account per device. Signing in on a new device
+  requires re-authorization via voice. This prevents cross-device account takeover if a session
+  token leaks. Implement by binding session tokens to a device fingerprint (UA, stored cookie, or
+  display specs) and requiring fresh voice liveness on new devices.
+- **Voiceprint consent** (Q9 in QUESTIONS.md): Voiceprints are special-category personal data under
+  UK GDPR and subject to Illinois BIPA (biometric consent). Before enrollment, show a consent
+  screen: "Your voice will be encrypted and stored. It cannot be used to identify you in public. It
+  will be deleted if you remove your account or don't use e1-4 for 3 years." Block users under 13.
+  Implement BIPA notice for IL users or exclude Illinois (pending legal review).
+- **Anti-spoofing** (Q8 in QUESTIONS.md): Evaluate and integrate SpeechBrain ECAPA-TDNN + AASIST.
+  Until integrated, liveness (current challenge-response) serves as interim anti-spoofing against
+  replayed recordings.
+
+Set `VOICE_LIVENESS=required` in production to enforce liveness. Without it, sign-in works but
+liveness is logged and skipped. Check `/api/health` to verify voiceprint and passkey RLS are
+enabled on the database.
+
+## 6. Smoke check after the first deploy
 
 ```bash
 E2E_BASE_URL=https://e1-4.com npm run test:e2e
