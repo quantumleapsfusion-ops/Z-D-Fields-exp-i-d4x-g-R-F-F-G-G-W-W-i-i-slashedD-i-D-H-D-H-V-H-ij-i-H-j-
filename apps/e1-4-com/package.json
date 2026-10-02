@@ -26,6 +26,8 @@
     "@earth-one/liquid-metal": "*",
     "@earth-one/spacetime": "*",
     "@earth-one/ui": "*",
+    "@earth-one/chalkboard": "*",
+    "@earth-one/gravity-board": "*",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@supabase/supabase-js": "^2.117.1",
