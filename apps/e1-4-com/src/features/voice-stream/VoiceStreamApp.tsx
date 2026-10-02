@@ -6,6 +6,7 @@ import { CodexReplay } from "@/features/codex/CodexReplay";
 import { deleteSegmentAction, deleteStreamAction } from "@/app/actions/stream";
 import type { Playlist } from "@/lib/audio/store";
 import { usePlaylist } from "@/lib/audio/usePlaylist";
+import { haptic } from "@/lib/device/haptics";
 import type { SegmentDTO } from "@/lib/voice/stream";
 
 import { formatDuration } from "./format";
@@ -107,7 +108,14 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
       ) : null}
 
       {failedUploads ? (
-        <button type="button" onClick={retryFailed} className="text-ochre mt-4 text-sm">
+        <button
+          type="button"
+          onClick={() => {
+            haptic("stage");
+            retryFailed();
+          }}
+          className="text-ochre mt-4 text-sm"
+        >
           Retry failed uploads
         </button>
       ) : null}
@@ -131,7 +139,10 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
                 <ShareButton segmentId={segment.id} label="Share" />
                 <button
                   type="button"
-                  onClick={() => removeSegment(segment.id)}
+                  onClick={() => {
+                    haptic("rejected");
+                    removeSegment(segment.id);
+                  }}
                   className="text-dust hover:text-ochre text-sm transition-colors"
                 >
                   Delete
@@ -147,7 +158,10 @@ export function VoiceStreamApp({ initialSegments }: { initialSegments: SegmentDT
           <ShareButton segmentId={null} label="Share whole stream" />
           <button
             type="button"
-            onClick={removeAll}
+            onClick={() => {
+              haptic("rejected");
+              removeAll();
+            }}
             className="text-dust hover:text-ochre text-sm"
           >
             Delete entire stream
@@ -245,10 +259,21 @@ function RoundButton({
   primary?: boolean;
   disabled?: boolean;
 }) {
+  const handleClick = () => {
+    if (label === "Pause") {
+      haptic("pause");
+    } else if (label === "Stop") {
+      haptic("stop");
+    } else {
+      haptic("start");
+    }
+    onClick();
+  };
+
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       disabled={disabled}
       className={`h-12 min-w-28 rounded-full px-6 font-sans text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
         primary
