@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { equations } from "./equations";
 import { people, peopleIn, personBySlug } from "./people";
-import { quantumComputing, quantumMechanics, sectionList } from "./sections";
+import { physics, quantumComputing, quantumMechanics, sectionList } from "./sections";
 
 const equationIds = new Set(equations.map((e) => e.id));
-const sections = [quantumMechanics, quantumComputing];
+const sections = [quantumMechanics, quantumComputing, physics];
 
 describe("people", () => {
   it("has unique slugs and a lookup that covers everyone", () => {

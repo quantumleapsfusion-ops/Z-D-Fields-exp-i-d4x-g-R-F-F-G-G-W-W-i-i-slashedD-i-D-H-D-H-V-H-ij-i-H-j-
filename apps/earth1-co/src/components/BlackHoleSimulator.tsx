@@ -21,7 +21,7 @@ const CANVAS_HEIGHT = 800;
 const BH_MASS = 10; // in solar masses for visualization
 const G = 1; // Normalized gravitational constant
 const C = 1; // Speed of light (normalized)
-const SCHWARZSCHILD_RADIUS = 2 * G * BH_MASS / (C * C);
+const SCHWARZSCHILD_RADIUS = (2 * G * BH_MASS) / (C * C);
 
 /**
  * Black Hole Simulator with gravitational lensing, accretion disk, and time dilation.
@@ -155,7 +155,7 @@ export function BlackHoleSimulator() {
       // Accretion disk
       accretes.forEach((p, i) => {
         // Keplerian orbital motion
-        const v_orbital = Math.sqrt(G * BH_MASS / p.r);
+        const v_orbital = Math.sqrt((G * BH_MASS) / p.r);
         const angular_momentum = p.r * v_orbital;
         p.theta += (angular_momentum / (p.r * p.r)) * 0.005 * animSpeed * timeScale;
 
@@ -199,7 +199,14 @@ export function BlackHoleSimulator() {
       ctx.globalAlpha = 1;
 
       // Event horizon glow
-      const gradient = ctx.createRadialGradient(cx, cy, horizonRadius * 0.8, cx, cy, horizonRadius * 1.2);
+      const gradient = ctx.createRadialGradient(
+        cx,
+        cy,
+        horizonRadius * 0.8,
+        cx,
+        cy,
+        horizonRadius * 1.2,
+      );
       gradient.addColorStop(0, "rgba(255, 100, 0, 0.3)");
       gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = gradient;
@@ -208,7 +215,11 @@ export function BlackHoleSimulator() {
       ctx.fill();
 
       // Time dilation info display
-      const timedilationFactor = 1 / Math.sqrt(Math.max(0.1, 1 - 2 * SCHWARZSCHILD_RADIUS / (SCHWARZSCHILD_RADIUS * 10)));
+      const timedilationFactor =
+        1 /
+        Math.sqrt(
+          Math.max(0.1, 1 - (2 * SCHWARZSCHILD_RADIUS) / (SCHWARZSCHILD_RADIUS * 10)),
+        );
       const timeString = timedilationFactor.toFixed(1);
       ctx.fillStyle = "#0f0";
       ctx.font = "12px monospace";
@@ -235,18 +246,14 @@ export function BlackHoleSimulator() {
           style={{ aspectRatio: "640 / 480" }}
         />
         <figcaption className="sr-only">
-          Interactive black hole simulator showing Schwarzschild geometry, gravitational lensing,
-          accretion disk, and time dilation effects.
+          Interactive black hole simulator showing Schwarzschild geometry, gravitational
+          lensing, accretion disk, and time dilation effects.
         </figcaption>
       </figure>
 
       <div className="space-y-3 rounded-lg border border-white/20 p-4">
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="toggle"
-            onClick={() => setPaused(!paused)}
-          >
+          <button type="button" className="toggle" onClick={() => setPaused(!paused)}>
             {paused ? "Resume" : "Pause"}
           </button>
           <button
@@ -282,12 +289,13 @@ export function BlackHoleSimulator() {
         </div>
 
         <p className="source text-sm leading-relaxed">
-          This simulator shows a Schwarzschild black hole with mass ~10 M☉. The black disk is the
-          event horizon; within it, not even light escapes. The orange circle shows the photon
-          sphere where light orbits unstably. The red-yellow accretion disk glows as matter spirals
-          inward, converting gravitational potential energy to heat. Notice how starlight bends
-          around the black hole—this is gravitational lensing. The green text shows time dilation:
-          near the photon sphere, time runs much slower than far away.
+          This simulator shows a Schwarzschild black hole with mass ~10 M☉. The black disk
+          is the event horizon; within it, not even light escapes. The orange circle shows
+          the photon sphere where light orbits unstably. The red-yellow accretion disk
+          glows as matter spirals inward, converting gravitational potential energy to
+          heat. Notice how starlight bends around the black hole—this is gravitational
+          lensing. The green text shows time dilation: near the photon sphere, time runs
+          much slower than far away.
         </p>
       </div>
     </div>
