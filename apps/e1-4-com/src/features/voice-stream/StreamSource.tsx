@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { haptic } from "@/lib/device/haptics";
 import type { StreamTranscript } from "@/features/voice-stream/useStreamTranscript";
 
 export function StreamSource({ stream }: { stream: StreamTranscript }) {
@@ -15,7 +16,10 @@ export function StreamSource({ stream }: { stream: StreamTranscript }) {
       <button
         type="button"
         disabled={stream.loading}
-        onClick={() => void stream.refresh()}
+        onClick={() => {
+          haptic("seek");
+          void stream.refresh();
+        }}
         className="hover:text-chalk underline underline-offset-4 disabled:opacity-50"
       >
         Refresh
