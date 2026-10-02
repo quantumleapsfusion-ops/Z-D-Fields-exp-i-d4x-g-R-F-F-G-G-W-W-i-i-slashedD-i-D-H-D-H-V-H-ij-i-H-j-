@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
+import { runFlat } from "./flat";
 import { Fluid } from "./fluid";
 
 /**
@@ -94,11 +95,28 @@ export function LiquidMetal({
     const rows = portrait ? Math.max(colsProp, rowsProp) : Math.min(colsProp, rowsProp);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    } catch {
+      // No WebGL here (blocked, unsupported or out of contexts): draw the same liquid in 2D.
+      return runFlat(el, live, cols, rows, pitch, DEFAULT_PITCH / pitch);
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(el.clientWidth, el.clientHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     el.appendChild(renderer.domElement);
+    let stopFlat: (() => void) | null = null;
+    const onLost = (event: Event) => {
+      // The GPU dropped the context (common on phones under load): carry on in 2D.
+      event.preventDefault();
+      if (stopFlat) return;
+      running = false;
+      cancelAnimationFrame(frame);
+      renderer.domElement.style.display = "none";
+      stopFlat = runFlat(el, live, cols, rows, pitch, DEFAULT_PITCH / pitch);
+    };
+    renderer.domElement.addEventListener("webglcontextlost", onLost);
 
     const scene = new THREE.Scene();
     const pmrem = new THREE.PMREMGenerator(renderer);
@@ -288,6 +306,7 @@ export function LiquidMetal({
     };
 
     const sync = () => {
+      if (stopFlat) return;
       const should = visible && !document.hidden && !reduced.matches;
       if (should && !running) {
         running = true;
@@ -360,6 +379,8 @@ export function LiquidMetal({
 
     return () => {
       cancelAnimationFrame(frame);
+      stopFlat?.();
+      renderer.domElement.removeEventListener("webglcontextlost", onLost);
       stopTilt?.();
       io.disconnect();
       ro.disconnect();

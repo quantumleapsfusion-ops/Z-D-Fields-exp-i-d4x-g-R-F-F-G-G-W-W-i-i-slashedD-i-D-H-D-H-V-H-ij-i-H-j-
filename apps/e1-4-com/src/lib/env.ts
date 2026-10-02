@@ -54,14 +54,19 @@ export const publicEnv = {
   },
 };
 
-/** Server only. Never import from a client component. */
+/**
+ * Server only. Never import from a client component. Each value is checked when it is read, so
+ * code that needs only the database does not demand the Supabase key (the local storage
+ * provider runs with none).
+ */
 export function serverEnv() {
   return {
-    supabaseServiceRoleKey: required(
-      "SUPABASE_SERVICE_ROLE_KEY",
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-    ),
-    databaseUrl: required("DATABASE_URL", process.env.DATABASE_URL),
+    get supabaseServiceRoleKey(): string {
+      return required("SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY);
+    },
+    get databaseUrl(): string {
+      return required("DATABASE_URL", process.env.DATABASE_URL);
+    },
   };
 }
 
@@ -70,6 +75,15 @@ export function serverEnv() {
  * capability instead of crashing the process.
  */
 export const env = {
+  /**
+   * Where uploaded audio and avatars live. `supabase` (the default) needs the Supabase variables
+   * above; `local` keeps them as files under `LOCAL_STORAGE_DIR` for working offline.
+   */
+  storage: {
+    provider: (read("STORAGE_PROVIDER") ?? "supabase") as "supabase" | "local",
+    localDir: read("LOCAL_STORAGE_DIR") ?? ".e14-storage",
+  },
+
   /** Self-hosted Da Vinci gateway. When both are set it is preferred over every third-party key. */
   davinci: {
     url: read("DAVINCI_URL"),

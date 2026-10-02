@@ -1,0 +1,22 @@
+{
+  "name": "@earth-one/content",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Typed content for earth1.co sections: people, contributions and sourced quotes.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "eslint-config-prettier": "^10.1.8",
+    "typescript": "^5",
+    "vitest": "^4.1.11"
+  }
+}

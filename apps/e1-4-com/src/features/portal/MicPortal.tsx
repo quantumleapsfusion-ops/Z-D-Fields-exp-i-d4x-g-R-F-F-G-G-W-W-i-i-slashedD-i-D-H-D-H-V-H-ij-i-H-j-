@@ -4,7 +4,14 @@ import { Logo } from "@earth-one/ui";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import type { PinPhase } from "@/features/codex/PinField";
 import { speak } from "@/features/codex/voice";
@@ -22,6 +29,7 @@ import { requestTilt } from "@/lib/device/tilt";
 
 const PinField = dynamic(() => import("@/features/codex/PinField"), { ssr: false });
 
+const subscribeNever = () => () => {};
 const BUZZ_LEVEL = 0.35;
 const BUZZ_GAP_MS = 220;
 
@@ -429,7 +437,7 @@ function Centre({ docked, children }: { docked?: boolean; children: ReactNode })
   return (
     <div
       className={`z-10 flex flex-col items-center gap-6 transition-all duration-700 ${
-        docked ? "absolute bottom-[max(2.5rem,env(safe-area-inset-bottom))]" : ""
+        docked ? "absolute bottom-[max(2.5rem,env(safe-area-inset-bottom))]" : "relative"
       }`}
     >
       {children}
@@ -454,11 +462,18 @@ function MicButton({
   disabled?: boolean;
 }) {
   const glow = speaking === undefined ? level : 0.35 + (speaking % 2) * 0.35;
+  // The server renders the button disabled and it wakes once React has taken the page over, so a
+  // tap that lands before hydration is refused rather than silently lost.
+  const ready = useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || !ready}
       aria-label={label}
       className={`relative rounded-full transition-all duration-700 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
         small ? "h-24 w-24" : "h-64 w-48 sm:h-80 sm:w-60"
