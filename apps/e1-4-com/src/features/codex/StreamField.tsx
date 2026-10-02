@@ -10,6 +10,7 @@ import type { Form } from "@/lib/gravity/superposition";
 import type { SoundPrint } from "@/lib/sound/analyse";
 import { commentOn } from "@/lib/sound/commentary";
 import { readSound } from "@/lib/sound/reading";
+import { haptic } from "@/lib/device/haptics";
 
 import type { PinPhase } from "./PinField";
 import { speak } from "./voice";
@@ -34,6 +35,7 @@ export function StreamField({ entries }: { entries: StreamEntry[] }) {
 
   const open = async (entry: StreamEntry) => {
     stop.current();
+    haptic("stage");
     setActive(entry.id);
     setPhase("listen");
     let cancelled = false;
@@ -65,7 +67,9 @@ export function StreamField({ entries }: { entries: StreamEntry[] }) {
         cancelVoice = speak(commentOn(measured), {
           onLine: () => {},
           onWord: () => setPulse((p) => p + 1),
-          onEnd: () => {},
+          onEnd: () => {
+            haptic("saved");
+          },
         });
       };
       await audio.play().catch(() => audio.onended?.(new Event("ended")));
