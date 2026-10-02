@@ -9,6 +9,7 @@ import { useLiveTranscription } from "@/features/live/useLiveTranscription";
 import { StreamSource } from "@/features/voice-stream/StreamSource";
 import { useStreamTranscript } from "@/features/voice-stream/useStreamTranscript";
 import { EVENT_HORIZON, density } from "@/lib/gravity/superposition";
+import { haptic } from "@/lib/device/haptics";
 
 const TopologyCollapse = dynamic(() => import("@/features/gravity/TopologyCollapse"), {
   ssr: false,
@@ -28,6 +29,7 @@ export function EventHorizon() {
 
   function cross() {
     if (!text) return;
+    haptic("accepted");
     setManuallyCrossed(true);
   }
 
@@ -83,7 +85,10 @@ export function EventHorizon() {
           ) : (
             <button
               type="button"
-              onClick={() => router.push(`/superposition${window.location.search}`)}
+              onClick={() => {
+                haptic("play");
+                router.push(`/superposition${window.location.search}`);
+              }}
               className="bg-chalk text-blackboard self-start rounded-full px-5 py-2 font-sans text-sm"
             >
               Cross into superposition (5D)
