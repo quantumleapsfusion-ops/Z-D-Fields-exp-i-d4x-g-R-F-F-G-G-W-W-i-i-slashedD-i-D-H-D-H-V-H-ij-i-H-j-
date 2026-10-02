@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { LiquidMetal, type ShapeFn, type TintFn } from "@earth-one/liquid-metal";
 
 import {
@@ -17,6 +17,9 @@ import { BANDS, FRAMES, type SoundPrint, WAVE_POINTS } from "@/lib/sound/analyse
 const LONG = 240;
 const SHORT = 146;
 const PITCH = 0.03;
+/** Share of the full grid a phone starts with; it drops further if frames still run long. */
+const PHONE_DENSITY = 0.62;
+const MIN_DENSITY = 0.4;
 /** Half the height of the bead-drawn logo, in world units. */
 const LOGO_HALF_H = 0.95;
 /** How high the logo stands out of the pool. */
@@ -27,10 +30,12 @@ const LOGO_INK = 0.14;
 /**
  * `rest` is Saturn turning slowly in the pool, `listen` is the live level, `line` raises the
  * waveform as one ridge, `board` inks the spectrogram low across the metal, `relief` lifts it
- * into hills by loudness, `well` sinks it into a black hole behind a rim, `form` shows a shape.
+ * into hills by loudness, `well` sinks it into a black hole behind a rim, `form` shows a shape,
+ * `play` sweeps a ridge across the pool in time with a recording and leaves its sound behind.
  * All of these are only targets: the liquid (`@earth-one/liquid-metal`) flows toward them.
  */
-export type PinPhase = "rest" | "listen" | "line" | "board" | "relief" | "well" | "form";
+export type PinPhase =
+  "rest" | "listen" | "line" | "board" | "relief" | "well" | "form" | "play";
 
 function formHeight(form: Form, u: number, v: number): number {
   const r = Math.hypot(u, v);
@@ -96,6 +101,43 @@ function reliefHeight(print: SoundPrint, u: number, v: number): number {
   return print.spectrogram[frame][band] ** 2 * (0.35 + print.loudness[frame] * 0.65);
 }
 
+/**
+ * A recording playing back: a ridge at the playhead lifts that moment's spectrum out of the metal
+ * and the sound already heard stays behind it as low relief.
+ */
+function playHeight(print: SoundPrint, at: number, u: number, v: number): number {
+  const frame = Math.min(FRAMES - 1, Math.floor(at * FRAMES));
+  const band = Math.min(BANDS - 1, Math.floor(v * BANDS));
+  const d = u - at;
+  const ridge =
+    Math.exp(-(d * d) / 0.0018) *
+    print.spectrogram[frame][band] ** 1.5 *
+    (0.35 + print.loudness[frame] * 0.85);
+  const heard = u <= at ? reliefHeight(print, u, v) * 0.4 : 0;
+  return heard + ridge * 1.1;
+}
+
+/** Reads the playhead once per animation frame, however many beads ask for it. */
+function perFrame(progress: (() => number) | undefined): (now: number) => number {
+  let frameAt = NaN;
+  let at = 0;
+  return (now) => {
+    if (now !== frameAt) {
+      frameAt = now;
+      at = Math.max(0, Math.min(1, progress?.() ?? 0));
+    }
+    return at;
+  };
+}
+
+/** Bead density for this device: phones and small screens start lighter so they hold 60 fps. */
+function startingDensity(): number {
+  if (typeof window === "undefined") return 1;
+  const small = Math.min(window.innerWidth, window.innerHeight) < 600;
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  return small || coarse ? PHONE_DENSITY : 1;
+}
+
 /** Slow swell that travels across the pool so it never sits still, whatever the phase. */
 function tide(x: number, y: number, now: number): number {
   return (
@@ -123,6 +165,8 @@ export default function PinField({
   form = "sphere",
   pulse = 0,
   logo = false,
+  progress,
+  levelSource,
 }: {
   phase: PinPhase;
   level?: number;
@@ -132,7 +176,16 @@ export default function PinField({
   pulse?: number;
   /** The metal itself draws the e1-4 Ψπ mark at the centre, and it stirs when spoken to. */
   logo?: boolean;
+  /** 0..1 through the recording being played, read every frame in the `play` phase. */
+  progress?: () => number;
+  /** Live level read every frame instead of `level`, e.g. from a playing recording. */
+  levelSource?: () => number;
 }) {
+  const [density, setDensity] = useState(startingDensity);
+  const thin = useCallback(
+    () => setDensity((d) => (d > MIN_DENSITY ? Math.max(MIN_DENSITY, d * 0.75) : d)),
+    [],
+  );
   const [mask, setMask] = useState<LogoMask | null>(null);
   useEffect(() => {
     if (!logo) return;
@@ -149,8 +202,9 @@ export default function PinField({
   const drawn = logo && mask && (phase === "rest" || phase === "listen") ? mask : null;
   const aspect = drawn ? logoAspect(drawn) : 1;
   const voice = phase === "listen" ? Math.min(1, level * 1.8) : 0;
-  const shape = useMemo<ShapeFn>(
-    () => (x, y, now, u, v) => {
+  const shape = useMemo<ShapeFn>(() => {
+    const playhead = perFrame(progress);
+    return (x, y, now, u, v) => {
       const r = Math.hypot(x, y);
       const a = Math.atan2(y, x);
       const base = tide(x, y, now);
@@ -177,10 +231,11 @@ export default function PinField({
           return wellHeight(r, a, now);
         case "form":
           return base + formHeight(form, x / 2.2, y / 2.2) * 0.9;
+        case "play":
+          return print ? base + playHeight(print, playhead(now), u, v) : base;
       }
-    },
-    [phase, print, form, drawn, aspect, voice],
-  );
+    };
+  }, [phase, print, form, drawn, aspect, voice, progress]);
   const tint = useMemo<TintFn | undefined>(
     () =>
       drawn
@@ -201,9 +256,11 @@ export default function PinField({
       tint={tint}
       pulse={pulse}
       level={phase === "listen" ? level : 0}
-      cols={LONG}
-      rows={SHORT}
-      pitch={PITCH}
+      levelSource={levelSource}
+      onSlow={thin}
+      cols={Math.round(LONG * density)}
+      rows={Math.round(SHORT * density)}
+      pitch={PITCH / density}
       autoOrient
       cover
       tilt={watchTilt}

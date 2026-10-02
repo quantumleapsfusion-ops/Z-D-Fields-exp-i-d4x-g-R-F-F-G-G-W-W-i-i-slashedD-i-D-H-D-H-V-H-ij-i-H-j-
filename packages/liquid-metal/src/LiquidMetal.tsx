@@ -6,6 +6,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 
 import { runFlat } from "./flat";
 import { Fluid } from "./fluid";
+import { voiceRipples } from "./ripples";
 
 /**
  * Returns the height (0..~1) the metal should be pulled toward at world position
@@ -37,6 +38,10 @@ export type LiquidMetalProps = {
   pulse?: number;
   /** 0..1 live sound level; keeps the surface trembling while someone speaks. */
   level?: number;
+  /** Read once per frame instead of `level`, so a playing recording can drive the metal without re-rendering. */
+  levelSource?: () => number;
+  /** Called once if frames keep running long, so the caller can ask for fewer beads. */
+  onSlow?: () => void;
   cols?: number;
   rows?: number;
   /** Bead spacing in world units. */
@@ -58,6 +63,10 @@ const COVER = 1.12;
 const POOL = 0.16;
 /** How far the whole field leans with the device, in radians. */
 const LEAN = 0.18;
+/** A frame slower than this (about 42 fps) counts against the bead budget. */
+const SLOW_FRAME = 1 / 42;
+/** Net slow frames before `onSlow` fires. */
+const SLOW_LIMIT = 90;
 
 /**
  * A pool of liquid metal made of thousands of beads. Each bead sits on a wave-equation
@@ -74,6 +83,8 @@ export function LiquidMetal({
   cover = false,
   pulse = 0,
   level = 0,
+  levelSource,
+  onSlow,
   cols: colsProp = DEFAULT_COLS,
   rows: rowsProp = DEFAULT_ROWS,
   pitch = DEFAULT_PITCH,
@@ -81,11 +92,11 @@ export function LiquidMetal({
   className,
 }: LiquidMetalProps) {
   const container = useRef<HTMLDivElement>(null);
-  const live = useRef({ shape, tint, pulse, level });
+  const live = useRef({ shape, tint, pulse, level, levelSource, onSlow });
 
   useEffect(() => {
-    live.current = { shape, tint, pulse, level };
-  }, [shape, tint, pulse, level]);
+    live.current = { shape, tint, pulse, level, levelSource, onSlow };
+  }, [shape, tint, pulse, level, levelSource, onSlow]);
 
   useEffect(() => {
     const el = container.current;
@@ -266,6 +277,7 @@ export function LiquidMetal({
     let last = 0;
     let lastPulse = live.current.pulse;
     let nextDrop = DROP_EVERY;
+    let slowFrames = 0;
     const start = performance.now() / 1000;
 
     const loop = (ms: number) => {
@@ -278,20 +290,18 @@ export function LiquidMetal({
       lean.y += (tilt.y - lean.y) * 0.08;
       beads.rotation.set(-lean.y * LEAN, lean.x * LEAN, 0);
       fillTarget(now);
-      const { pulse: beat, level: lvl } = live.current;
+      slowFrames = Math.max(0, slowFrames + (dt > SLOW_FRAME ? 1 : -1));
+      if (slowFrames > SLOW_LIMIT) {
+        slowFrames = -Infinity;
+        live.current.onSlow?.();
+      }
+      const { pulse: beat } = live.current;
+      const lvl = live.current.levelSource?.() ?? live.current.level;
       if (beat !== lastPulse) {
         lastPulse = beat;
         fluid.splash((cols - 1) / 2, (rows - 1) / 2, 4 * cellsPerDefault, -9);
       }
-      if (lvl > 0.02) {
-        // A voice keeps the pool trembling in proportion to its loudness.
-        fluid.splash(
-          (cols - 1) / 2 + (Math.random() - 0.5) * cols * 0.3,
-          (rows - 1) / 2 + (Math.random() - 0.5) * rows * 0.3,
-          3 * cellsPerDefault,
-          -lvl * 6,
-        );
-      }
+      if (lvl > 0.02) voiceRipples(fluid, now, lvl, cellsPerDefault);
       if (now > nextDrop) {
         nextDrop = now + DROP_EVERY * (0.6 + Math.random());
         fluid.splash(
