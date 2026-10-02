@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { sectionBySlug } from "@earth-one/content";
 
 import { FieldPage } from "@/components/FieldPage";
+import { DNAHelix } from "@/components/DNAHelix";
+import { BlackHoleSimulator } from "@/components/BlackHoleSimulator";
 
 import { research } from "@/lib/research";
 import { site } from "@/lib/site";
@@ -83,6 +85,16 @@ export default async function PillarPage({ params }: Props) {
               </a>
             </section>
           ))}
+        </div>
+      ) : null}
+      {page.slug === "biology" ? (
+        <div className="mt-16 w-full max-w-4xl">
+          <DNAHelix />
+        </div>
+      ) : null}
+      {page.slug === "physics" ? (
+        <div className="mt-16 w-full max-w-4xl">
+          <BlackHoleSimulator />
         </div>
       ) : null}
     </>

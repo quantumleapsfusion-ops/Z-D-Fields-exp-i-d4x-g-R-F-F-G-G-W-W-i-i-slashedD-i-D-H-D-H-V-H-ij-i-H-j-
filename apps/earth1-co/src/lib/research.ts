@@ -21,4 +21,15 @@ export const research = [
       url: "https://quantum.cloud.ibm.com/learning/en",
     },
   },
+  {
+    id: "biology",
+    title: "Biology",
+    question:
+      "How do the letters of life—DNA, RNA, and proteins—build every organism from a single cell?",
+    focus: ["Genetics", "Evolution", "Molecular biology"],
+    reference: {
+      title: "Nature · Life Sciences",
+      url: "https://www.nature.com/subjects/biology",
+    },
+  },
 ] as const;
