@@ -158,12 +158,18 @@ export default async function ProfilePage() {
         <div className="hairline my-10" />
 
         <h2 className="label text-ochre mb-3">Delete account</h2>
-        <p className="text-chalk/70 mb-4 max-w-xl text-sm leading-relaxed">
-          Permanently destroys your account, every Voice Stream segment and its audio, all
-          transcriptions, every voice note you sent in Talk, share links, chalkboards and
-          your avatar: database rows and stored files. This cannot be undone.
-        </p>
-        <DeleteAccountForm />
+        {user.deletionScheduledFor ? (
+          <p className="text-ochre mb-4 max-w-xl text-sm leading-relaxed">
+            Deletion scheduled. This action cannot be undone once the timer expires.
+          </p>
+        ) : (
+          <p className="text-chalk/70 mb-4 max-w-xl text-sm leading-relaxed">
+            Schedules permanent destruction of your account, every Voice Stream segment and its
+            audio, all transcriptions, every voice note you sent in Talk, share links, chalkboards
+            and your avatar: database rows and stored files. You have 30 days to cancel.
+          </p>
+        )}
+        <DeleteAccountForm deletionScheduledFor={user.deletionScheduledFor} />
       </section>
     </PageShell>
   );

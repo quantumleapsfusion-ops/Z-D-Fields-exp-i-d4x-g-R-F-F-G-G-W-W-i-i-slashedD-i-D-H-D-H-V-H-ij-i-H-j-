@@ -3,6 +3,7 @@
 import { useActionState, useTransition } from "react";
 
 import {
+  cancelDeletion,
   deleteAccount,
   updateName,
   uploadAvatar,
@@ -56,8 +57,26 @@ export function NameForm({ defaultName }: { defaultName: string }) {
   );
 }
 
-export function DeleteAccountForm() {
+export function DeleteAccountForm({
+  deletionScheduledFor,
+}: {
+  deletionScheduledFor?: Date | null;
+}) {
   const [state, action, pending] = useActionState(deleteAccount, null);
+
+  if (deletionScheduledFor) {
+    return (
+      <div className="max-w-md">
+        <p className="text-ochre mb-4 text-sm">
+          Your account will be permanently deleted on{" "}
+          <strong>{deletionScheduledFor.toLocaleDateString()}</strong>. You can cancel this
+          anytime before then.
+        </p>
+        <CancelDeletionButton />
+      </div>
+    );
+  }
+
   return (
     <form action={action} className="flex max-w-md flex-col gap-3">
       <input name="confirm" placeholder="Type DELETE to confirm" className={input} />
@@ -66,10 +85,27 @@ export function DeleteAccountForm() {
         disabled={pending}
         className="border-ochre/60 text-ochre hover:bg-ochre hover:text-blackboard self-start rounded-full border px-4 py-2 text-sm transition-colors disabled:opacity-50"
       >
-        {pending ? "Deleting…" : "Delete everything"}
+        {pending ? "Scheduling deletion…" : "Delete everything"}
       </button>
       <Status state={state} />
     </form>
+  );
+}
+
+export function CancelDeletionButton() {
+  const [state, start, pending] = useActionState(cancelDeletion, null);
+  return (
+    <>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => start()}
+        className="border-chalk/20 hover:border-chalk text-chalk self-start rounded-full border px-4 py-2 text-sm transition-colors disabled:opacity-50"
+      >
+        {pending ? "Cancelling…" : "Cancel deletion"}
+      </button>
+      <Status state={state} />
+    </>
   );
 }
 
