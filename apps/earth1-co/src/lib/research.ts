@@ -21,4 +21,15 @@ export const research = [
       url: "https://quantum.cloud.ibm.com/learning/en",
     },
   },
+  {
+    id: "biochemistry",
+    title: "Biochemistry",
+    question:
+      "How do proteins fold into precise 3D structures that perform life's chemistry?",
+    focus: ["Protein folding", "Metabolism", "Catalysis"],
+    reference: {
+      title: "Nature · Biochemistry",
+      url: "https://www.nature.com/subjects/biochemistry",
+    },
+  },
 ] as const;
