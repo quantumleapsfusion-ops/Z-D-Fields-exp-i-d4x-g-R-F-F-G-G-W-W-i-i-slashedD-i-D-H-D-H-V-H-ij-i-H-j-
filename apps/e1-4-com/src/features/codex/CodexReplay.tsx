@@ -12,22 +12,32 @@ import { speak } from "./voice";
 export function CodexReplay({ audioUrl }: { audioUrl: string }) {
   const [lines, setLines] = useState<string[] | null>(null);
   const [line, setLine] = useState(-1);
+  const [word, setWord] = useState(-1);
   const [busy, setBusy] = useState(false);
   const cancel = useRef<(() => void) | null>(null);
+  const wordIndex = useRef(0);
 
   useEffect(() => () => cancel.current?.(), []);
 
   const listen = async () => {
     cancel.current?.();
     setBusy(true);
+    wordIndex.current = 0;
     try {
       const res = await fetch(audioUrl);
       const print = res.ok ? await decodeSound([await res.blob()]) : null;
       const said = print ? commentOn(print) : ["I could not hear this entry."];
       setLines(said);
       cancel.current = speak(said, {
-        onLine: setLine,
-        onWord: () => {},
+        onLine: (index) => {
+          wordIndex.current = 0;
+          setLine(index);
+          setWord(-1);
+        },
+        onWord: () => {
+          setWord(wordIndex.current);
+          wordIndex.current += 1;
+        },
         onEnd: () => setBusy(false),
       });
     } catch {
@@ -51,11 +61,28 @@ export function CodexReplay({ audioUrl }: { audioUrl: string }) {
       </button>
       {lines ? (
         <p className="text-chalk/80 mt-2 font-sans text-sm leading-relaxed">
-          {lines.map((text, i) => (
-            <span key={i} className={i === line ? "text-chalk" : undefined}>
-              {text}{" "}
-            </span>
-          ))}
+          {lines.map((text, lineIdx) => {
+            const isCurrentLine = lineIdx === line;
+            const words = text.split(/\s+/);
+            return (
+              <span key={lineIdx} className={!isCurrentLine ? "text-chalk/60" : undefined}>
+                {words.map((w, wordIdx) => (
+                  <span
+                    key={wordIdx}
+                    className={
+                      isCurrentLine && wordIdx === word
+                        ? "text-ochre font-medium transition-colors"
+                        : isCurrentLine
+                          ? "text-chalk"
+                          : undefined
+                    }
+                  >
+                    {w}{" "}
+                  </span>
+                ))}
+              </span>
+            );
+          })}
         </p>
       ) : null}
     </div>
