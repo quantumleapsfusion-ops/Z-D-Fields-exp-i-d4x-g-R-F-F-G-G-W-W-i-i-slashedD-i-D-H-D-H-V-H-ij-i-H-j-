@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { SyncedTranscript } from "@/features/voice-stream/SyncedTranscript";
+import { AnimatedCaption } from "@/features/voice-stream/AnimatedCaption";
 import { formatDuration } from "@/features/voice-stream/format";
 import { segmentStarts, usePlayback, type AudioEngine } from "@/lib/audio/store";
 
@@ -131,11 +131,11 @@ export function AudioDock() {
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="max-h-28 overflow-y-auto px-5 pt-4 pb-2">
+                    <div className="px-5 pt-4 pb-2">
                       <p className="label mb-2">
                         {playlist.title} · part {current + 1} of {segments.length}
                       </p>
-                      <SyncedTranscript
+                      <AnimatedCaption
                         text={segment.transcript}
                         positionMs={offsetMs}
                         durationMs={segment.durationMs}
