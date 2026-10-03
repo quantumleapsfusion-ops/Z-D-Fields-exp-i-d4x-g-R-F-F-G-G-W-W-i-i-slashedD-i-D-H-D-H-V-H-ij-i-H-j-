@@ -65,7 +65,8 @@ function TopicSection({ topic }: { topic: Topic }) {
 
 /** A content-backed section page (chemistry, physics, biology, biochemistry, mathematics, global citizenship). */
 export function FieldPage({ section }: { section: FieldSection }) {
-  const figures = [...section.figures, ...(section.sub?.figures ?? [])];
+  const subFigures = section.sub?.flatMap((s) => s.figures) ?? [];
+  const figures = [...section.figures, ...subFigures];
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -148,19 +149,19 @@ export function FieldPage({ section }: { section: FieldSection }) {
         <FigureEntry key={f.slug} figure={f} />
       ))}
 
-      {section.sub ? (
-        <section aria-labelledby={section.sub.id}>
-          <H2 id={section.sub.id}>{section.sub.title}</H2>
+      {section.sub?.map((sub) => (
+        <section key={sub.id} aria-labelledby={sub.id}>
+          <H2 id={sub.id}>{sub.title}</H2>
           <Prose>
-            {section.sub.intro.map((p) => (
+            {sub.intro.map((p) => (
               <p key={p.slice(0, 24)}>{p}</p>
             ))}
           </Prose>
-          {section.sub.figures.map((f) => (
+          {sub.figures.map((f) => (
             <FigureEntry key={f.slug} figure={f} />
           ))}
         </section>
-      ) : null}
+      ))}
 
       <p className="source mt-16 border-t border-white/20 pt-6">
         Quotations appear only when we could check them against a named source. Sayings we

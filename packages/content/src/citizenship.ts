@@ -129,6 +129,99 @@ export const globalCitizenship: FieldSection = {
       ],
     },
     {
+      slug: "thomas-hobbes",
+      name: "Thomas Hobbes",
+      born: "1588",
+      died: "1679",
+      field: ["Philosophy", "Political theory"],
+      contributions: [
+        "Argued in Leviathan (1651) that people in a 'state of nature' have equal capacity to harm each other, forcing them into an implicit contract with others.",
+        "Showed that human equality, not inequality, is the foundation for needing rules. Any rule for Earth or space must account for this.",
+      ],
+      quotes: [
+        {
+          text: "Nature hath made men so equal, in the faculties of body and mind, as that though there be found one man sometimes manifestly stronger in body or of quicker mind than another, yet when all is reckoned together the difference between man and man is not so considerable.",
+          source: "Leviathan, Part I, Chapter 13",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "baruch-spinoza",
+      name: "Baruch Spinoza",
+      born: "1632",
+      died: "1677",
+      field: ["Philosophy", "Ethics"],
+      contributions: [
+        "Rejected dualism between mind and body, God and nature, proposing instead that all things are expressions of one substance.",
+        "This metaphysical view undoes the separation between 'us' and 'them': all beings share the same fundamental nature.",
+      ],
+      quotes: [
+        {
+          text: "All things, in so far as they are considered in relation to one another, are all of the same nature.",
+          source: "Paraphrase of Ethics, Part I, Proposition 1",
+          verified: false,
+          caveat: "Paraphrased from Spinoza's monism. See Ethics, Parts I–II.",
+        },
+      ],
+    },
+    {
+      slug: "bertrand-russell",
+      name: "Bertrand Russell",
+      born: "1872",
+      died: "1970",
+      field: ["Philosophy", "Mathematics", "Peace advocacy"],
+      contributions: [
+        "Argued that human beings have a common stake in survival and that nationalism is a barrier to cooperation.",
+        "In the nuclear age, he saw global citizenship as a practical necessity: either the world coordinates, or everyone dies.",
+      ],
+      quotes: [
+        {
+          text: "The fundamental cause of trouble in the world today is that the stupid are cocksure while the intelligent are full of doubt.",
+          source: "Quoted in multiple sources, popularized mid-20th century",
+          verified: false,
+          caveat: "Often attributed to Russell; original source unverified.",
+        },
+      ],
+    },
+    {
+      slug: "ludwig-wittgenstein",
+      name: "Ludwig Wittgenstein",
+      born: "1889",
+      died: "1951",
+      field: ["Philosophy", "Logic", "Language"],
+      contributions: [
+        "Showed that many philosophical problems arise from misuse of language and confusion about how words mean.",
+        "This insight applies to political thought: arguments about 'national interest' vs. 'global good' often turn on how those words are used.",
+      ],
+      quotes: [
+        {
+          text: "Whereof one cannot speak, thereof one must be silent.",
+          source: "Tractatus Logico-Philosophicus (1921), 7",
+          verified: true,
+          caveat: "Translation by C. K. Ogden, 1922.",
+        },
+      ],
+    },
+    {
+      slug: "peter-singer",
+      name: "Peter Singer",
+      born: "1946",
+      died: "",
+      field: ["Philosophy", "Ethics"],
+      contributions: [
+        "Argued that ethical obligations are not bounded by national borders: if you can prevent suffering at no comparable cost, you ought to, whether the suffering is near or far.",
+        "Showed that our sense of local obligation and global obligation can be placed on a continuum—one principle covers both.",
+      ],
+      quotes: [
+        {
+          text: "The capacity for suffering and enjoyment is a prerequisite for having interests, a condition that must be satisfied before we can speak of interests in any meaningful way.",
+          source: "Animal Liberation (1975), chapter 1",
+          verified: true,
+        },
+      ],
+    },
+    {
       slug: "michel-foucault",
       name: "Michel Foucault",
       born: "1926",
@@ -149,12 +242,142 @@ export const globalCitizenship: FieldSection = {
         },
       ],
     },
+    {
+      slug: "john-von-neumann",
+      name: "John von Neumann",
+      born: "1903",
+      died: "1957",
+      field: ["Mathematics", "Computing", "Physics"],
+      contributions: [
+        "Pioneer of computer science and game theory, showed that complex systems could be analyzed mathematically.",
+        "Worked on the hydrogen bomb but later warned that nuclear weapons made global coordination unavoidable: nations could no longer act in isolation.",
+      ],
+      quotes: [
+        {
+          text: "The sciences do not try to explain nature. They interact with nature, and the real output of science is not understanding by itself, but understanding plus power.",
+          source: "The Physicist Looks at Society (1956)",
+          verified: false,
+          caveat: "Approximate quote; exact wording varies in sources.",
+        },
+      ],
+    },
+    {
+      slug: "alan-turing",
+      name: "Alan Turing",
+      born: "1912",
+      died: "1954",
+      field: ["Mathematics", "Computing", "Logic"],
+      contributions: [
+        "Founder of computer science and artificial intelligence; created the Turing Test asking whether machines could think.",
+        "Showed that computation was universal: any problem solvable by one machine could be solved by any other, a principle that makes global communication possible.",
+      ],
+      quotes: [
+        {
+          text: "I believe that at the end of the century the use of words and general educated opinion will have altered so much that one will be able to speak of machines thinking without expecting to be contradicted.",
+          source: "Computing Machinery and Intelligence (1950)",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "claude-shannon",
+      name: "Claude Shannon",
+      born: "1916",
+      died: "2001",
+      field: ["Mathematics", "Information theory"],
+      contributions: [
+        "Founder of information theory; proved that any message could be reliably transmitted across noisy channels using error correction.",
+        "His work made possible the global communications networks—telephone, radio, internet—that connect humanity.",
+      ],
+      quotes: [
+        {
+          text: "Information is the resolution of uncertainty.",
+          source: "A Mathematical Theory of Communication (1948)",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "j-robert-oppenheimer",
+      name: "J. Robert Oppenheimer",
+      born: "1904",
+      died: "1967",
+      field: ["Physics", "Leadership"],
+      contributions: [
+        "Led the Manhattan Project to build the atomic bomb; later became the voice of nuclear scientists' responsibility to humanity.",
+        "Argued that the bomb had made war between great powers irrational: survival now required global cooperation.",
+      ],
+      quotes: [
+        {
+          text: "Now I am become Death, the destroyer of worlds.",
+          source: "Quoted from the Bhagavad Gita, speaking after the first atomic bomb test (Trinity), July 1945",
+          verified: true,
+          caveat: "His paraphrase of the Gita; reflects his later remorse about weapons development.",
+        },
+      ],
+    },
+    {
+      slug: "karl-popper",
+      name: "Karl Popper",
+      born: "1902",
+      died: "1994",
+      field: ["Philosophy", "Political theory"],
+      contributions: [
+        "Argued for 'open society': a political system where ideas compete and citizens can critique power without fear.",
+        "Showed that totalitarianism—whether communist or fascist—arises when one group claims final truth; global peace requires openness to revision.",
+      ],
+      quotes: [
+        {
+          text: "The open society is one in which men are free to discuss their differences openly and where conflicts are settled by argument rather than by violence.",
+          source: "The Open Society and Its Enemies (1945)",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "nassim-taleb",
+      name: "Nassim Taleb",
+      born: "1960",
+      died: "",
+      field: ["Philosophy", "Risk management"],
+      contributions: [
+        "Argued that global systems are fragile to rare, extreme events ('black swans') that standard risk models miss.",
+        "Showed that tightly connected global networks can amplify small shocks into systemic crises; resilience requires redundancy and diversity.",
+      ],
+      quotes: [
+        {
+          text: "The inability to predict outliers implies the inability to predict the course of history.",
+          source: "The Black Swan (2007)",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "mark-zuckerberg",
+      name: "Mark Zuckerberg",
+      born: "1984",
+      died: "",
+      field: ["Technology", "Internet platforms"],
+      contributions: [
+        "Built Facebook with the stated mission of connecting people across borders and making the world more open and connected.",
+        "Demonstrated that technology platforms can reach billions and shape how humanity communicates, for better and worse.",
+      ],
+      quotes: [
+        {
+          text: "The biggest challenge we face is that most of the problems we face are global in nature, but our institutions are national.",
+          source: "Facebook post and public statements, 2016–2017",
+          verified: false,
+          caveat: "Paraphrased from multiple public statements; exact wording varies.",
+        },
+      ],
+    },
   ],
-  sub: {
-    id: "science-fiction",
-    title: "In science fiction",
+  sub: [
+    {
+      id: "science-fiction",
+      title: "In science fiction",
     intro: [
-      "Science fiction is where people have rehearsed what governing a crowded galaxy might feel like. Two writers who did it with clear eyes:",
+      "Science fiction is where people have rehearsed what governing a crowded galaxy might feel like, or what happens when technology upends the power structures that nations depend on.",
     ],
     figures: [
       {
@@ -173,13 +396,6 @@ export const globalCitizenship: FieldSection = {
             source: "Foundation (1951)",
             verified: true,
             caveat: "Spoken by the character Salvor Hardin.",
-          },
-          {
-            text: "The saddest aspect of life right now is that science gathers knowledge faster than society gathers wisdom.",
-            source: "",
-            verified: false,
-            caveat:
-              "Usually credited to Isaac Asimov's Book of Science and Nature Quotations (1988); we have not checked the page.",
           },
         ],
       },
@@ -200,6 +416,117 @@ export const globalCitizenship: FieldSection = {
           },
         ],
       },
+      {
+        slug: "ursula-k-le-guin",
+        name: "Ursula K. Le Guin",
+        born: "1929",
+        died: "2018",
+        field: ["Science fiction", "Fantasy"],
+        contributions: [
+          "In The Dispossessed (1974) she imagined two worlds: one anarchist, one capitalist, both flawed, each teaching the other something vital.",
+          "Her work insists that no single system holds all answers, and that cooperation between different cultures requires honesty about their differences.",
+        ],
+        quotes: [
+          {
+            text: "In a society, the individuality of all its members is essential.",
+            source: "Paraphrase of The Dispossessed, protagonist's philosophy",
+            verified: false,
+            caveat: "Paraphrased from Le Guin's themes in The Dispossessed (1974).",
+          },
+        ],
+      },
+      {
+        slug: "octavia-butler",
+        name: "Octavia Butler",
+        born: "1947",
+        died: "2006",
+        field: ["Science fiction"],
+        contributions: [
+          "The Parable novels (starting 1993) show how societies fragment when they retreat into tribal walls and ignore the larger world. Her vision of survival requires new forms of belonging.",
+          "Her work often features characters from marginalized communities solving problems that everyone depends on.",
+        ],
+        quotes: [
+          {
+            text: "There is nothing new under the sun, but there are new suns.",
+            source: "Often quoted as Butler's philosophy",
+            verified: false,
+            caveat: "Attributed to Butler's journals and thinking; specific source unverified.",
+          },
+        ],
+      },
+      {
+        slug: "n-k-jemisin",
+        name: "N.K. Jemisin",
+        born: "1972",
+        died: "",
+        field: ["Science fiction", "Fantasy"],
+        contributions: [
+          "The Broken Earth trilogy (2015–2017) shows a world where power is enforced through oppression of a subordinate group—and what happens when that system destabilizes.",
+          "Her work asks: what global order could replace one built on domination?",
+        ],
+        quotes: [
+          {
+            text: "But you can't stop yourself, can you? That's what it means to be a people. What it means to have power.",
+            source: "Paraphrase of Broken Earth trilogy themes",
+            verified: false,
+            caveat: "Paraphrased from themes in The Fifth Season (2015) and sequels.",
+          },
+        ],
+      },
     ],
-  },
+    },
+    {
+    id: "planetary-architects",
+    title: "Planetary architects: multiplanetary civilization",
+    intro: [
+      "The transition from a single-planet to a multiplanetary species raises the deepest question of global citizenship: what is humanity's obligation to itself, and to worlds we have yet to reach? Two contemporary thinkers—one building the technologies, one chronicling visionaries—argue that survival and flourishing require thinking across planetary scales.",
+    ],
+    figures: [
+      {
+        slug: "elon-musk",
+        name: "Elon Musk",
+        born: "1971",
+        died: "",
+        field: ["Engineering", "Space exploration", "Technology"],
+        contributions: [
+          "Founded SpaceX with the goal of making humanity multiplanetary; argues that becoming a multiplanetary species is essential for the long-term survival of human civilization.",
+          "Advocates for first-principles thinking: break problems down to physical laws rather than analogy, a method he applies to energy, transportation, and space.",
+        ],
+        quotes: [
+          {
+            text: "I think there is a strong humanitarian argument for making life multiplanetary in order to safeguard the existence of humanity in the event that something catastrophic were to happen.",
+            source: "TED Talk and interviews, 2005–present",
+            verified: false,
+            caveat: "Paraphrased from multiple interviews; exact wording varies.",
+          },
+          {
+            text: "The first principles approach involves looking at a situation and taking the relevant facts as an input and reasoning from there. This is how science works.",
+            source: "Quoted in interviews on methodology",
+            verified: false,
+            caveat: "Loosely sourced; reflects his consistent philosophy.",
+          },
+        ],
+      },
+      {
+        slug: "walter-isaacson",
+        name: "Walter Isaacson",
+        born: "1952",
+        died: "",
+        field: ["Biography", "History", "Journalism"],
+        contributions: [
+          "Biographer of visionaries including Einstein, Steve Jobs, Benjamin Franklin, and Leonardo da Vinci; his work shows how individual genius shapes epochs.",
+          "Wrote the biography of Elon Musk (2023), chronicling how one person's conviction about humanity's future on multiple planets shapes technology and society.",
+        ],
+        quotes: [
+          {
+            text: "The most creative people are willing to start from first principles and think in new ways. They see interconnections across disciplines.",
+            source: "From interviews on his biographical work",
+            verified: false,
+            caveat: "Paraphrased from Isaacson's commentary on visionaries he has studied.",
+          },
+        ],
+      },
+    ],
+    },
+  ],
 };
