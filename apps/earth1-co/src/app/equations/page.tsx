@@ -39,6 +39,13 @@ export default function EquationsPage() {
           words. The maths is only the shorthand. More equations arrive with each new
           section of the library.
         </p>
+        <p>
+          New to the notation? See{" "}
+          <Link href="/symbols" className="border-b border-white/40 hover:border-white">
+            Symbols: what every Greek letter and maths sign means
+          </Link>
+          .
+        </p>
       </Prose>
       {groups.map((g) => (
         <section key={g.slug}>

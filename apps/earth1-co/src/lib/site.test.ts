@@ -36,6 +36,15 @@ describe("sitemap", () => {
   it("includes every pillar and every person profile", () => {
     for (const p of site.pillars) expect(urls).toContain(`${site.url}/${p.slug}`);
     for (const p of people) expect(urls).toContain(`${site.url}/people/${p.slug}`);
+    for (const route of [
+      "/knowledge-test",
+      "/symbols",
+      "/periodic-table",
+      "/planets",
+      "/black-hole",
+    ]) {
+      expect(urls).toContain(`${site.url}${route}`);
+    }
   });
 });
 

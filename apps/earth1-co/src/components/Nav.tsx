@@ -10,6 +10,11 @@ const links = [
   { href: "/quantum-computing", title: "Quantum Computing" },
   ...site.pillars.map((p) => ({ href: `/${p.slug}`, title: p.title })),
   { href: "/equations", title: "Equations" },
+  { href: "/knowledge-test", title: "Knowledge Test" },
+  { href: "/symbols", title: "Symbols" },
+  { href: "/periodic-table", title: "Periodic Table" },
+  { href: "/planets", title: "Planets" },
+  { href: "/black-hole", title: "Black Hole" },
   { href: "/founder", title: "Founder" },
 ];
 

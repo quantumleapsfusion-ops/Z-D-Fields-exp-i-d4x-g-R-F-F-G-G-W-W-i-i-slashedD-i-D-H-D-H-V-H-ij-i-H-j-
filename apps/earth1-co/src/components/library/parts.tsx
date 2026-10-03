@@ -6,9 +6,17 @@ import { personBySlug } from "@/lib/library/people";
 import type { Equation, Person } from "@/lib/library/types";
 
 /** The reading column: dark glass over the fixed starfield so long text stays legible. */
-export function Page({ children }: { children: React.ReactNode }) {
+export function Page({
+  children,
+  wide = false,
+}: {
+  children: React.ReactNode;
+  wide?: boolean;
+}) {
   return (
-    <div className="w-full max-w-3xl rounded-sm bg-black/70 px-5 py-10 text-left font-serif backdrop-blur-sm sm:px-10">
+    <div
+      className={`w-full ${wide ? "max-w-6xl" : "max-w-3xl"} rounded-sm bg-black/70 px-5 py-10 text-left font-serif backdrop-blur-sm sm:px-10`}
+    >
       {children}
     </div>
   );

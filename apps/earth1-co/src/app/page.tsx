@@ -199,6 +199,50 @@ export default function HomePage() {
             All equations, explained
           </Link>
         </p>
+        <section aria-labelledby="explore-heading" className="mx-auto mt-20 max-w-[70ch]">
+          <h3 id="explore-heading" className="text-center text-xl sm:text-2xl">
+            Explore
+          </h3>
+          <ul className="mt-6 grid gap-px sm:grid-cols-2">
+            {[
+              {
+                href: "/knowledge-test",
+                title: "Knowledge Test",
+                description: "Test what you know about the ideas in this library.",
+              },
+              {
+                href: "/symbols",
+                title: "Symbols",
+                description: "Look up Greek letters and mathematical notation.",
+              },
+              {
+                href: "/periodic-table",
+                title: "Periodic Table",
+                description: "Explore the properties of all 118 elements.",
+              },
+              {
+                href: "/planets",
+                title: "Planets",
+                description: "Compare the eight worlds of our Solar System.",
+              },
+              {
+                href: "/black-hole",
+                title: "Black Hole",
+                description: "Explore gravity, lensing, and black-hole scales.",
+              },
+            ].map((entry) => (
+              <li key={entry.href}>
+                <Link
+                  href={entry.href}
+                  className="block h-full border border-white/15 px-5 py-5 transition-colors hover:border-white/60"
+                >
+                  <span className="text-xl">{entry.title}</span>
+                  <span className="source mt-2 block">{entry.description}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       </section>
     </>
   );

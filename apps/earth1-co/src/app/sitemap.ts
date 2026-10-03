@@ -10,6 +10,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/quantum-computing",
     ...site.pillars.map((p) => `/${p.slug}`),
     "/equations",
+    "/knowledge-test",
+    "/symbols",
+    "/periodic-table",
+    "/planets",
+    "/black-hole",
     "/founder",
   ];
   const entries = paths.map((path) => ({
