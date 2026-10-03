@@ -2,9 +2,14 @@
 
 import { useActionState, useTransition } from "react";
 
-import { updateName, uploadAvatar, type ActionState } from "@/app/actions/profile";
+import {
+  cancelDeletion,
+  deleteAccount,
+  updateName,
+  uploadAvatar,
+  type ActionState,
+} from "@/app/actions/profile";
 import { revokeShareAction } from "@/app/actions/stream";
-import { resizeImage } from "@/features/profile/resizeImage";
 
 const input =
   "w-full rounded-full border border-chalk/20 bg-transparent px-4 py-2 font-sans text-chalk placeholder:text-dust/60 focus:border-ochre focus:outline-none";
@@ -22,22 +27,8 @@ function Status({ state }: { state: ActionState }) {
 
 export function AvatarForm() {
   const [state, action, pending] = useActionState(uploadAvatar, null);
-  const [, start] = useTransition();
   return (
-    <form
-      action={action}
-      onSubmit={(event) => {
-        // Shrink the picture on the device first; the server still checks what arrives.
-        event.preventDefault();
-        const form = event.currentTarget;
-        const chosen = new FormData(form).get("avatar");
-        start(async () => {
-          const data = new FormData();
-          data.set("avatar", chosen instanceof File ? await resizeImage(chosen) : "");
-          action(data);
-        });
-      }}
-    >
+    <form action={action}>
       <input
         type="file"
         name="avatar"
@@ -63,6 +54,58 @@ export function NameForm({ defaultName }: { defaultName: string }) {
       </button>
       <Status state={state} />
     </form>
+  );
+}
+
+export function DeleteAccountForm({
+  deletionScheduledFor,
+}: {
+  deletionScheduledFor?: Date | null;
+}) {
+  const [state, action, pending] = useActionState(deleteAccount, null);
+
+  if (deletionScheduledFor) {
+    return (
+      <div className="max-w-md">
+        <p className="text-ochre mb-4 text-sm">
+          Your account will be permanently deleted on{" "}
+          <strong>{deletionScheduledFor.toLocaleDateString()}</strong>. You can cancel this
+          anytime before then.
+        </p>
+        <CancelDeletionButton />
+      </div>
+    );
+  }
+
+  return (
+    <form action={action} className="flex max-w-md flex-col gap-3">
+      <input name="confirm" placeholder="Type DELETE to confirm" className={input} />
+      <button
+        type="submit"
+        disabled={pending}
+        className="border-ochre/60 text-ochre hover:bg-ochre hover:text-blackboard self-start rounded-full border px-4 py-2 text-sm transition-colors disabled:opacity-50"
+      >
+        {pending ? "Scheduling deletion…" : "Delete everything"}
+      </button>
+      <Status state={state} />
+    </form>
+  );
+}
+
+export function CancelDeletionButton() {
+  const [state, start, pending] = useActionState(cancelDeletion, null);
+  return (
+    <>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => start()}
+        className="border-chalk/20 hover:border-chalk text-chalk self-start rounded-full border px-4 py-2 text-sm transition-colors disabled:opacity-50"
+      >
+        {pending ? "Cancelling…" : "Cancel deletion"}
+      </button>
+      <Status state={state} />
+    </>
   );
 }
 

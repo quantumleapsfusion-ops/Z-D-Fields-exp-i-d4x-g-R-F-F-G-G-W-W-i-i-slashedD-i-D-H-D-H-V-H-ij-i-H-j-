@@ -19,6 +19,10 @@ model User {
   handle      String?  @unique
   /// Object path inside the `avatars` bucket (e.g. "<uid>/avatar.png").
   avatarPath  String?  @map("avatar_path")
+  /// When deletion was requested (non-null when scheduled). Null = not scheduled.
+  deletionScheduledAt DateTime? @map("deletion_scheduled_at") @db.Timestamptz
+  /// When deletion will be executed (30 days after scheduledAt). Null = not scheduled.
+  deletionScheduledFor DateTime? @map("deletion_scheduled_for") @db.Timestamptz
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
 

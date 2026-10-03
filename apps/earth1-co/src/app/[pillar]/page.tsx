@@ -4,6 +4,11 @@ import { sectionBySlug } from "@earth-one/content";
 
 import { FieldPage } from "@/components/FieldPage";
 
+import { BlackHoleSimulator } from "@/components/BlackHoleSimulator";
+import { DNAHelix } from "@/components/DNAHelix";
+import { PeriodicTable } from "@/components/PeriodicTable";
+import { ProteinFolder } from "@/components/ProteinFolder";
+import { SolarSystem } from "@/components/SolarSystem";
 import { research } from "@/lib/research";
 import { site } from "@/lib/site";
 
@@ -51,7 +56,7 @@ export default async function PillarPage({ params }: Props) {
         {page.line}
       </p>
       {page.slug === "research" ? (
-        <div className="mt-16 grid w-full max-w-4xl gap-12 text-left sm:grid-cols-2">
+        <div className="mt-16 w-full max-w-4xl space-y-16 text-left">
           {research.map((area) => (
             <section key={area.id} id={area.id} aria-labelledby={`${area.id}-title`}>
               <h2
@@ -73,11 +78,56 @@ export default async function PillarPage({ params }: Props) {
                   </li>
                 ))}
               </ul>
+
+              {/* Cross-links */}
+              {(area.id === "chemistry" || area.id === "biology" || area.id === "biochemistry") && (
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {area.id !== "chemistry" && (
+                    <a href="#chemistry" className="text-xs border border-white/25 px-3 py-1 rounded-full hover:border-white/50">
+                      Chemistry
+                    </a>
+                  )}
+                  {area.id !== "biology" && (
+                    <a href="#biology" className="text-xs border border-white/25 px-3 py-1 rounded-full hover:border-white/50">
+                      Biology
+                    </a>
+                  )}
+                  {area.id !== "biochemistry" && (
+                    <a href="#biochemistry" className="text-xs border border-white/25 px-3 py-1 rounded-full hover:border-white/50">
+                      Biochemistry
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Interactive visualizations */}
+              <div className="mt-8">
+                {area.id === "chemistry" && <PeriodicTable />}
+                {area.id === "biology" && <DNAHelix />}
+                {area.id === "biochemistry" && <ProteinFolder />}
+                {area.id === "physics" && (
+                  <div className="space-y-12">
+                    <div>
+                      <h3 className="text-sm font-light tracking-[0.08em] uppercase text-white/70 mb-4">
+                        Orbital mechanics
+                      </h3>
+                      <SolarSystem />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-light tracking-[0.08em] uppercase text-white/70 mb-4">
+                        Black hole simulator
+                      </h3>
+                      <BlackHoleSimulator />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <a
                 href={area.reference.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-5 inline-block border-b border-white/40 pb-0.5 text-xs tracking-[0.08em] text-white/70 hover:text-white"
+                className="mt-8 inline-block border-b border-white/40 pb-0.5 text-xs tracking-[0.08em] text-white/70 hover:text-white"
               >
                 {area.reference.title} ↗
               </a>
