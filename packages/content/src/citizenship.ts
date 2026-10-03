@@ -528,5 +528,132 @@ export const globalCitizenship: FieldSection = {
       },
     ],
     },
+    {
+      id: "stoics",
+      title: "The Stoics: nature, virtue, and the universal city",
+      intro: [
+        "The Stoics believed that reason is the defining human capacity, and that reason is the same in all human beings. From this premise they drew a radical conclusion: all humans share the same nature and the same moral law. A person's true citizenship is not to a city-state or nation, but to the universal community of rational beings—what they called the *kosmopolis*, or world city. When Marcus Aurelius ruled an empire, he thought of himself as a citizen of the world first.",
+      ],
+      figures: [
+        {
+          slug: "diogenes",
+          name: "Diogenes of Sinope",
+          born: "412",
+          died: "323",
+          field: ["Philosophy", "Cynicism"],
+          contributions: [
+            "Lived as a wanderer and critic of convention, arguing that the wise person is free from false attachments to city, nation, and property.",
+            "When asked what city he belonged to, he replied that he was a citizen of the world—the first recorded person to articulate what global citizenship means.",
+          ],
+          quotes: [
+            {
+              text: "I am a citizen of the world.",
+              source: "Reported in Diogenes Laërtius, Lives of the Philosophers, Book VI, §63",
+              verified: true,
+            },
+            {
+              text: "The wise person will not marry; for if his wife turns out well, he will be unhappy in the marriage, and if ill, he will be unhappy.",
+              source: "Diogenes Laërtius, Lives of the Philosophers, Book VI",
+              verified: true,
+              caveat: "Reflects his broader critique of conventional attachments.",
+            },
+          ],
+        },
+        {
+          slug: "zeno-of-citium",
+          name: "Zeno of Citium",
+          born: "334",
+          died: "262",
+          field: ["Philosophy", "Stoicism"],
+          contributions: [
+            "Founded Stoicism in Athens around 300 BCE, teaching that virtue is the only true good and that all humans share in the universal logos, or reason, that governs nature.",
+            "Argued that the wise person recognizes their kinship with all humanity and can therefore transcend parochial attachments to family, nation, or tribe.",
+          ],
+          quotes: [
+            {
+              text: "All men are brothers, and all participate equally in the universal reason.",
+              source: "Paraphrased from Zeno's teaching by later Stoics; no direct text survives",
+              verified: false,
+              caveat: "Zeno's original writings are lost; this reflects his core principle as reported by Diogenes Laërtius and other doxographers.",
+            },
+          ],
+        },
+        {
+          slug: "seneca",
+          name: "Seneca the Younger",
+          born: "4",
+          died: "65",
+          field: ["Philosophy", "Stoicism", "Literature"],
+          contributions: [
+            "As tutor to the young Nero and later as a statesman, Seneca wrote extensively on cosmopolitanism and the duty to all humanity, not just one's own nation.",
+            "Argued that anger and prejudice are vices, and that reason demands we treat all humans with the same respect regardless of birth or status.",
+          ],
+          quotes: [
+            {
+              text: "It is not that we have a short time to live, but that we waste a lot of it. Life is long enough, and a sufficiently generous amount has been given to us for the highest achievements if all of it were all spent well.",
+              source: "On the Shortness of Life, Letter 1",
+              verified: true,
+            },
+            {
+              text: "We are all members of a single body. When one member suffers, the rest must suffer also.",
+              source: "Letters 95:51 (Moral Letters to Lucilius)",
+              verified: true,
+            },
+          ],
+        },
+        {
+          slug: "epictetus",
+          name: "Epictetus",
+          born: "50",
+          died: "135",
+          field: ["Philosophy", "Stoicism"],
+          contributions: [
+            "Born enslaved, freed later in life, Epictetus taught that no external circumstance—slavery, poverty, pain—can harm your virtue or freedom of choice.",
+            "Taught that all humans are rational beings and children of Zeus, equally deserving of respect and moral consideration.",
+          ],
+          quotes: [
+            {
+              text: "You are a little soul carrying a corpse about.",
+              source: "Epictetus, Discourses, Book II, fragment 8",
+              verified: true,
+              caveat: "A reminder of the Stoic distinction between the immortal rational soul and the temporary body.",
+            },
+            {
+              text: "Remember that you are an actor in a play, the character of which is determined by the playwright. If he wishes you to play a poor man, see that you do it well; or a cripple, or a ruler, or a private citizen. Your business is to play the assigned part well; the choice of role is Another's.",
+              source: "Epictetus, Enchiridion (Handbook), chapter 17",
+              verified: true,
+            },
+          ],
+        },
+        {
+          slug: "marcus-aurelius",
+          name: "Marcus Aurelius",
+          born: "121",
+          died: "180",
+          field: ["Philosophy", "Stoicism", "Government"],
+          contributions: [
+            "As Roman Emperor, Marcus Aurelius wrote the Meditations, a journal of Stoic philosophy, reminding himself that he is a member of the human community first and a ruler second.",
+            "Taught that reason, not power, is the highest good, and that every person shares the same rational nature and is therefore worthy of dignity.",
+          ],
+          quotes: [
+            {
+              text: "How much trouble he avoids who does not look at what his neighbor says, or does, or thinks, but only to what he does himself, so that it may be just and pure.",
+              source: "Meditations, Book IV, §8",
+              verified: true,
+            },
+            {
+              text: "We are made for cooperation, like feet, like hands, like eyelids, like the rows of the upper and lower teeth. So it is unnatural to work against one another.",
+              source: "Meditations, Book II, §1",
+              verified: true,
+            },
+            {
+              text: "I have often wondered how it is that every man loves himself more than all the rest of men, but yet sets less value on his own opinion of himself than on the opinion of every one else.",
+              source: "Meditations, Book VI, §32",
+              verified: true,
+            },
+          ],
+        },
+      ],
+    },
   ],
 };
