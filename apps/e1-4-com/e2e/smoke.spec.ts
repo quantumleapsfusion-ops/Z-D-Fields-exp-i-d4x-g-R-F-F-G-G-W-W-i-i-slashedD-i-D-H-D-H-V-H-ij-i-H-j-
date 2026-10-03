@@ -1,111 +1,141 @@
 import { expect, test } from "@playwright/test";
 
-import { cleanupE2eUsers, expectLoggedOut, loginAs } from "./helpers/auth";
+import {
+  cleanupE2eUsers,
+  expectLoggedOut,
+  loginAs,
+  rememberSessionUser,
+} from "./helpers/auth";
+import { runFakeStorage } from "./helpers/run-fake-storage";
+
+/**
+ * The front door is a microphone: a visitor speaks to get in, and a signed-in person speaks to
+ * Da Vinci. The fake microphone that Chromium is launched with plays a steady tone, which the
+ * voiceprint code accepts as a voice, so the whole path runs without a human.
+ */
+runFakeStorage();
 
 test.afterEach(async () => {
   await cleanupE2eUsers();
 });
 
-test.describe("smoke: login → record → share", () => {
-  test("landing renders and links into the app", async ({ page }) => {
+// The pin field behind the button is WebGL drawn in software on CI; slow its frame loop so the
+// page stays responsive while a test drives it.
+async function calmAnimation(page: import("@playwright/test").Page) {
+  await page.addInitScript(() => {
+    window.requestAnimationFrame = (cb) =>
+      window.setTimeout(() => cb(performance.now()), 200);
+    window.cancelAnimationFrame = (id) => window.clearTimeout(id);
+  });
+}
+
+test.describe("smoke: speak to enter → speak → stream", () => {
+  // Decoding, voice matching and saving all happen after Stop, on a page that is also drawing
+  // WebGL in software on CI. Give every test here three times the usual budget.
+  test.slow();
+
+  test("the front door is a microphone, not a form", async ({ page }) => {
+    await calmAnimation(page);
     await page.goto("/");
     await expect(page).toHaveTitle(/e1-4/i);
-    await expect(page.locator('a[href="/stream"]:visible').first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Speak to enter" })).toBeEnabled();
+    await expect(page.getByRole("status")).toHaveText("Tap and speak to enter");
+    await expect(page.locator("input, textarea")).toHaveCount(0);
   });
 
-  test("anonymous visitors are bounced from /stream to /login", async ({ page }) => {
+  test("anonymous visitors are sent from /stream to the front door", async ({ page }) => {
+    await calmAnimation(page);
     await expectLoggedOut(page);
-    await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /continue with/i }).first(),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Speak to enter" })).toBeVisible();
   });
 
-  test("anonymous visitors are bounced from /talk to /login", async ({ page }) => {
+  test("anonymous visitors are sent from /talk to the front door", async ({ page }) => {
     await page.goto("/talk");
-    await expect(page).toHaveURL(/\/login/);
+    await expect(page).toHaveURL(/\/login\?next=%2Ftalk/);
   });
 
-  test("a signed-in user records a segment and generates a share link", async ({
+  test("speaking at the front door signs the voice in and keeps what was said", async ({
+    page,
+    context,
+  }) => {
+    await calmAnimation(page);
+    await page.goto("/");
+    const speak = page.getByRole("button", { name: "Speak to enter" });
+    await expect(speak).toBeEnabled();
+    await speak.click({ force: true });
+    await expect(page.getByRole("status")).toHaveText("Listening");
+    await page.waitForTimeout(2500);
+
+    const voiceId = page.waitForResponse((r) => r.url().endsWith("/api/voice-id"));
+    const firstEntry = page.waitForResponse(
+      (r) => r.url().endsWith("/api/stream/segments") && r.request().method() === "POST",
+    );
+    await page.getByRole("button", { name: "Stop" }).click({ force: true });
+
+    const recognised = await voiceId;
+    console.log(`voice-id answered ${recognised.status()} ${await recognised.text()}`);
+    expect(recognised.status()).toBe(200);
+    expect(await recognised.json()).toMatchObject({ ok: true });
+
+    // A session cookie now exists, so the voice owns a stream and what it said is its first entry.
+    await expect
+      .poll(async () => (await context.cookies()).some((c) => c.name === "e14_session"))
+      .toBe(true);
+    expect((await firstEntry).status()).toBe(201);
+    await expect(page).toHaveURL(/\/(journey)?$/, { timeout: 30_000 });
+
+    // Remember the account so the test deletes it afterwards.
+    const cookie = (await context.cookies()).find((c) => c.name === "e14_session")!;
+    await rememberSessionUser(cookie.value);
+
+    await page.goto("/stream");
+    await expect(page).toHaveURL(/\/stream$/);
+    await expect(page.getByRole("button", { name: "Entry 1" })).toBeVisible();
+  });
+
+  test("a signed-in person speaks on the home page and the entry lands in their stream", async ({
     page,
     context,
     baseURL,
   }) => {
     await loginAs(context, baseURL!);
-    page.on("dialog", (d) => void d.accept());
+    await calmAnimation(page);
+    await page.goto("/");
+    await expect(page.getByRole("link", { name: "Your stream" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Talk" })).toBeVisible();
 
-    await page.goto("/stream");
-    await expect(page).toHaveURL(/\/stream$/);
-    await expect(page.getByRole("heading", { name: /voice stream/i })).toBeVisible();
-
-    // Start clean: the shared test user may have leftovers from an aborted run.
-    const wipe = page.getByRole("button", { name: "Delete entire stream" });
-    if (await wipe.isVisible()) {
-      await wipe.click();
-      await expect(wipe).toBeHidden();
-    }
-
-    const record = page.getByRole("button", { name: "Record" });
-    await expect(record).toBeEnabled();
-
+    const speak = page.getByRole("button", { name: "Speak to Da Vinci" });
+    await expect(speak).toBeEnabled();
     const upload = page.waitForResponse(
       (r) => r.url().endsWith("/api/stream/segments") && r.request().method() === "POST",
     );
-    await record.click();
-    await expect(page.getByRole("button", { name: "Stop" })).toBeVisible();
-    await expect(page.getByTestId("recorder-error")).toHaveCount(0);
+    await speak.click({ force: true });
+    await expect(page.getByRole("status")).toContainText("Listening");
     await page.waitForTimeout(2500);
-    await page.getByRole("button", { name: "Stop" }).click();
+    await page.getByRole("button", { name: "Stop" }).click({ force: true });
 
     const res = await upload;
     expect(res.status(), await res.text()).toBe(201);
     const { segment } = (await res.json()) as {
-      segment: { id: string; mimeType: string; durationMs: number; audioPath: string };
+      segment: { id: string; mimeType: string; durationMs: number };
     };
     expect(segment.mimeType).toMatch(/^audio\/(webm|mp4|ogg)$/);
     expect(segment.durationMs).toBeGreaterThan(1500);
 
-    // The uploaded segment appears on the timeline with its actions.
-    const shareSegment = page.getByRole("button", { name: "Share", exact: true }).first();
-    await expect(shareSegment).toBeVisible();
-
-    // Stored audio streams back through the signed-URL proxy.
+    // The stored audio streams back to its owner.
     const audio = await page.request.get(`/api/stream/segments/${segment.id}/audio`);
     expect(audio.status()).toBe(200);
     expect((await audio.body()).byteLength).toBeGreaterThan(1000);
 
-    // Share one segment.
-    await shareSegment.click();
-    await page.getByRole("button", { name: "Create link" }).click();
-    const linkInput = page.locator("input[readonly]").first();
-    await expect(linkInput).toHaveValue(/\/s\/[A-Za-z0-9_-]{16,}$/);
-    const link = await linkInput.inputValue();
-
-    // The link works for a stranger (fresh context, no cookies).
+    // A stranger with no session gets nothing.
     const stranger = await page.context().browser()!.newContext();
-    const strangerPage = await stranger.newPage();
-    await strangerPage.goto(link);
-    await expect(
-      strangerPage.getByRole("heading", { name: /shared a moment of their stream/i }),
-    ).toBeVisible();
-    // Stranger cannot reach the owner's private API.
-    const forbidden = await strangerPage.request.get(
-      `/api/stream/segments/${segment.id}/audio`,
+    const forbidden = await stranger.request.get(
+      `${baseURL}/api/stream/segments/${segment.id}/audio`,
     );
     expect([401, 403, 404]).toContain(forbidden.status());
     await stranger.close();
 
-    // Close the segment popover (it overlaps the footer on phone viewports), then share the whole stream.
-    await shareSegment.click();
-    await expect(linkInput).toBeHidden();
-    await page.getByRole("button", { name: "Share whole stream" }).click();
-    await page.getByRole("button", { name: "Create link" }).click();
-    await expect(page.locator("input[readonly]").last()).toHaveValue(
-      /\/s\/[A-Za-z0-9_-]{16,}$/,
-    );
-
-    // Cleanup so the shared test account does not accumulate audio.
-    await page.getByRole("button", { name: "Delete entire stream" }).click();
-    await expect(page.getByText(/your stream is silent/i)).toBeVisible();
+    await page.goto("/stream");
+    await expect(page.getByRole("button", { name: "Entry 1" })).toBeVisible();
   });
 });

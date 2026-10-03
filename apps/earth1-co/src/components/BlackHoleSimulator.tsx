@@ -1,18 +1,44 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
-interface Particle {
+interface Star {
   x: number;
   y: number;
-  vx: number;
-  vy: number;
-  life: number;
-  trail: Array<{ x: number; y: number }>;
+  z: number;
+  brightness: number;
+  color: string;
 }
 
+interface AccretionParticle {
+  r: number; // radius from black hole
+  theta: number; // angle
+  temp: number; // temperature for color (0-1)
+}
+
+const CANVAS_WIDTH = 1200;
+const CANVAS_HEIGHT = 800;
+const BH_MASS = 10; // in solar masses for visualization
+const G = 1; // Normalized gravitational constant
+const C = 1; // Speed of light (normalized)
+const SCHWARZSCHILD_RADIUS = (2 * G * BH_MASS) / (C * C);
+
+/**
+ * Black Hole Simulator with gravitational lensing, accretion disk, and time dilation.
+ * Features:
+ * - Schwarzschild black hole with event horizon
+ * - Photon sphere visualization
+ * - Gravitational lensing of starfield
+ * - Glowing accretion disk
+ * - Time dilation effect
+ * - Paused/playing state for exploration
+ */
 export function BlackHoleSimulator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [paused, setPaused] = useState(false);
+  const [showPhotonSphere, setShowPhotonSphere] = useState(true);
+  const [showLensing, setShowLensing] = useState(true);
+  const [timeScale, setTimeScale] = useState(1);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -21,168 +47,256 @@ export function BlackHoleSimulator() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
+    // Reduce motion preference
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const animSpeed = reduceMotion ? 0.1 : 1;
 
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
+    // Setup canvas
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
 
+    const w = rect.width;
+    const h = rect.height;
     const cx = w / 2;
     const cy = h / 2;
-    const GM = 8; // Gravitational parameter
-    const schwarzschild = 1; // Event horizon radius
 
-    const particles: Particle[] = [];
-    const maxParticles = reduce ? 20 : 50;
+    // Generate starfield
+    const stars: Star[] = [];
+    const starCount = 300;
+    for (let i = 0; i < starCount; i++) {
+      stars.push({
+        x: (Math.random() - 0.5) * w * 2,
+        y: (Math.random() - 0.5) * h * 2,
+        z: Math.random() * 2,
+        brightness: Math.random() * 0.7 + 0.3,
+        color: ["#fff", "#ffe6cc", "#ccddff"][Math.floor(Math.random() * 3)],
+      });
+    }
 
-    const createParticle = () => {
-      const angle = Math.random() * Math.PI * 2;
-      const r = 5 + Math.random() * 8;
-      const v = Math.sqrt(GM / r) * (0.8 + Math.random() * 0.4);
+    // Accretion disk particles
+    const accretes: AccretionParticle[] = [];
+    for (let i = 0; i < 200; i++) {
+      accretes.push({
+        r: SCHWARZSCHILD_RADIUS * 3 + Math.random() * 5,
+        theta: Math.random() * Math.PI * 2,
+        temp: 0.5 + Math.random() * 0.5,
+      });
+    }
 
-      return {
-        x: cx + Math.cos(angle) * r,
-        y: cy + Math.sin(angle) * r,
-        vx: -Math.sin(angle) * v,
-        vy: Math.cos(angle) * v,
-        life: 1,
-        trail: [],
-      };
-    };
+    let time = 0;
+    let frameCount = 0;
 
-    const animate = () => {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+    const render = () => {
+      if (paused || reduceMotion) {
+        frameCount += 1;
+      } else {
+        time += 0.002 * animSpeed * timeScale;
+        frameCount += 1;
+      }
+
+      // Clear background
+      ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, w, h);
 
-      // Add new particles
-      if (particles.length < maxParticles && Math.random() < 0.1) {
-        particles.push(createParticle());
-      }
+      // Draw background stars
+      stars.forEach((star) => {
+        // Apply perspective
+        const scale = 1 / (1 + star.z * 0.5);
+        const screenX = cx + star.x * scale;
+        const screenY = cy + star.y * scale;
 
-      // Update particles
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-
-        // Gravity toward black hole
-        const dx = cx - p.x;
-        const dy = cy - p.y;
-        const r2 = dx * dx + dy * dy;
-        const r = Math.sqrt(r2);
-
-        if (r < schwarzschild * 2) {
-          particles.splice(i, 1);
-          continue;
+        // Cull off-screen
+        if (screenX < -50 || screenX > w + 50 || screenY < -50 || screenY > h + 50) {
+          return;
         }
 
-        const a = GM / (r2 * r);
-        p.vx += a * dx * 0.02;
-        p.vy += a * dy * 0.02;
+        // Gravitational lensing distortion
+        let lensedX = screenX - cx;
+        let lensedY = screenY - cy;
+        const dist2 = lensedX * lensedX + lensedY * lensedY;
+        const dist = Math.sqrt(dist2);
 
-        p.x += p.vx * 0.5;
-        p.y += p.vy * 0.5;
-        p.life -= 0.005;
-
-        if (p.life <= 0) {
-          particles.splice(i, 1);
-          continue;
+        if (showLensing && dist > 0) {
+          const factor = 1 + 500 / (dist2 + 200);
+          lensedX *= factor;
+          lensedY *= factor;
         }
 
-        // Draw trail
-        if (!reduce && p.trail.length > 30) {
-          p.trail.shift();
-        }
-        p.trail.push({ x: p.x, y: p.y });
+        const finalX = cx + lensedX;
+        const finalY = cy + lensedY;
 
-        if (!reduce && p.trail.length > 1) {
-          ctx.strokeStyle = `rgba(255, 100, 50, ${p.life * 0.3})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(p.trail[0].x, p.trail[0].y);
-          for (let j = 1; j < p.trail.length; j++) {
-            ctx.lineTo(p.trail[j].x, p.trail[j].y);
-          }
-          ctx.stroke();
-        }
+        // Brightness accounts for time dilation
+        const brightness = star.brightness * Math.max(0.1, 1 - dist * 0.001);
+        const size = Math.max(0.5, 1.5 * scale);
 
-        // Draw particle
-        ctx.fillStyle = `rgba(255, 150, 100, ${p.life})`;
+        ctx.fillStyle = star.color;
+        ctx.globalAlpha = brightness;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+        ctx.arc(finalX, finalY, size, 0, Math.PI * 2);
         ctx.fill();
-      }
+        ctx.globalAlpha = 1;
+      });
 
-      // Draw accretion disk
-      ctx.strokeStyle = "rgba(255, 100, 50, 0.15)";
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 3; i++) {
+      // Photon sphere (innermost circular orbit of light)
+      const photonR = SCHWARZSCHILD_RADIUS * 1.5;
+      if (showPhotonSphere) {
+        ctx.strokeStyle = "#ff9f1c";
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.4;
         ctx.beginPath();
-        const r = schwarzschild * 4 + i * 1;
-        ctx.ellipse(cx, cy, r, r * 0.3, 0, 0, Math.PI * 2);
+        ctx.arc(cx, cy, photonR * 30, 0, Math.PI * 2);
         ctx.stroke();
+        ctx.globalAlpha = 1;
       }
 
-      // Draw event horizon
-      ctx.strokeStyle = "rgba(255, 50, 50, 0.6)";
-      ctx.lineWidth = 2;
+      // Accretion disk
+      accretes.forEach((p, i) => {
+        // Keplerian orbital motion
+        const v_orbital = Math.sqrt((G * BH_MASS) / p.r);
+        const angular_momentum = p.r * v_orbital;
+        p.theta += (angular_momentum / (p.r * p.r)) * 0.005 * animSpeed * timeScale;
+
+        // Inspiral (slow decay into black hole)
+        p.r -= 0.001 * animSpeed * timeScale;
+
+        // Regenerate at outer edge when it falls in
+        if (p.r < SCHWARZSCHILD_RADIUS * 2) {
+          p.r = SCHWARZSCHILD_RADIUS * 8;
+          p.theta = Math.random() * Math.PI * 2;
+          p.temp = 0.5 + Math.random() * 0.5;
+        }
+
+        // Draw accretion disk particle
+        const x = cx + Math.cos(p.theta) * p.r * 30;
+        const y = cy + Math.sin(p.theta) * p.r * 30;
+
+        // Temperature-based color: red -> yellow -> white
+        let color = "#ff0000";
+        if (p.temp > 0.6) color = "#ffff00";
+        if (p.temp > 0.8) color = "#ffffff";
+
+        const brightness = 0.4 + p.temp * 0.6;
+        const size = 1.5 + p.temp * 2;
+
+        ctx.fillStyle = color;
+        ctx.globalAlpha = brightness;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+
+      // Event horizon (Schwarzschild radius)
+      const horizonRadius = SCHWARZSCHILD_RADIUS * 30;
+      ctx.fillStyle = "#000";
+      ctx.globalAlpha = 0.9;
       ctx.beginPath();
-      ctx.arc(cx, cy, schwarzschild, 0, Math.PI * 2);
-      ctx.stroke();
+      ctx.arc(cx, cy, horizonRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
 
-      if (!reduce) {
-        requestAnimationFrame(animate);
-      }
+      // Event horizon glow
+      const gradient = ctx.createRadialGradient(
+        cx,
+        cy,
+        horizonRadius * 0.8,
+        cx,
+        cy,
+        horizonRadius * 1.2,
+      );
+      gradient.addColorStop(0, "rgba(255, 100, 0, 0.3)");
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(cx, cy, horizonRadius * 1.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Time dilation info display
+      const timedilationFactor =
+        1 /
+        Math.sqrt(
+          Math.max(0.1, 1 - (2 * SCHWARZSCHILD_RADIUS) / (SCHWARZSCHILD_RADIUS * 10)),
+        );
+      const timeString = timedilationFactor.toFixed(1);
+      ctx.fillStyle = "#0f0";
+      ctx.font = "12px monospace";
+      ctx.globalAlpha = 0.7;
+      ctx.fillText(`Time dilation: ${timeString}x at photon sphere`, 10, h - 20);
+      ctx.globalAlpha = 1;
     };
 
-    animate();
+    const animationId = setInterval(() => {
+      render();
+    }, 16);
 
-    const handleResize = () => {
-      const newW = canvas.clientWidth;
-      const newH = canvas.clientHeight;
-      canvas.width = newW * dpr;
-      canvas.height = newH * dpr;
-      ctx.scale(dpr, dpr);
-      animate();
+    return () => {
+      clearInterval(animationId);
     };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [paused, showPhotonSphere, showLensing, timeScale]);
 
   return (
-    <div className="space-y-6">
-      <canvas
-        ref={canvasRef}
-        className="w-full h-64 bg-gradient-to-b from-slate-900/50 to-slate-950/50 rounded border border-white/10"
-      />
+    <div className="space-y-4">
+      <figure className="relative overflow-hidden rounded-lg border border-white/20">
+        <canvas
+          ref={canvasRef}
+          className="w-full bg-black"
+          style={{ aspectRatio: "640 / 480" }}
+        />
+        <figcaption className="sr-only">
+          Interactive black hole simulator showing Schwarzschild geometry, gravitational
+          lensing, accretion disk, and time dilation effects.
+        </figcaption>
+      </figure>
 
-      <div className="text-xs leading-relaxed text-white/60 space-y-2">
-        <p>
-          A black hole is a region of spacetime where gravity is so strong that nothing, not even light, can escape beyond the event horizon (shown in red).
-        </p>
-        <p>
-          Matter spiraling into a black hole heats up through friction in the accretion disk, radiating intense energy. The closer matter gets to the event horizon, the faster it orbits.
-        </p>
-        <p>
-          Black holes are characterized by their mass and spin. Supermassive black holes lurk at the centers of galaxies, including our own Milky Way.
-        </p>
-      </div>
+      <div className="space-y-3 rounded-lg border border-white/20 p-4">
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="toggle" onClick={() => setPaused(!paused)}>
+            {paused ? "Resume" : "Pause"}
+          </button>
+          <button
+            type="button"
+            className={`toggle ${showPhotonSphere ? "active" : ""}`}
+            onClick={() => setShowPhotonSphere(!showPhotonSphere)}
+          >
+            Photon Sphere
+          </button>
+          <button
+            type="button"
+            className={`toggle ${showLensing ? "active" : ""}`}
+            onClick={() => setShowLensing(!showLensing)}
+          >
+            Lensing
+          </button>
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs bg-white/5 rounded border border-white/10 p-4">
-        <div>
-          <h4 className="font-semibold text-white/80 mb-2">Schwarzschild Radius</h4>
-          <p className="text-white/60">
-            The radius of the event horizon depends on mass: rs = 2GM/c²
-          </p>
+        <div className="space-y-2">
+          <label className="flex items-center gap-2">
+            <span className="text-sm">Speed:</span>
+            <input
+              type="range"
+              min="0"
+              max="3"
+              step="0.1"
+              value={timeScale}
+              onChange={(e) => setTimeScale(Number(e.target.value))}
+              className="w-32"
+            />
+            <span className="text-sm">{timeScale.toFixed(1)}×</span>
+          </label>
         </div>
-        <div>
-          <h4 className="font-semibold text-white/80 mb-2">Gravitational Time Dilation</h4>
-          <p className="text-white/60">
-            Time slows near the event horizon. An observer falling in experiences normal time, but appears to slow from outside.
-          </p>
-        </div>
+
+        <p className="source text-sm leading-relaxed">
+          This simulator shows a Schwarzschild black hole with mass ~10 M☉. The black disk
+          is the event horizon; within it, not even light escapes. The orange circle shows
+          the photon sphere where light orbits unstably. The red-yellow accretion disk
+          glows as matter spirals inward, converting gravitational potential energy to
+          heat. Notice how starlight bends around the black hole—this is gravitational
+          lensing. The green text shows time dilation: near the photon sphere, time runs
+          much slower than far away.
+        </p>
       </div>
     </div>
   );

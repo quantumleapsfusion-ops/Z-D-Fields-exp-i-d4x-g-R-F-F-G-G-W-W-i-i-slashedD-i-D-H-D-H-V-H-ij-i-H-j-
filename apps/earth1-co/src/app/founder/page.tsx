@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   title: "Founder",
   description: `${site.founder.name}, ${site.founder.role} of ${site.org}.`,
   alternates: { canonical: "/founder" },
+  openGraph: {
+    title: `Founder — ${site.name}`,
+    description: `${site.founder.name}, ${site.founder.role} of ${site.org}.`,
+    url: "/founder",
+  },
 };
 
 export default function FounderPage() {
