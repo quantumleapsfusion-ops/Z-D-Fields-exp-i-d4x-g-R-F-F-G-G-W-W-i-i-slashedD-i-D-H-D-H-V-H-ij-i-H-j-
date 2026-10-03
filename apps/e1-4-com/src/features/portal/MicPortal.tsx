@@ -26,25 +26,12 @@ import { type CapturedSpan, useRecorder } from "@/features/voice-stream/useRecor
 import { useVoiceCapture } from "@/features/voice-stream/useVoiceCapture";
 import { useCarry } from "@/lib/carry";
 import { haptic } from "@/lib/device/haptics";
+import { useVoiceBuzz } from "@/lib/device/useVoiceBuzz";
 import { requestTilt } from "@/lib/device/tilt";
 
 const PinField = dynamic(() => import("@/features/codex/PinField"), { ssr: false });
 
 const subscribeNever = () => () => {};
-const BUZZ_LEVEL = 0.35;
-const BUZZ_GAP_MS = 220;
-
-/** A short buzz on each loud moment of speech, so the phone answers the voice as the beads do. */
-function useVoiceBuzz(level: number) {
-  const last = useRef(0);
-  useEffect(() => {
-    if (level < BUZZ_LEVEL) return;
-    const now = performance.now();
-    if (now - last.current < BUZZ_GAP_MS) return;
-    last.current = now;
-    haptic("voice");
-  }, [level]);
-}
 
 /** Da Vinci's front door: one microphone over a field of liquid metal. Everything follows from the sound. */
 export function MicPortal({ signedIn }: { signedIn: boolean }) {

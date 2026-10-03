@@ -9,3 +9,4 @@ export {
   type TintFn,
   type Tilt,
 } from "./LiquidMetal";
+export { voiceRipples } from "./ripples";
