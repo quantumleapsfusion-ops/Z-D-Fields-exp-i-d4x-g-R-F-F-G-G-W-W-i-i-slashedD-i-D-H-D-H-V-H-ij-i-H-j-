@@ -844,6 +844,83 @@ export const globalCitizenship: FieldSection = {
           ],
         },
         {
+          slug: "georg-hegel",
+          name: "Georg Wilhelm Friedrich Hegel",
+          born: "1770",
+          died: "1831",
+          field: ["Philosophy", "Metaphysics", "History"],
+          contributions: [
+            "Developed dialectical philosophy: history is the progressive realization of freedom through thesis-antithesis-synthesis, where each stage of consciousness negates and transcends the previous one.",
+            "Argued that the individual must be understood through their relation to the whole—the state, history, and Spirit—and that true freedom comes through recognizing one's place in this larger whole.",
+            "Showed that consciousness is not a static thing but a process of becoming; self-awareness requires struggle and negation, themes that deeply influenced existentialist philosophy.",
+          ],
+          quotes: [
+            {
+              text: "The only thing we learn from history is that we learn nothing from history.",
+              source: "Often attributed to Hegel; exact source disputed",
+              verified: false,
+              caveat: "Popular attribution; the precise source in Hegel's works is uncertain.",
+            },
+            {
+              text: "Freedom is the recognition of necessity.",
+              source: "Paraphrased from Hegel's Philosophy of History",
+              verified: false,
+              caveat: "Captures his view that true freedom comes through understanding the necessity of historical development.",
+            },
+          ],
+        },
+        {
+          slug: "edmund-husserl",
+          name: "Edmund Husserl",
+          born: "1859",
+          died: "1938",
+          field: ["Philosophy", "Phenomenology", "Logic"],
+          contributions: [
+            "Founder of phenomenology: the rigorous study of consciousness and how we experience the world; argued that philosophy must return to 'things themselves' through direct description of experience.",
+            "Developed the method of phenomenological reduction (epoché): suspending belief in the external world to study the essential structures of consciousness itself.",
+            "Showed that consciousness is always consciousness *of* something (intentionality); this insight became foundational for understanding how humans project meaning onto the world.",
+          ],
+          quotes: [
+            {
+              text: "To the things themselves!",
+              source: "Logical Investigations (1900), Introduction",
+              verified: true,
+              caveat: "Husserl's rallying cry for philosophy to focus on direct experience rather than abstraction.",
+            },
+            {
+              text: "All consciousness is consciousness of something.",
+              source: "Paraphrased from Husserl's theory of intentionality",
+              verified: false,
+              caveat: "Core principle of phenomenology: consciousness always has an object or direction.",
+            },
+          ],
+        },
+        {
+          slug: "martin-heidegger",
+          name: "Martin Heidegger",
+          born: "1889",
+          died: "1976",
+          field: ["Philosophy", "Phenomenology", "Existentialism"],
+          contributions: [
+            "Transformed phenomenology into existential analysis: argued that the fundamental question of philosophy is not 'what exists?' but 'what is Being?', and that humans (Dasein) are unique in being aware of their own existence.",
+            "Developed the concept of authenticity vs. inauthenticity: humans typically lose themselves in the 'They-self' (das Man), conforming to social convention; authentic existence requires confronting mortality and freedom.",
+            "Showed that being-toward-death is central to human existence; awareness of finitude clarifies what matters and enables authentic choice. This philosophy profoundly shaped existentialist thought.",
+          ],
+          quotes: [
+            {
+              text: "Language is the house of being.",
+              source: "Letter on Humanism (1947)",
+              verified: true,
+              caveat: "Heidegger's view that language and being are inseparably linked.",
+            },
+            {
+              text: "Being and time determine each other reciprocally, but in such a manner that we cannot say in what sense the reciprocal determination is to be understood until the nature of Being has been cleared up.",
+              source: "Being and Time (1927), Introduction",
+              verified: true,
+            },
+          ],
+        },
+        {
           slug: "jean-paul-sartre",
           name: "Jean-Paul Sartre",
           born: "1905",
