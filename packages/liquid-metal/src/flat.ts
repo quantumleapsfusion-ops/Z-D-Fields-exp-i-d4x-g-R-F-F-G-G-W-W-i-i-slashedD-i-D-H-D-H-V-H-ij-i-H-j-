@@ -1,7 +1,14 @@
 import { Fluid } from "./fluid";
 import type { ShapeFn, TintFn } from "./LiquidMetal";
+import { voiceRipples } from "./ripples";
 
-type Live = { shape: ShapeFn; tint?: TintFn; pulse: number; level: number };
+type Live = {
+  shape: ShapeFn;
+  tint?: TintFn;
+  pulse: number;
+  level: number;
+  levelSource?: () => number;
+};
 
 /**
  * The same liquid drawn flat on a 2D canvas, for devices where WebGL is missing or lost. Each
@@ -110,19 +117,13 @@ export function runFlat(
     const dt = last ? Math.min(0.1, now - last) : 1 / 60;
     last = now;
     fillTarget(now);
-    const { pulse, level } = live.current;
+    const { pulse } = live.current;
+    const level = live.current.levelSource?.() ?? live.current.level;
     if (pulse !== lastPulse) {
       lastPulse = pulse;
       fluid.splash((cols - 1) / 2, (rows - 1) / 2, 4 * cellsPerDefault, -9);
     }
-    if (level > 0.02) {
-      fluid.splash(
-        (cols - 1) / 2 + (Math.random() - 0.5) * cols * 0.3,
-        (rows - 1) / 2 + (Math.random() - 0.5) * rows * 0.3,
-        3 * cellsPerDefault,
-        -level * 6,
-      );
-    }
+    if (level > 0.02) voiceRipples(fluid, now, level, cellsPerDefault);
     if (now > nextDrop) {
       nextDrop = now + 1.6 * (0.6 + Math.random());
       fluid.splash(

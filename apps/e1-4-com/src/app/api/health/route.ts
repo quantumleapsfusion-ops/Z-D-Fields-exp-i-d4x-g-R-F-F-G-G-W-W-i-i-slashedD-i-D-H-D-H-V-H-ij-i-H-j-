@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { withPgbouncerParams } from "@/lib/pooler-url";
 import { AVATARS_BUCKET, VOICE_BUCKET } from "@/lib/storage";
+import { livenessMode } from "@/lib/voiceprint/liveness";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +26,8 @@ const TABLES = [
   "sessions",
   "voiceprints",
   "login_events",
+  "auth_challenges",
+  "passkeys",
   "_prisma_migrations",
 ] as const;
 
@@ -100,7 +103,8 @@ async function checkBuckets() {
 
 /**
  * Deployment self-check. Reports only booleans: which variables are set, whether the database
- * answers, which tables exist and whether the storage buckets exist. Never echoes a value.
+ * answers, which tables exist, whether the storage buckets exist and how sign-in liveness is
+ * checked (`fail` means `VOICE_LIVENESS=required` with no speech-to-text). Never echoes a value.
  */
 export async function GET() {
   const [database, storage] = await Promise.all([checkDatabase(), checkBuckets()]);
@@ -110,7 +114,8 @@ export async function GET() {
   const bucketsOk =
     storage.provider === "local" ||
     (storage.buckets ? Object.values(storage.buckets).every(Boolean) : false);
-  const ok = database.connected && tablesOk && bucketsOk;
+  const liveness = livenessMode();
+  const ok = database.connected && tablesOk && bucketsOk && liveness !== "fail";
   return NextResponse.json(
     {
       ok,
@@ -118,6 +123,7 @@ export async function GET() {
       databaseUrl: databaseUrlShape(),
       database,
       storage,
+      liveness,
     },
     { status: ok ? 200 : 503, headers: { "cache-control": "no-store" } },
   );

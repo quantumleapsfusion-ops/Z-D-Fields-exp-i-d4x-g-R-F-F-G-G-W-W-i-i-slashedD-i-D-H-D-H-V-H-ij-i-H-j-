@@ -81,3 +81,16 @@ export async function endSession(): Promise<void> {
     cookieStore.delete(SESSION_COOKIE);
   }
 }
+
+export async function revokeOtherSessions(userId: string): Promise<void> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  const currentTokenHash = token ? hashToken(token) : null;
+
+  await prisma.session.deleteMany({
+    where: {
+      userId,
+      ...(currentTokenHash && { tokenHash: { not: currentTokenHash } }),
+    },
+  });
+}

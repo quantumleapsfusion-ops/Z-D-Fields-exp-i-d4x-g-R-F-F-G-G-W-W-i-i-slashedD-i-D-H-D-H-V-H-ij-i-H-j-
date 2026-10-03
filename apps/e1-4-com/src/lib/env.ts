@@ -130,4 +130,6 @@ export const env = {
     resendApiKey: read("RESEND_API_KEY"),
     alertEmailFrom: read("AI_ALERT_EMAIL_FROM") ?? "e1-4 <alerts@e1-4.com>",
   },
+
+  voiceLiveness: read("VOICE_LIVENESS") as "off" | "required" | undefined,
 } as const;

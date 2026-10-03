@@ -73,7 +73,26 @@ STT/LLM API keys server-only. Configure Supabase OAuth redirects and migrations 
 described in `docs/DEPLOY.md` before enabling interactive features. Never enter
 server-only secrets in the static Pages projects.
 
-## 5. Verify production
+## 5. Apply database migrations (manual, gated)
+
+The Vercel build does **not** run migrations, on purpose: preview deployments can
+share the production database and would apply a PR's migrations before it merges.
+Apply them by hand, once, after the PR is reviewed and before (or together with) merging:
+
+```bash
+cd apps/e1-4-com
+# DIRECT_URL must be the non-pooled connection string of the target database
+npx prisma migrate status   # lists pending migrations
+npx prisma migrate deploy   # applies them; never use `migrate dev` or `db push` here
+```
+
+Row-level security for new tables is part of the Prisma migration itself; the SQL in
+`apps/e1-4-com/supabase/migrations/` only covers older tables. Then open `/api/health`
+on the deployment: it should
+return `{"ok":true}`. If it names a missing table or variable, do not merge or promote.
+Take a database backup first when a migration drops or rewrites data.
+
+## 6. Verify production
 
 Visit `https://e1-4.com` and `https://earth1.co`: confirm the correct title, brand
 mark, favicon, and links to the other domain in header, content and footer. Check

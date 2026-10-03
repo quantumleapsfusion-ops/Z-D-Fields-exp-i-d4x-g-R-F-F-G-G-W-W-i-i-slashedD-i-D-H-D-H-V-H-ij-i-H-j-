@@ -36,21 +36,35 @@ export async function blobToPcm16(blob: Blob): Promise<ArrayBuffer | null> {
   }
 }
 
+/** Why a sign-in did not go through; each has its own shake, glyph and vibration. */
+export type VoiceRefusal = "voice" | "liveness" | "busy" | "setup";
+
+export type VoiceResult = { ok: true } | { ok: false; reason: VoiceRefusal };
+
 /**
  * Sends a voice sample to be recognised. Signed out, a match opens that speaker's stream and a
- * new voice opens a new one; signed in, the sample refines the speaker's stored print.
+ * new voice opens a new one. `span.pcm` (tapped live from the microphone) is used when present;
+ * decoding the recorded file is only the fallback. The server checks the spoken digits in this same
+ * audio. `enrol` asks for a new stream if no known voice matches. `challenge` is the liveness id whose digits the
+ * person just spoke back.
  */
-export async function sendVoice(blob: Blob): Promise<boolean> {
-  const pcm = await blobToPcm16(blob);
-  if (!pcm) return false;
+export async function sendVoice(
+  span: { blob: Blob; pcm?: ArrayBuffer },
+  challenge: string | null,
+  enrol = false,
+): Promise<VoiceResult> {
+  const pcm = span.pcm ?? (await blobToPcm16(span.blob));
+  if (!pcm) return { ok: false, reason: "voice" };
+  const form = new FormData();
+  form.append("voice", new Blob([pcm], { type: "application/octet-stream" }));
+  if (enrol) form.append("enrol", "1");
+  if (challenge) form.append("challenge", challenge);
   try {
-    const res = await fetch("/api/voice-id", {
-      method: "POST",
-      headers: { "content-type": "application/octet-stream" },
-      body: pcm,
-    });
-    return res.ok;
+    const res = await fetch("/api/voice-id", { method: "POST", body: form });
+    if (res.ok) return { ok: true };
+    const body = (await res.json().catch(() => null)) as { reason?: VoiceRefusal } | null;
+    return { ok: false, reason: body?.reason ?? (res.status >= 500 ? "setup" : "voice") };
   } catch {
-    return false;
+    return { ok: false, reason: "setup" };
   }
 }

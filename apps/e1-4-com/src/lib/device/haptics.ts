@@ -7,6 +7,12 @@ export const HAPTICS = {
   accepted: [20, 30, 60],
   rejected: [80, 40, 80],
   voice: [8],
+  /** Spoken digits did not match. */
+  liveness: [60, 40, 60, 40, 60],
+  /** Too many tries; wait. */
+  busy: [250],
+  /** The server could not be reached or is not set up. */
+  setup: [40, 80, 40, 80, 200],
 } as const satisfies Record<string, readonly number[]>;
 
 export type Haptic = keyof typeof HAPTICS;

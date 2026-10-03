@@ -35,7 +35,7 @@ export async function uploadSpan(span: CapturedSpan): Promise<SegmentDTO> {
   form.append("endedAt", span.endedAt.toISOString());
   form.append("durationMs", String(Math.round(span.durationMs)));
   if (span.durationMs >= VOICE_SAMPLE_MIN_MS) {
-    const pcm = await blobToPcm16(span.blob);
+    const pcm = span.pcm ?? (await blobToPcm16(span.blob));
     if (pcm) form.append("voice", new Blob([pcm], { type: "application/octet-stream" }));
   }
   const res = await postWithRetry(form);

@@ -12,7 +12,7 @@ import {
   isVoiceprint,
 } from "./voiceprint";
 
-type LoginContext = { clientHash: string; device: string | null };
+type LoginContext = { clientHash: string; device: string | null; enrol?: boolean };
 
 async function remember(userId: string, sample: Voiceprint) {
   const stored = await prisma.voiceprint.findUnique({
@@ -37,12 +37,12 @@ async function remember(userId: string, sample: Voiceprint) {
   });
 }
 
-async function recordLogin(userId: string, context: LoginContext) {
+async function recordLogin(userId: string, context: LoginContext, success: boolean = true) {
   await prisma.loginEvent.create({
     data: {
       userId,
       method: "voice",
-      success: true,
+      success,
       clientHash: context.clientHash,
       device: context.device,
     },
@@ -83,7 +83,7 @@ export async function identifyVoice(
 ) {
   if (currentUserId) {
     const matched = await verifySpeaker(currentUserId, sample);
-    await recordLogin(currentUserId, context);
+    await recordLogin(currentUserId, context, matched);
     return { userId: currentUserId, enrolled: false, matched };
   }
 
@@ -108,6 +108,10 @@ export async function identifyVoice(
     await createSession(closest.userId);
     await recordLogin(closest.userId, context);
     return { userId: closest.userId, enrolled: false, matched: true };
+  }
+
+  if (!context.enrol) {
+    return { userId: null, enrolled: false, matched: false };
   }
 
   const user = await prisma.user.create({

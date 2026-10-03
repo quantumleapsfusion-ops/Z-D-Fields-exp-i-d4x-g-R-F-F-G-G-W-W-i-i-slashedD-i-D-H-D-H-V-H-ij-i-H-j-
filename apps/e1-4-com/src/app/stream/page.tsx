@@ -37,6 +37,7 @@ export default async function StreamPage({
 
   return (
     <StreamField
+      ownStream
       entries={segments.map((s) => ({
         id: s.id,
         durationMs: s.durationMs,

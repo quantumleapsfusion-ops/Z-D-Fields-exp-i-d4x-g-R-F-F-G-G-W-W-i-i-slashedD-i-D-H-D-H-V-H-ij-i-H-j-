@@ -70,9 +70,14 @@ test.describe("smoke: speak to enter → speak → stream", () => {
     const firstEntry = page.waitForResponse(
       (r) => r.url().endsWith("/api/stream/segments") && r.request().method() === "POST",
     );
+    const stoppedAt = Date.now();
     await page.getByRole("button", { name: "Stop" }).click({ force: true });
 
     const recognised = await voiceId;
+    // Sign-in budget is 5 s from the tap; about 2.5 s of that is the person speaking.
+    const answeredInMs = Date.now() - stoppedAt;
+    console.log(`voice-id answered ${answeredInMs} ms after Stop`);
+    expect(answeredInMs).toBeLessThan(2500);
     console.log(`voice-id answered ${recognised.status()} ${await recognised.text()}`);
     expect(recognised.status()).toBe(200);
     expect(await recognised.json()).toMatchObject({ ok: true });

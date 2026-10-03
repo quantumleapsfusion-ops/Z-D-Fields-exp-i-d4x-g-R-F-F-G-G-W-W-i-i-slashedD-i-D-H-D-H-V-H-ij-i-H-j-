@@ -28,6 +28,8 @@
     "@earth-one/ui": "*",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
+    "@simplewebauthn/browser": "^14.0.0",
+    "@simplewebauthn/server": "^14.0.3",
     "@supabase/supabase-js": "^2.117.1",
     "framer-motion": "13.4.0",
     "idb": "^8.0.3",
