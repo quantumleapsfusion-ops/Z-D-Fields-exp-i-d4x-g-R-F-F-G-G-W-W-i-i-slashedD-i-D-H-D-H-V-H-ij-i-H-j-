@@ -576,6 +576,32 @@ export const globalCitizenship: FieldSection = {
           },
         ],
       },
+      {
+        slug: "george-lucas",
+        name: "George Lucas",
+        born: "1944",
+        died: "",
+        field: ["Science fiction", "Filmmaking", "Mythology"],
+        contributions: [
+          "Created Star Wars (1977–present), a science fiction saga that reshaped storytelling by blending mythological archetypes with futuristic technology, showing how timeless human struggles play out across galaxies.",
+          "Built worlds where good and evil are not absolutes but human choices, where redemption is possible, and where ordinary people (farmboys, rebels, scavengers) can change the course of history through commitment to something larger than themselves.",
+          "Demonstrated that science fiction is not about technology but about asking what it means to be human—a question relevant to every civilization, past or future.",
+        ],
+        quotes: [
+          {
+            text: "The technology you use impresses no one. The experience you create with it is everything.",
+            source: "Quoted in interviews and public statements",
+            verified: true,
+            caveat: "Reflects Lucas's philosophy on the purpose of filmmaking and storytelling.",
+          },
+          {
+            text: "I wanted to create a modern myth.",
+            source: "Interviews about Star Wars creation and legacy",
+            verified: true,
+            caveat: "Lucas's stated intention in creating Star Wars.",
+          },
+        ],
+      },
     ],
     },
     {
