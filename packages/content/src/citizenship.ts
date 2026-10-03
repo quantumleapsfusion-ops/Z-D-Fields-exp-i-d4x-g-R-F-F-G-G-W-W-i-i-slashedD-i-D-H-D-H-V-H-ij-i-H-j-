@@ -762,9 +762,87 @@ export const globalCitizenship: FieldSection = {
       id: "existentialist-and-political",
       title: "Existentialist and political philosophers",
       intro: [
-        "In the twentieth century, existentialists and political philosophers grappled with freedom, responsibility, and what we owe each other. They inherited totalitarianism, genocide, and the collapse of old certainties. Their work asks: how should free people live together when traditional authority has failed? What does responsibility mean when individuals must choose?",
+        "In the nineteenth and twentieth centuries, existentialists and political philosophers grappled with freedom, responsibility, and what we owe each other. Kierkegaard, Schopenhauer, and Nietzsche posed the early questions: what does it mean to choose in the face of an indifferent universe? What is the individual's obligation when authority itself has become questionable? The twentieth-century existentialists—Sartre, Beauvoir, Camus, Arendt—inherited totalitarianism, genocide, and the collapse of old certainties, asking: how should free people live together when traditional authority has failed?",
       ],
       figures: [
+        {
+          slug: "soren-kierkegaard",
+          name: "Søren Kierkegaard",
+          born: "1813",
+          died: "1855",
+          field: ["Philosophy", "Theology", "Existentialism"],
+          contributions: [
+            "Pioneer of existential thought: argued that truth is subjectivity and that becoming a self requires radical choice and commitment in the face of uncertainty.",
+            "Emphasized the 'leap of faith': the idea that authentic existence cannot be based on reason alone, but requires passionate commitment and personal responsibility.",
+            "Showed that the individual stands alone before existence and must choose who they are; this theme became central to twentieth-century existentialism.",
+          ],
+          quotes: [
+            {
+              text: "Life can only be understood backwards, but it must be lived forwards.",
+              source: "Journals (Papirer)",
+              verified: false,
+              caveat: "Often attributed to Kierkegaard; the exact source and wording in his works is debated by scholars.",
+            },
+            {
+              text: "The most common form of despair is not being who you are.",
+              source: "Paraphrased from The Sickness Unto Death (1849)",
+              verified: false,
+              caveat: "Captures his existential concern with authenticity and self-becoming.",
+            },
+          ],
+        },
+        {
+          slug: "arthur-schopenhauer",
+          name: "Arthur Schopenhauer",
+          born: "1788",
+          died: "1860",
+          field: ["Philosophy", "Metaphysics", "Ethics"],
+          contributions: [
+            "Argued that the world is driven by an irrational blind will, not reason, and that suffering is fundamental to existence.",
+            "Showed that individual desires and attachments lead to suffering; the honest response is resignation and compassion for all who suffer.",
+            "His pessimism and emphasis on the individual's struggle against an indifferent world profoundly influenced later existentialists.",
+          ],
+          quotes: [
+            {
+              text: "Man can do what he wills, but he cannot will what he wills.",
+              source: "Essay on the Freedom of the Will (1839)",
+              verified: true,
+              caveat: "Statement of his determinism: we act freely within our nature, but cannot choose our nature itself.",
+            },
+            {
+              text: "The inner nature of everything is suffering; it is only the phenomena that seem pleasant.",
+              source: "Paraphrased from The World as Will and Representation",
+              verified: false,
+              caveat: "Central theme of his philosophy: suffering is the essence of existence.",
+            },
+          ],
+        },
+        {
+          slug: "friedrich-nietzsche",
+          name: "Friedrich Nietzsche",
+          born: "1844",
+          died: "1900",
+          field: ["Philosophy", "Philology", "Literature"],
+          contributions: [
+            "Declared 'God is dead' and confronted the question: how should we live in a world without objective meaning or authority?",
+            "Developed the concept of the Übermensch (overman): the individual who creates their own values rather than accepting inherited morality.",
+            "Argued that life affirmation—saying yes to existence despite its suffering—is higher than the denial of life; this revaluation of values influenced existentialists' emphasis on radical freedom.",
+          ],
+          quotes: [
+            {
+              text: "God is dead. God remains dead. And we have killed him.",
+              source: "The Gay Science (1882), §125",
+              verified: true,
+              caveat: "Nietzsche's proclamation that traditional religious and moral authority no longer binds modern humanity.",
+            },
+            {
+              text: "One must have chaos within oneself to give birth to a dancing star.",
+              source: "Thus Spoke Zarathustra (1883–1885)",
+              verified: true,
+              caveat: "On the necessity of internal struggle and creativity in self-creation.",
+            },
+          ],
+        },
         {
           slug: "jean-paul-sartre",
           name: "Jean-Paul Sartre",
