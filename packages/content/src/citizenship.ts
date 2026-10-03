@@ -1023,5 +1023,92 @@ export const globalCitizenship: FieldSection = {
         },
       ],
     },
+    {
+      id: "modern-science-communicators",
+      title: "Modern science communicators: humanity in the cosmos",
+      intro: [
+        "In the late twentieth and early twenty-first centuries, scientists have become philosophers in their own right, explaining humanity's place in the universe. They show that we are not separate from nature but continuous with it—made of stardust, shaped by evolution, organized by principles that operate at every scale from the molecular to the cosmic. This knowledge is itself a form of global citizenship: understanding that we share a common biology, a common origin, and a common future on a finite planet.",
+      ],
+      figures: [
+        {
+          slug: "neil-degrasse-tyson",
+          name: "Neil deGrasse Tyson",
+          born: "1958",
+          died: "",
+          field: ["Astrophysics", "Science communication", "Cosmology"],
+          contributions: [
+            "Made astrophysics accessible to the general public through books, television, and the podcast Cosmos, explaining humanity's place in a vast universe.",
+            "Argues that understanding our cosmic insignificance—the perspective of knowing we live on a tiny planet—paradoxically clarifies what matters: collaboration, curiosity, and shared stewardship of Earth.",
+            "Demonstrates that science is not separate from humanism but is essential to understanding what it means to be human.",
+          ],
+          quotes: [
+            {
+              text: "The most astounding fact is that if you're made of atoms, and you look at the atoms, they're the same atoms that make up the stars.",
+              source: "Interviews and Cosmos: A Spacetime Odyssey (2014)",
+              verified: false,
+              caveat: "Paraphrased from interviews; this reflects his signature theme about cosmic connection.",
+            },
+            {
+              text: "Science is a way of thinking much more than it is a body of knowledge.",
+              source: "Various interviews and writings",
+              verified: false,
+              caveat: "Captures his view of science as a method of understanding.",
+            },
+          ],
+        },
+        {
+          slug: "richard-dawkins",
+          name: "Richard Dawkins",
+          born: "1941",
+          died: "",
+          field: ["Evolutionary biology", "Science communication", "Philosophy"],
+          contributions: [
+            "Explained evolution and natural selection to a global audience through books like The Selfish Gene (1976), showing that all life on Earth shares common ancestry.",
+            "Demonstrated that understanding evolution clarifies human nature: we are shaped by the same processes that shape all living things, yet possess unique capacities for reason, culture, and moral choice.",
+            "Argues that science and reason are humanity's best tools for understanding reality and solving global problems, and that acknowledging our evolutionary heritage unites rather than divides us.",
+          ],
+          quotes: [
+            {
+              text: "There is grandeur in this view of life, with its several powers, having been originally breathed into a few forms or into one; and that, whilst this planet has gone cycling on according to the fixed law of gravity, from so simple a beginning endless forms most beautiful and most wonderful have been, and are being, evolved.",
+              source: "The Selfish Gene (1976), quoting Darwin's The Origin of Species",
+              verified: true,
+              caveat: "Dawkins's choice of this epigraph captures the wonder of evolution.",
+            },
+            {
+              text: "We are all atheists about most of the gods that humanity has ever believed in. Some of us just go one god further.",
+              source: "Various interviews and The God Delusion (2006)",
+              verified: false,
+              caveat: "Reflects his argument about consistent application of reason.",
+            },
+          ],
+        },
+        {
+          slug: "denis-noble",
+          name: "Denis Noble",
+          born: "1936",
+          died: "",
+          field: ["Systems biology", "Physiology", "Science communication"],
+          contributions: [
+            "Pioneer of systems biology, showing that life at every scale—from cells to organisms to ecosystems—operates through networks of mutual regulation, not simple top-down control.",
+            "In The Music of Life (2006), argued that understanding the symphony of biological organization reveals a perspective on evolution and development that goes beyond gene-centered views, showing how genes, cells, and organisms co-create each other.",
+            "Demonstrates that viewing life as an integrated system rather than competing parts leads to insights about health, disease, and the kind of cooperation necessary for planetary survival.",
+          ],
+          quotes: [
+            {
+              text: "The genes do not determine the organism; nor do the organism and its environment determine the organism. It's a two-way street.",
+              source: "Paraphrased from The Music of Life (2006)",
+              verified: false,
+              caveat: "Captures his systems biology view of bidirectional causation.",
+            },
+            {
+              text: "Life is a music, not a machine.",
+              source: "The Music of Life (2006), title and central theme",
+              verified: true,
+              caveat: "Noble's metaphor for understanding life as a dynamic, relational process.",
+            },
+          ],
+        },
+      ],
+    },
   ],
 };
