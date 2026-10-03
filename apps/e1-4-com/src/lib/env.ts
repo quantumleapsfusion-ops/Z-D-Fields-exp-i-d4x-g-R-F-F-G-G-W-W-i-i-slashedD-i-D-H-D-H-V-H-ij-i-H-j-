@@ -90,13 +90,6 @@ export const env = {
     secret: read("DAVINCI_SECRET"),
   },
 
-  /**
-   * Liveness for voice sign-in (the person must speak back digits the device just said).
-   * `required` fails sign-in when it cannot be checked; `off` skips it; unset checks it whenever a
-   * speech-to-text service is configured and skips it (with a log line) otherwise.
-   */
-  voiceLiveness: read("VOICE_LIVENESS") as "required" | "off" | undefined,
-
   stt: {
     provider: read("STT_PROVIDER") as
       "davinci" | "whisper" | "deepgram" | "none" | undefined,
@@ -137,4 +130,6 @@ export const env = {
     resendApiKey: read("RESEND_API_KEY"),
     alertEmailFrom: read("AI_ALERT_EMAIL_FROM") ?? "e1-4 <alerts@e1-4.com>",
   },
+
+  voiceLiveness: read("VOICE_LIVENESS") as "off" | "required" | undefined,
 } as const;

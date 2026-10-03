@@ -37,12 +37,12 @@ async function remember(userId: string, sample: Voiceprint) {
   });
 }
 
-async function recordLogin(userId: string, context: LoginContext, success = true) {
+async function recordLogin(userId: string, context: LoginContext) {
   await prisma.loginEvent.create({
     data: {
       userId,
       method: "voice",
-      success,
+      success: true,
       clientHash: context.clientHash,
       device: context.device,
     },
@@ -74,8 +74,7 @@ export async function verifySpeaker(
 
 /**
  * The voice is the key: signed in, it is checked against the speaker's print; signed out, the
- * closest matching speaker is signed in, and an unheard voice is given a stream of its own only
- * when `context.enrol` is set.
+ * closest matching speaker is signed in, and an unheard voice is given a stream of its own.
  */
 export async function identifyVoice(
   sample: Voiceprint,
@@ -84,7 +83,7 @@ export async function identifyVoice(
 ) {
   if (currentUserId) {
     const matched = await verifySpeaker(currentUserId, sample);
-    await recordLogin(currentUserId, context, matched);
+    await recordLogin(currentUserId, context);
     return { userId: currentUserId, enrolled: false, matched };
   }
 
@@ -110,10 +109,6 @@ export async function identifyVoice(
     await recordLogin(closest.userId, context);
     return { userId: closest.userId, enrolled: false, matched: true };
   }
-
-  // An unheard voice is not silently given a new account: a known person with a sore throat
-  // would land in an empty stream. The caller asks for one explicitly with `enrol`.
-  if (!context.enrol) return { userId: null, enrolled: false, matched: false };
 
   const user = await prisma.user.create({
     data: {

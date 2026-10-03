@@ -59,7 +59,6 @@ export async function enqueue(id: string, span: CapturedSpan): Promise<void> {
     startedAt: span.startedAt.toISOString(),
     endedAt: span.endedAt.toISOString(),
     durationMs: span.durationMs,
-    pcm: span.pcm,
   };
   await run("readwrite", (store) => store.put(row));
 }

@@ -6,7 +6,7 @@ import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
   type AuthenticationResponseJSON,
-  type AuthenticatorTransportFuture,
+  type AuthenticatorTransport,
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
   type RegistrationResponseJSON,
@@ -107,7 +107,7 @@ export async function registrationOptions(
     attestationType: "none",
     excludeCredentials: user.passkeys.map((p) => ({
       id: p.id,
-      transports: p.transports as AuthenticatorTransportFuture[],
+      transports: p.transports as AuthenticatorTransport[],
     })),
     authenticatorSelection: { residentKey: "required", userVerification: "required" },
   });
@@ -182,7 +182,7 @@ export async function verifyAuthentication(
       id: passkey.id,
       publicKey: new Uint8Array(passkey.publicKey),
       counter: passkey.counter,
-      transports: passkey.transports as AuthenticatorTransportFuture[],
+      transports: passkey.transports as AuthenticatorTransport[],
     },
   });
   if (!verified) throw new PasskeyError("unverified");
