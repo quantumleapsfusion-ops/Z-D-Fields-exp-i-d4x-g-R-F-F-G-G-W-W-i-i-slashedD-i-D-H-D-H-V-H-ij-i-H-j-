@@ -10,6 +10,84 @@ export const globalCitizenship: FieldSection = {
   ],
   figures: [
     {
+      slug: "socrates",
+      name: "Socrates",
+      born: "470",
+      died: "399",
+      field: ["Philosophy", "Ethics"],
+      contributions: [
+        "Pioneered the method of dialogue and questioning as the path to truth, believing that examining life together reveals what all humans have in common beneath surface differences.",
+        "Argued that knowledge and virtue are inseparable: to know the good is to do it, implying that all rational beings have access to the same moral truths.",
+      ],
+      quotes: [
+        {
+          text: "The unexamined life is not worth living.",
+          source: "Plato, Apology, 38a",
+          verified: true,
+          caveat: "Spoken by Socrates at his trial.",
+        },
+        {
+          text: "Know thyself.",
+          source: "Inscription at the Temple of Apollo at Delphi; quoted by Socrates in Plato's Charmides",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "plato",
+      name: "Plato",
+      born: "428",
+      died: "348",
+      field: ["Philosophy", "Metaphysics", "Political theory"],
+      contributions: [
+        "In the Republic, imagined a just state based on wisdom and virtue rather than power or wealth, governed by those trained to see beyond opinion to truth itself.",
+        "Argued that justice is harmony in the soul and in the city, and that the truly wise person cares for the good of the whole community, not personal gain.",
+      ],
+      quotes: [
+        {
+          text: "The measure of a person is what they do with power.",
+          source: "Paraphrased from Plato's works on justice and power",
+          verified: false,
+          caveat: "Reflects Plato's core concern; exact wording varies across dialogues.",
+        },
+        {
+          text: "Until philosophers are kings, or the kings and princes of the world have the spirit and power of philosophy, cities will never cease from evils.",
+          source: "The Republic, Book V, 473d",
+          verified: true,
+        },
+      ],
+    },
+    {
+      slug: "aristotle",
+      name: "Aristotle",
+      born: "384",
+      died: "322",
+      field: ["Philosophy", "Metaphysics", "Ethics"],
+      contributions: [
+        "Developed virtue ethics: the idea that human flourishing (eudaimonia) comes from developing excellences of character shared by all rational beings, not from obedience to external rules.",
+        "Taught that humans are political animals who flourish only in community, and that the ideal state cultivates virtue in all its members regardless of status.",
+      ],
+      quotes: [
+        {
+          text: "Happiness depends upon ourselves.",
+          source: "Nicomachean Ethics, Book I",
+          verified: true,
+        },
+        {
+          text: "Man is a political animal.",
+          source: "Politics, Book I, chapter 2",
+          verified: true,
+          caveat: "Often translated as 'man is by nature a political animal,' meaning humans naturally form communities.",
+        },
+        {
+          text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
+          source: "Commonly attributed to Aristotle; actual source uncertain (possibly paraphrased from Nicomachean Ethics)",
+          verified: false,
+          caveat: "This formulation is popular but may not be direct from Aristotle.",
+        },
+      ],
+    },
+    {
       slug: "augustine-of-hippo",
       name: "Augustine of Hippo",
       born: "354",
@@ -200,6 +278,31 @@ export const globalCitizenship: FieldSection = {
           source: "Tractatus Logico-Philosophicus (1921), 7",
           verified: true,
           caveat: "Translation by C. K. Ogden, 1922.",
+        },
+      ],
+    },
+    {
+      slug: "gottlob-frege",
+      name: "Gottlob Frege",
+      born: "1848",
+      died: "1925",
+      field: ["Philosophy", "Logic", "Mathematics"],
+      contributions: [
+        "Founded modern logic and the philosophy of language by showing how meaning and reference work; his work revealed that language has structure that mirrors the structure of thought itself.",
+        "Argued that the laws of logic are universal and necessary, binding on all rational beings; disagreement about logic is disagreement about the nature of reality.",
+      ],
+      quotes: [
+        {
+          text: "A thought is something which can be expressed in a sentence and is either true or false.",
+          source: "Paraphrased from Frege's writings on sense and reference",
+          verified: false,
+          caveat: "Reflects his view of thoughts as abstract, mind-independent objects.",
+        },
+        {
+          text: "If we are to have objective knowledge of the world, it must be through the medium of language and logic.",
+          source: "Paraphrased from Frege's epistemology",
+          verified: false,
+          caveat: "Captures his position on logic's role in understanding reality.",
         },
       ],
     },
